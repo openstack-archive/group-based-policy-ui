@@ -1,0 +1,38 @@
+Metadata-Version: 1.1
+Name: group-based-policy-ui
+Version: dbb0301
+Summary: Horizon modules for Group Based Policy
+Home-page: http://www.openstack.org/
+Author: OpenStack
+Author-email: openstack-dev@lists.openstack.org
+License: UNKNOWN
+Description: ===============================
+        group-based-policy-ui
+        ===============================
+        
+        Horizon modules for Group Based Policy
+        
+        * Free software: Apache license
+        * Documentation: http://docs.openstack.org/developer/group-based-policy-ui
+        * Source: http://git.openstack.org/cgit/stackforge/group-based-policy-ui
+        * Bugs: http://bugs.launchpad.net/group-based-policy-ui
+        
+        Features
+        --------
+        
+        * TODO
+        
+        
+Platform: UNKNOWN
+Classifier: Environment :: OpenStack
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
