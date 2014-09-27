@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = gbpui
+omit = gbpui/tests/*,gbpui/openstack/*
+
+[report]
+ignore-errors = True
