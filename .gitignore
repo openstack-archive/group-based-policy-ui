@@ -1,0 +1,14 @@
+*.swp
+*.pyc
+*.lock
+/sharemug/uploads/*
+/sharemug/static/js/spa/.webassets-cache/*
+*.thumbnail
+*.cache
+/sharemug/log/*.log
+*.log
+/log/*.log
+/log/*.log 
+/temp/*
+uploads/*
+sharemug/static/app/js/compressed.js

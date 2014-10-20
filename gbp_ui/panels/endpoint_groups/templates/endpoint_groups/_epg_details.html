@@ -1,0 +1,50 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+	<hr class="header_rule">
+	<dl>
+		<dt>{% trans "Name" %}</dt>
+		<dd>{{ epg.name|default:_("-") }}</dd>
+
+		<dt>{% trans "Description" %}</dt>
+		<dd>{{ epg.description|default:_("-") }}</dd>
+
+		<dt>{% trans "ID" %}</dt>
+		<dd>{{ epg.id }} </dd>
+
+		<dt>{% trans "Project ID" %}</dt>
+		<dd>{{ epg.tenant_id }}</dd>
+	</dl>
+	{% if l3list %}
+	<div class='panel panel-default'>
+		<div class='panel-heading'>{% trans "L3 Policies" %}</div>
+		<div class='panel-body'>
+			<table class="table">
+				<thead><tr><th>Name</th><th>ID</th><tr></thead>
+				<tbody>
+				{% for l3 in l3list %}
+				<tr><td>&nbsp;{{l3.name}}</td><td>{{l3.id}}</td></tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{% endif %}
+ 	{% if l2list %}
+	<div class='panel panel-default'>
+		<div class='panel-heading'>{% trans "L2 Policies" %}</div>
+		<div class='panel-body'>
+			<table class="table">
+				<thead><tr><th>Name</th><th>ID</th><tr></thead>
+				<tbody>
+				{% for l2 in l2list %}
+				<tr><td>&nbsp;{{l2.name}}</td><td>{{l2.id}}</td></tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{% endif %}
+</div>
+
