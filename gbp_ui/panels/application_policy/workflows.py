@@ -313,7 +313,6 @@ class AddPolicyClassifier(workflows.Workflow):
 
 	def _create_classifer(self, request, context):
 		try:
-			print context
 			client.policyclassifier_create(request, **context)
 			return True
 		except Exception as e:

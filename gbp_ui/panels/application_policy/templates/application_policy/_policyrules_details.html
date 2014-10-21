@@ -33,7 +33,6 @@
       {{classifier.name}}:
       {% url 'horizon:project:application_policy:policyclassifierdetails' classifier.id as classifier_url %}
       <a href="{{ classifier_url }}">{{ classifier.id }}</a><br>
-      {% trans "-" %}
       {% endfor %}
     </dd>
   </dl>

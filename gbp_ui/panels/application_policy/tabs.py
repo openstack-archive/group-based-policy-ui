@@ -173,6 +173,7 @@ class PolicyRulesDetailsTab(tabs.Tab):
             policyrule = client.policyrule_get(request, ruleid)
             actions = client.policyaction_list(request, policyrule_id=ruleid)
             classifiers = client.policyclassifier_list(request, policyrule_id=ruleid)
+            classifiers = [item for item in classifiers if item.id == policyrule.policy_classifier_id]
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve policyrule details.'),

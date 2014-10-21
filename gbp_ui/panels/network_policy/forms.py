@@ -23,6 +23,7 @@ from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
+from gbp_ui import client
 
 LOG = logging.getLogger(__name__)
  
@@ -36,7 +37,8 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                                 }), label=_("IP Version")) 
 	ip_pool = forms.IPField(label=_("IP Pool"),
 									initial="",
-									help_text=_("IP Pool"),
+									help_text=_("Network address in CIDR format "
+                                      "(e.g. 192.168.0.0/24, 2001:DB8::/48)"),
 									version=forms.IPv4 | forms.IPv6,
 									mask=True) 
 	subnet_prefix_length = forms.CharField(max_length=80,
@@ -65,8 +67,8 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
 			msg = _("L3 Policy Created Successfully!")
 			LOG.debug(msg)
 			return http.HttpResponseRedirect(url)
-		except Exception:
-			msg = _("Failed to create L3 policy")
+		except Exception as e:
+			msg = _("Failed to create L3 policy.  %s" % str(e))
 			LOG.error(msg)
 			exceptions.handle(request, msg, redirect=redirect)
  
@@ -80,7 +82,8 @@ class UpdateL3PolicyForm(forms.SelfHandlingForm):
                                 }), label=_("IP Version")) 
 	ip_pool = forms.IPField(label=_("IP Pool"),
 									initial="",
-									help_text=_("IP Pool"),
+									help_text=_("Network address in CIDR format "
+                                      "(e.g. 192.168.0.0/24, 2001:DB8::/48)"),
 									version=forms.IPv4 | forms.IPv6,
 									mask=True) 
 	subnet_prefix_length = forms.CharField(max_length=80,

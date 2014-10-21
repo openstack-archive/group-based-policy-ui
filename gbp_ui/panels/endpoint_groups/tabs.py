@@ -65,6 +65,7 @@ class EPGDetailsTab(tabs.Tab):
             epg = client.epg_get(request, epgid)
             l3list = client.l3policy_list(request)
             l2list = client.l2policy_list(request)
+            l2list = [item for item in l2list if item.id == epg.l2_policy_id]
         except Exception:
             exceptions.handle(request, _('Unable to retrieve group details.'), redirect=self.failure_url)
         return {'epg': epg, 'l3list':l3list,'l2list':l2list}
