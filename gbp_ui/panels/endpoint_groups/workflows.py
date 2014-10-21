@@ -32,14 +32,14 @@ LOG = logging.getLogger(__name__)
 
 class SelectProvidedContractAction(workflows.Action):
     provided_contract = forms.MultipleChoiceField(
-        label=_("Provided Contract"),
+        label=_("Provided Policy Rule Set"),
         required=False,
         widget=forms.CheckboxSelectMultiple(),
-        help_text=_("Choose a contract for an EPG."))
+        help_text=_("Choose a policy rule set for an EPG."))
 
     class Meta:
-        name = _("Provided Contracts")
-        help_text = _("Select provided contract for EPG.")
+        name = _("Provided Policy Rule Set")
+        help_text = _("Select provided Policy Rule Set for EPG.")
 
     def populate_provided_contract_choices(self, request, context):
         try:
@@ -54,21 +54,21 @@ class SelectProvidedContractAction(workflows.Action):
         except Exception as e:
             contract_list = []
             exceptions.handle(request,
-                              _('Unable to retrieve contracts (%(error)s).')
+                              _('Unable to retrieve policy rule set (%(error)s).')
                               % {'error': str(e)})
         return contract_list
 
 
 class SelectConsumedContractAction(workflows.Action):
     consumed_contract = forms.MultipleChoiceField(
-        label=_("Consumed Contract"),
+        label=_("Consumed Policy Rule Set"),
         required=False,
         widget=forms.CheckboxSelectMultiple(),
-        help_text=_("Select consumed contract for EPG."))
+        help_text=_("Select consumed policy rule set for EPG."))
 
     class Meta:
-        name = _("Consumed Contracts")
-        help_text = _("Select consumed contract for EPG.")
+        name = _("Consumed Policy Rule Set")
+        help_text = _("Select consumed policy rule set for EPG.")
 
     def populate_consumed_contract_choices(self, request, context):
         try:
@@ -83,19 +83,19 @@ class SelectConsumedContractAction(workflows.Action):
         except Exception as e:
             contract_list = []
             exceptions.handle(request,
-                              _('Unable to retrieve contracts (%(error)s).')
+                              _('Unable to retrieve policy rule set (%(error)s).')
                               % {'error': str(e)})
         return contract_list
 
 class SelectL2policyAction(workflows.Action):
 	l2policy = forms.ChoiceField(
-			label=_("L2 Policy"),
+			label=_("Network Policy"),
 			required=False,
-			help_text=_("Select l2 policy for EPG."),)
+			help_text=_("Select network policy for EPG."),)
 
 	class Meta:
-		name = _("L2 Policy")
-		help_text = _("Select l2 policy for EPG.")
+		name = _("Network Policy")
+		help_text = _("Select network policy for EPG.")
 
 	def populate_l2policy_choices(self,request,context):
 		policies = []
@@ -123,7 +123,7 @@ class SelectL2policyStep(workflows.Step):
 
 class SelectProvidedContractStep(workflows.Step):
     action_class = SelectProvidedContractAction
-    name = _("Provided Contract")
+    name = _("Provided Policy Rule Set")
     contributes = ("provided_contracts",)
 
     def contribute(self, data, context):
@@ -141,7 +141,7 @@ class SelectProvidedContractStep(workflows.Step):
 
 class SelectConsumedContractStep(workflows.Step):
     action_class = SelectConsumedContractAction
-    name = _("Consumed Contract")
+    name = _("Consumed Policy Rule Set")
     contributes = ("consumed_contracts",)
 
     def contribute(self, data, context):

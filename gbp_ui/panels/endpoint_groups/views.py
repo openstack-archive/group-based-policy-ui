@@ -154,31 +154,3 @@ class RemoveConsumedView(forms.ModalFormView):
     
     def get_initial(self):
         return self.kwargs 
-
-class AddL2policyView(forms.ModalFormView):
-	form_class = epg_forms.AddL2PolicyForm
-	template_name = "project/endpoint_groups/add_l2policy.html"
-
-	def get_context_data(self, **kwargs):
-		context = super(AddL2policyView,self).get_context_data(**kwargs)
-		return context
-
-	def get_initial(self):
-		return self.kwargs
-
-class L2PolicyUpdateView(forms.ModalFormView):
- 	form_class = epg_forms.UpdateL2PolicyForm
-	template_name = "project/endpoint_groups/update_l2policy.html"
-
-	def get_context_data(self, **kwargs):
-		context = super(L2PolicyUpdateView,self).get_context_data(**kwargs)
-		context['l2policy_id'] = self.kwargs['l2policy_id']
-		return context
-
-	def get_initial(self):
-		return self.kwargs
- 
-
-class L2PolicyDetailsView(tabs.TabView):
-    tab_group_class = (epg_tabs.L2PolicyDetailsTabs)
-    template_name = 'project/endpoint_groups/details_tabs.html' 

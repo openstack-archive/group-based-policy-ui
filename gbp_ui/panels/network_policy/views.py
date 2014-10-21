@@ -74,5 +74,38 @@ class L3PolicyUpdateView(forms.ModalFormView):
 		return self.kwargs
  
 class L3PolicyDetailsView(tabs.TabView):
-    tab_group_class = (np_tabs.L3PolicyDetailsTabs)
-    template_name = 'project/network_policy/details_tabs.html'  
+	tab_group_class = (np_tabs.L3PolicyDetailsTabs)
+	template_name = 'project/network_policy/details_tabs.html'  
+
+	def get_context_data(self,**kwargs):
+		context = super(L3PolicyDetailsView,self).get_context_data(**kwargs)
+		context['l3policy_id'] = self.kwargs['l3policy_id']
+		return context
+
+class AddL2policyView(forms.ModalFormView):
+	form_class = np_forms.AddL2PolicyForm
+	template_name = "project/endpoint_groups/add_l2policy.html"
+
+	def get_context_data(self, **kwargs):
+		context = super(AddL2policyView,self).get_context_data(**kwargs)
+		return context
+
+	def get_initial(self):
+		return self.kwargs
+
+class L2PolicyUpdateView(forms.ModalFormView):
+ 	form_class = np_forms.UpdateL2PolicyForm
+	template_name = "project/endpoint_groups/update_l2policy.html"
+
+	def get_context_data(self, **kwargs):
+		context = super(L2PolicyUpdateView,self).get_context_data(**kwargs)
+		context['l2policy_id'] = self.kwargs['l2policy_id']
+		return context
+
+	def get_initial(self):
+		return self.kwargs
+ 
+
+class L2PolicyDetailsView(tabs.TabView):
+    tab_group_class = (np_tabs.L2PolicyDetailsTabs)
+    template_name = 'project/endpoint_groups/details_tabs.html'  

@@ -96,7 +96,7 @@ class PolicyRulesTab(tabs.TableTab):
 
 class ApplicationPoliciesTab(tabs.TableTab):
     table_classes = (tables.ApplicationPoliciesTable,)
-    name = _("Application Policies")
+    name = _("Policy Rule Set")
     slug = "application_policies"
     template_name = "horizon/common/_detail_table.html"
 
@@ -106,7 +106,7 @@ class ApplicationPoliciesTab(tabs.TableTab):
             contracts = client.contract_list(self.tab_group.request, tenant_id=tenant_id)
         except Exception:
             contracts = []
-            exceptions.handle(self.tab_group.request, _('Unable to retrieve contract list.'))
+            exceptions.handle(self.tab_group.request, _('Unable to retrieve policy rule set list.'))
 
         for contract in contracts:
             contract.set_id_as_name_if_empty()

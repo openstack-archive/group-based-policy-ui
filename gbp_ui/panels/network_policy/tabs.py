@@ -39,10 +39,7 @@ class L3PolicyDetailsTab(tabs.Tab):
 		return {'l3policy':l3policy}
  
  
-class L3PolicyDetailsTabs(tabs.TabGroup):
-	slug = "l3policy_tabs"
-	tabs = (L3PolicyDetailsTab,) 
- 
+
 class L3PolicyTab(tabs.TableTab):
 	table_classes = (tables.L3PolicyTable,)
 	name = _("L3 Policy")
@@ -64,4 +61,43 @@ class L3PolicyTabs(tabs.TabGroup):
     slug = "l3policy_tab"
     tabs = (L3PolicyTab,)
     sticky = True
- 
+
+class L2PolicyTab(tabs.TableTab):
+	table_classes = (tables.L2PolicyTable,)
+	name = _("L2 Policies")
+	slug = "l2policy"
+	template_name = "horizon/common/_detail_table.html"
+
+	def get_l2policy_table_data(self):
+		policies = []
+		try:
+			tenant_id = self.request.user.tenant_id
+			policies = client.l2policy_list(self.request,tenant_id=tenant_id)
+		except Exception:
+			policies = []
+			exceptions.handle(self.tab_group.request,
+							_('Unable to retrieve l2 policy list.'))
+		return policies
+
+class L2PolicyDetailsTab(tabs.Tab):
+	name = _("L2 Policy Details")
+	slug = "l2_policy_details"
+	template_name = "project/endpoint_groups/_l2_policy_details.html"
+	failure_url = reverse_lazy('horizon:project:endpoint_group:index')
+
+	def get_context_data(self,request):
+		l2policy_id = self.tab_group.kwargs['l2policy_id']
+		try:
+			l2policy = client.l2policy_get(request,l2policy_id)
+		except Exception:
+			exceptions.handle(request, _('Unable to retrieve l2 policy details.'), redirect=self.failure_url)
+		return {'l2policy':l2policy}
+
+
+class L2PolicyDetailsTabs(tabs.TabGroup):
+	slug = "l2policy_tabs"
+	tabs = (L2PolicyDetailsTab,)
+
+class L3PolicyDetailsTabs(tabs.TabGroup):
+	slug = "l3policy_tabs"
+	tabs = (L3PolicyDetailsTab,L2PolicyTab,) 

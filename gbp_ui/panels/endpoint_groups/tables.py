@@ -58,46 +58,6 @@ class EPGsTable(tables.DataTable):
         table_actions = (AddEPGLink, DeleteEPGLink)
         row_actions = (UpdateEPGLink, DeleteEPGLink)
 
-	pass
-
-class CreateL2PolicyLink(tables.LinkAction):
-	name = "add_l2policy"
-	verbose_name = _("Create L2 Policy")
-	url = "horizon:project:endpoint_groups:addl2policy"
-	classes = ("ajax-modal","btn-addl2policy")
-
-
-class EditL2PolicyLink(tables.LinkAction):
-    name = "update_l2policy"
-    verbose_name = _("Edit L2Policy")
-    classes = ("ajax-modal", "btn-update",)
-
-    def get_link_url(self, l2policy):
-        base_url = reverse("horizon:project:endpoint_groups:update_l2policy", kwargs={'l2policy_id': l2policy.id})
-        return base_url
-
-class DeleteL2PolicyLink(tables.DeleteAction):
-    name = "delete_l2policy"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("L2Policy")
-    data_type_plural = _("L2Policies")
- 
-
-class L2PolicyTable(tables.DataTable):
-	name = tables.Column("name",
-						verbose_name=_("Name"),
-						link="horizon:project:endpoint_groups:l2policy_details")
-	description = tables.Column("description", verbose_name=_("Description"))
-	id = tables.Column("id", verbose_name=_("ID"))
-	l3_policy_id = tables.Column("l3_policy_id", verbose_name=_("L3 Policy ID"))
-
-	class Meta:
-		name = "l2policy_table"
-		verbose_name = _("L2 Policy")
-		table_actions = (CreateL2PolicyLink,DeleteL2PolicyLink)
-		row_actions = (EditL2PolicyLink,DeleteL2PolicyLink)
-
 class LaunchVMLink(tables.LinkAction):
     name = "launch_vm"
     verbose_name = _("Create Member")

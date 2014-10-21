@@ -6,7 +6,7 @@
 {% block form_action %}{% url "horizon:project:application_policy:updatecontract" contract_id %}{% endblock %}
 
 {% block modal_id %}update_contract_modal{% endblock %}
-{% block modal-header %}{% trans "Edit Contract" %}{% endblock %}
+{% block modal-header %}{% trans "Edit Policy Rule Set" %}{% endblock %}
 
 {% block modal-body %}
 <div class="left">
@@ -21,6 +21,6 @@
 {% endblock %}
 
 {% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Update Contract" %}" />
+  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Update Policy Rule Set" %}" />
   <a href="{% url "horizon:project:application_policy:index" %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
 {% endblock %}

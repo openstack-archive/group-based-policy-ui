@@ -20,14 +20,14 @@ from horizon import tables
 
 class AddAppPolicyLink(tables.LinkAction):
     name = "addcontract"
-    verbose_name = _("Create Application Policy")
+    verbose_name = _("Create Policy Rule Set")
     url = "horizon:project:application_policy:addcontract"
     classes = ("ajax-modal", "btn-addcontract",)
 
 
 class UpdateAppPolicyLink(tables.LinkAction):
     name = "updatecontract"
-    verbose_name = _("Edit Application Policy")
+    verbose_name = _("Edit Policy Rule Set")
     classes = ("ajax-modal",'edit_contract')
 
     def get_link_url(self, contract):
@@ -39,8 +39,8 @@ class DeleteAppPolicyLink(tables.DeleteAction):
     name = "deletecontract"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Contract")
-    data_type_plural = _("Contracts")
+    data_type_singular = _("Policy Rule Set")
+    data_type_plural = _("Policy Rule Set")
 
 
 class AddPolicyRuleLink(tables.LinkAction):
@@ -130,7 +130,7 @@ class ApplicationPoliciesTable(tables.DataTable):
 
 	class Meta:
 		name = "application_policies_table"
-		verbose_name = _("Application Policies")
+		verbose_name = _("Policy Rule Set")
 		table_actions = (AddAppPolicyLink, DeleteAppPolicyLink)
 		row_actions = (UpdateAppPolicyLink, DeleteAppPolicyLink)
 

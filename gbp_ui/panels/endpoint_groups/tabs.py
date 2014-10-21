@@ -24,8 +24,6 @@ from gbp_ui import client
 import tables
 
 EPGsTable = tables.EPGsTable
-L2PolicyTable = tables.L2PolicyTable
-
 
 class EPGsTab(tabs.TableTab):
     table_classes = (EPGsTable,)
@@ -48,22 +46,6 @@ class EPGsTab(tabs.TableTab):
 
         return epgs
 
-class L2PolicyTab(tabs.TableTab):
-	table_classes = (L2PolicyTable,)
-	name = _("L2 Policy")
-	slug = "l2policy"
-	template_name = "horizon/common/_detail_table.html"
-
-	def get_l2policy_table_data(self):
-		policies = []
-		try:
-			tenant_id = self.request.user.tenant_id
-			policies = client.l2policy_list(self.request,tenant_id=tenant_id)
-		except Exception:
-			policies = []
-			exceptions.handle(self.tab_group.request,
-							_('Unable to retrieve l2 policy list.'))
-		return policies
 
 
 class EPGTabs(tabs.TabGroup):
@@ -87,24 +69,6 @@ class EPGDetailsTab(tabs.Tab):
             exceptions.handle(request, _('Unable to retrieve group details.'), redirect=self.failure_url)
         return {'epg': epg, 'l3list':l3list,'l2list':l2list}
 
-class L2PolicyDetailsTab(tabs.Tab):
-	name = _("L2 Policy Details")
-	slug = "l2_policy_details"
-	template_name = "project/endpoint_groups/_l2_policy_details.html"
-	failure_url = reverse_lazy('horizon:project:endpoint_group:index')
-
-	def get_context_data(self,request):
-		l2policy_id = self.tab_group.kwargs['l2policy_id']
-		try:
-			l2policy = client.l2policy_get(request,l2policy_id)
-		except Exception:
-			exceptions.handle(request, _('Unable to retrieve l2 policy details.'), redirect=self.failure_url)
-		return {'l2policy':l2policy}
-
-
-class L2PolicyDetailsTabs(tabs.TabGroup):
-	slug = "l2policy_tabs"
-	tabs = (L2PolicyDetailsTab,)
 
 
 

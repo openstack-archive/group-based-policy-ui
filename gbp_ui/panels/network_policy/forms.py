@@ -118,4 +118,67 @@ class UpdateL3PolicyForm(forms.SelfHandlingForm):
 			msg = _("Failed to update L3 policy")
 			LOG.error(msg)
 			exceptions.handle(request, msg, redirect=redirect)
- 
+
+class AddL2PolicyForm(forms.SelfHandlingForm):
+	name = forms.CharField(max_length=80, label=_("Name"), required=False)
+	description = forms.CharField(max_length=80, label=_("Description"), required=False)
+	l3_policy_id = forms.ChoiceField(label=_("L3 Policy"),required=False)
+
+	def __init__(self,request,*args,**kwargs):
+		super(AddL2PolicyForm,self).__init__(request, *args, **kwargs)
+		try:
+			policies = client.l3policy_list(request)
+			policies = [(item['id'],item['name']+":"+item['id']) for item in policies]
+			self.fields['l3_policy_id'].choices = policies
+		except Exception as e:
+			msg = _("Failed to get L3 policy list")
+			LOG.error(msg)
+			exceptions.handle(request, msg, redirect=redirect)
+
+	def handle(self, request, context):
+		url = reverse("horizon:project:endpoint_groups:index")
+		try:
+			l2_policy = client.l2policy_create(request,**context)
+			msg = _("L2 Policy Created Successfully!")
+			LOG.debug(msg)
+			return http.HttpResponseRedirect(url)
+		except Exception as e:
+			print e
+			msg = _("Failed to create L2 policy")
+			LOG.error(msg)
+			exceptions.handle(request, msg, redirect=redirect)
+
+class UpdateL2PolicyForm(forms.SelfHandlingForm):
+	name = forms.CharField(max_length=80, label=_("Name"), required=False)
+	description = forms.CharField(max_length=80, label=_("Description"), required=False)
+	l3_policy_id = forms.ChoiceField(label=_("L3 Policy"),required=False)
+
+	def __init__(self,request,*args,**kwargs):
+		super(UpdateL2PolicyForm,self).__init__(request, *args, **kwargs)
+		try:
+			l2policy_id = self.initial['l2policy_id']
+			l2 = client.l2policy_get(request,l2policy_id)
+			print l2
+			policies = client.l3policy_list(request)
+			policies = [(item['id'],item['name']+":"+item['id']) for item in policies]
+			self.fields['l3_policy_id'].choices = policies
+			for item in ['name','description','l3_policy_id']:
+				self.fields[item].initial = getattr(l2,item)
+		except Exception as e:
+			msg = _("Failed to get L3 policy list")
+			LOG.error(msg)
+			exceptions.handle(request, msg, redirect=redirect)
+
+
+	def handle(self, request, context):
+		url = reverse("horizon:project:endpoint_groups:index")
+		l2policy_id = self.initial['l2policy_id']
+		try:
+			l2_policy = client.l2policy_update(request,l2policy_id,**context)
+			msg = _("L2 Policy Updated Successfully!")
+			LOG.debug(msg)
+			return http.HttpResponseRedirect(url)
+		except Exception:
+			msg = _("Failed to update L2 policy")
+			LOG.error(msg)
+			exceptions.handle(request, msg, redirect=redirect) 

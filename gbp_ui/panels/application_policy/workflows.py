@@ -28,11 +28,11 @@ class SelectPolicyRuleAction(workflows.Action):
         label=_("Policy Rules"),
         required=False,
         widget=forms.CheckboxSelectMultiple(),
-        help_text=_("Create a contract with selected rules."))
+        help_text=_("Create a policy rule set with selected rules."))
 
     class Meta:
         name = _("Rules")
-        help_text = _("Select policy-rules for your contract.")
+        help_text = _("Select policy rules for your policy rule set.")
 
     def populate_policy_rules_choices(self, request, context):
         try:
@@ -77,8 +77,8 @@ class AddContractAction(workflows.Action):
         super(AddContractAction, self).__init__(request, *args, **kwargs)
 
     class Meta:
-        name = _("Create Contract")
-        help_text = _("Create a new Contract")
+        name = _("Create Policy Rule Set")
+        help_text = _("Create a new Policy Rule Set")
 
 
 class AddContractStep(workflows.Step):
@@ -92,10 +92,10 @@ class AddContractStep(workflows.Step):
 
 class AddContract(workflows.Workflow):
     slug = "addcontract"
-    name = _("Create Contract")
+    name = _("Create Policy Rule Set")
     finalize_button_name = _("Create")
-    success_message = _('Created Contract "%s".')
-    failure_message = _('Unable to create Contract "%s".')
+    success_message = _('Created Policy Rule Set "%s".')
+    failure_message = _('Unable to create Policy Rule Set "%s".')
     default_steps = (AddContractStep,
                      SelectPolicyRuleStep)
     wizard = True
@@ -300,31 +300,32 @@ class AddClassifierStep(workflows.Step):
 
 
 class AddPolicyClassifier(workflows.Workflow):
-    slug = "addpolicyclassifier"
-    name = _("Create Classifier")
-    finalize_button_name = _("Create")
-    success_message = _('Created Classifier "%s".')
-    failure_message = _('Unable to create Classifier "%s".')
-    success_url = "horizon:project:application_policy:index"
-    default_steps = (AddClassifierStep,)
+	slug = "addpolicyclassifier"
+	name = _("Create Classifier")
+	finalize_button_name = _("Create")
+	success_message = _('Created Classifier "%s".')
+	failure_message = _('Unable to create Classifier "%s".')
+	success_url = "horizon:project:application_policy:index"
+	default_steps = (AddClassifierStep,)
 
-    def format_status_message(self, message):
-        return message % self.context.get('name')
+	def format_status_message(self, message):
+		return message % self.context.get('name')
 
-    def _create_classifer(self, request, context):
-        try:
-            client.policyclassifier_create(request, **context)
-            return True
-        except Exception as e:
-            msg = self.format_status_message(self.failure_message) + str(e)
-            exceptions.handle(request, msg)
-            return False
+	def _create_classifer(self, request, context):
+		try:
+			print context
+			client.policyclassifier_create(request, **context)
+			return True
+		except Exception as e:
+			msg = self.format_status_message(self.failure_message) + str(e)
+			exceptions.handle(request, msg)
+			return False
 
-    def handle(self, request, context):
-        classifier = self._create_classifer(request, context)
-        if not classifier:
-            return False
-        return True
+	def handle(self, request, context):
+		classifier = self._create_classifer(request, context)
+		if not classifier:
+			return False
+		return True
 
 
 class AddPolicyActionAction(workflows.Action):
