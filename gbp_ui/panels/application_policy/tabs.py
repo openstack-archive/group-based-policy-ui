@@ -124,7 +124,7 @@ class ApplicationPoliciesTabs(tabs.TabGroup):
 
 
 class ContractDetailsTab(tabs.Tab):
-    name = _("Contract Details")
+    name = _("Policy Rule Set Details")
     slug = "contractdetails"
     template_name = "project/application_policy/_contract_details.html"
     failure_url = reverse_lazy('horizon:project:contract:index')
@@ -143,7 +143,10 @@ class ContractDetailsTab(tabs.Tab):
                 action_list = []
                 for aid in rule.policy_actions:
                     action = client.policyaction_get(request,aid)
-                    action_list.append(action.name+":"+str(action.id)+":"+str(action.action_type))
+                    if action.action_value:
+                        action_list.append(str(action.action_type)+":"+str(action.action_value))
+                    else:
+                        action_list.append(str(action.action_type))
                 r['actions'] = action_list
                 r['classifier'] = client.policyclassifier_get(request,rule.policy_classifier_id)
                 rules_with_details.append(r)

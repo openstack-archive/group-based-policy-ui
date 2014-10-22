@@ -23,12 +23,14 @@ from horizon import messages
 from horizon import tabs
 from horizon.utils import memoized
 from horizon import workflows
+from horizon import tables
 
 from gbp_ui import client
 
 import forms as np_forms
 import tabs as np_tabs
 import workflow as np_workflows
+import tables as np_tables
 
 
 class IndexView(tabs.TabView):
@@ -73,18 +75,31 @@ class L3PolicyUpdateView(forms.ModalFormView):
 	def get_initial(self):
 		return self.kwargs
  
-class L3PolicyDetailsView(tabs.TabView):
-	tab_group_class = (np_tabs.L3PolicyDetailsTabs)
-	template_name = 'project/network_policy/details_tabs.html'  
+class L3PolicyDetailsView(tables.MultiTableView):
+	table_classes = (np_tables.L2PolicyTable,)
+	template_name = 'project/network_policy/l3policy_details.html'  
+
+	def get_l2policy_table_data(self):
+		policies = []
+		try:
+			tenant_id = self.request.user.tenant_id
+			policies = client.l2policy_list(self.request,tenant_id=tenant_id)
+		except Exception:
+			policies = []
+			exceptions.handle(self.tab_group.request,
+					_('Unable to retrieve l2 policy list.'))
+		return policies
 
 	def get_context_data(self,**kwargs):
 		context = super(L3PolicyDetailsView,self).get_context_data(**kwargs)
-		context['l3policy_id'] = self.kwargs['l3policy_id']
+		p = client.l3policy_get(self.request,self.kwargs['l3policy_id'])
+		print p
+		context['l3policy'] = p
 		return context
 
 class AddL2policyView(forms.ModalFormView):
 	form_class = np_forms.AddL2PolicyForm
-	template_name = "project/endpoint_groups/add_l2policy.html"
+	template_name = "project/network_policy/add_l2policy.html"
 
 	def get_context_data(self, **kwargs):
 		context = super(AddL2policyView,self).get_context_data(**kwargs)

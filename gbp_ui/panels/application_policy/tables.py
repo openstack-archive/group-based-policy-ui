@@ -124,7 +124,7 @@ class DeletePolicyActionLink(tables.DeleteAction):
 
 class ApplicationPoliciesTable(tables.DataTable):
 	name = tables.Column("name", verbose_name=_("Name"),
-			link="horizon:project:application_policy:application_policy_details")
+			link="horizon:project:application_policy:policy_rule_set_details")
 	description = tables.Column("description",
 			verbose_name=_("Description"))
 

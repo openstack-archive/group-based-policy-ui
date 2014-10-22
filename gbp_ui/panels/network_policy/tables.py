@@ -23,7 +23,7 @@ from openstack_dashboard.dashboards.project.instances.tables import *
 import pdb
 
 class CreateL2PolicyLink(tables.LinkAction):
-	name = "add_l2policy"
+	name = "create_l2policy"
 	verbose_name = _("Create L2 Policy")
 	url = "horizon:project:network_policy:addl2policy"
 	classes = ("ajax-modal","btn-addl2policy")

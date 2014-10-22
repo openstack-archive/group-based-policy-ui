@@ -88,16 +88,16 @@ class SelectConsumedContractAction(workflows.Action):
         return contract_list
 
 class SelectL2policyAction(workflows.Action):
-	l2policy = forms.ChoiceField(
+	l2policy_id = forms.ChoiceField(
 			label=_("Network Policy"),
 			required=False,
 			help_text=_("Select network policy for EPG."),)
 
 	class Meta:
 		name = _("Network Policy")
-		help_text = _("Select network policy for EPG.")
+		help_text = _("Select network policy for EPG. Selecting default will create an Network Policy implicitly.")
 
-	def populate_l2policy_choices(self,request,context):
+	def populate_l2policy_id_choices(self,request,context):
 		policies = []
 		try:
 			policies = client.l2policy_list(request)
@@ -105,6 +105,7 @@ class SelectL2policyAction(workflows.Action):
 				p.set_id_as_name_if_empty()
 			policies = sorted(policies, key=lambda rule: rule.name)
 			policies = [(p.id, p.name+":"+p.id) for p in policies] 
+			policies.insert(0,('default','default'))
 		except Exception as e:
 			exceptions.handle(request,
 					_("Unable to retrieve policies (%(error)s).")
@@ -117,6 +118,7 @@ class SelectL2policyStep(workflows.Step):
 	contributes = ("l2policy_id",)
 
 	def contribute(self,data,context):
+		context['l2_policy_id'] = data['l2policy_id']
 		return context
 
 
@@ -193,13 +195,13 @@ class AddEPG(workflows.Workflow):
                      SelectProvidedContractStep,
                      SelectConsumedContractStep,
 					 SelectL2policyStep,)
-    wizard = True
 
     def format_status_message(self, message):
         return message % self.context.get('name')
 
     def handle(self, request, context):
 		try:
+			print "EPG creation context"
 			print context
 			client.epg_create(request, **context)
 			return True

@@ -31,8 +31,8 @@ LOG = logging.getLogger(__name__)
 class UpdateEPGForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(max_length=80, label=_("Description"), required=False)
-    provided_contracts = forms.MultipleChoiceField(label=_("Provided Contracts"),required=False)
-    consumed_contracts = forms.MultipleChoiceField(label=_("Consumed Contracts"),required=False)
+    provided_contracts = forms.MultipleChoiceField(label=_("Provided Policy Rule Set"),required=False)
+    consumed_contracts = forms.MultipleChoiceField(label=_("Consumed Policy Rule Set"),required=False)
     failure_url = 'horizon:project:endpoint_groups:index'
 
     def __init__(self, request, *args, **kwargs):
@@ -221,5 +221,3 @@ class RemoveConsumedForm(forms.SelfHandlingForm):
 			redirect = url
 			LOG.error(msg)   
 			exceptions.handle(request, msg, redirect=redirect)
-
-
