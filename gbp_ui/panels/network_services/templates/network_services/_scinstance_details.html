@@ -1,0 +1,30 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+	<hr class="header_rule">
+	<dl>
+		<dt>{% trans "Name" %}</dt>
+		<dd>{{ scinstance.name|default:_("-") }}</dd>
+
+		<dt>{% trans "Description" %}</dt>
+		<dd>{{ scinstance.description|default:_("-") }}</dd>
+
+		<dt>{% trans "ID" %}</dt>
+		<dd>{{ scinstance.id }} </dd>
+		
+		<dt>{% trans "Provider PTG" %}</dt>
+		<dd>{{ scinstance.provider_ptg }} </dd>
+
+		<dt>{% trans "Consumer PTG" %}</dt>
+		<dd>{{ scinstance.consumer_ptg }} </dd>
+
+		<dt>{% trans "Service Chain Spec" %}</dt>
+		<dd>{{ scinstance.servicechain_spec}} </dd>
+
+		<dt>{% trans "Classifier" %}</dt>
+		<dd>{{ scinstance.classifier}} </dd>
+	
+	</dl>
+</div>
+     

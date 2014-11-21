@@ -1,0 +1,16 @@
+
+INSTALLATION
+
+This project is structure is done based on the below link.
+
+http://docs.openstack.org/developer/horizon/topics/settings.html#pluggable-settings
+
+I created the package 'gbp_ui' and put it in openstack_dashboard.
+
+copy the the files which starts with underscore to "openstack_dashboard/local/enabled/" then
+horizon will pick up the GBP UI.
+
+Make sure "gbp_ui" can be imported, either in .venv or in the openstack_folder, or whatever the python path the other
+dependencies reside like 'python-neutronclient' etc.
+
+NOTE:  group-based-policy-ui is not qualified as valid package name, so I created gbp_ui package.

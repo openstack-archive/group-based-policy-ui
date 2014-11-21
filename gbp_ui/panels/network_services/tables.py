@@ -1,0 +1,139 @@
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+#
+# @author: Ronak Shah
+
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
+from django import http
+from django.template import defaultfilters as dfilters
+
+from horizon import tables
+from horizon.utils import filters
+
+from gbp_ui import column_filters
+
+class CreateServiceChainSpecLink(tables.LinkAction):
+    name = "create_scspec_link"
+    verbose_name = _("Create Service Chain Spec")
+    url = "horizon:project:network_services:create_sc_spec"
+    classes = ("ajax-modal","btn-create_scspec")
+
+class EditServiceChainSpecLink(tables.LinkAction):
+    name = "edit_sc_spec"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, scspec):
+        base_url = reverse("horizon:project:network_services:update_sc_spec", kwargs={'scspec_id': scspec.id})
+        return base_url
+ 
+class DeleteServiceChainSpecLink(tables.DeleteAction):
+	name = "delete_servicechain_spec"
+	action_present = _("Delete")
+	action_past = _("Scheduled deletion of %(data_type)s")
+	data_type_singular = _("ServiceChainSpec")
+	data_type_plural = _("ServiceChainSpecs")
+ 
+class ServiceChainSpecTable(tables.DataTable):
+	name = tables.Column("name",
+			verbose_name=_("Name"),
+ 			link="horizon:project:network_services:sc_spec_details")
+	description = tables.Column("description", 
+			verbose_name=_("Description"))
+	nodes = tables.Column("nodes", verbose_name=_("Nodes"))
+
+	class Meta:
+		name = "service_chain_spec_table"
+		verbose_name = _("Service Chain Specs")
+		table_actions = (CreateServiceChainSpecLink,)
+		row_actions = (EditServiceChainSpecLink,DeleteServiceChainSpecLink,)
+
+
+class CreateServiceChainNodeLink(tables.LinkAction):
+    name = "create_scnode_link"
+    verbose_name = _("Create Service Chain Node")
+    url = "horizon:project:network_services:create_sc_node"
+    classes = ("ajax-modal","btn-create_scnode")
+
+
+class EditServiceChainNodeLink(tables.LinkAction):
+    name = "edit_sc_node"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, scnode):
+        base_url = reverse("horizon:project:network_services:update_sc_node", kwargs={'scnode_id': scnode.id})
+        return base_url
+
+class DeleteServiceChainNodeLink(tables.DeleteAction):
+	name = "delete_servicechain_node"
+	action_present = _("Delete")
+	action_past = _("Scheduled deletion of %(data_type)s")
+	data_type_singular = _("ServiceChainNode")
+	data_type_plural = _("ServiceChainNodes")
+ 
+class ServiceChainNodeTable(tables.DataTable):
+	name = tables.Column("name",
+			verbose_name=_("Name"),
+ 			link="horizon:project:network_services:sc_node_details")
+	description = tables.Column("description", 
+			verbose_name=_("Description"))
+	service_type = tables.Column("service_type",
+			verbose_name=_("Service Type"))
+
+	class Meta:
+		name = "service_chain_node_table"
+		verbose_name = _("Service Chain Node") 
+		table_actions = (CreateServiceChainNodeLink,)
+		row_actions = (EditServiceChainNodeLink,DeleteServiceChainNodeLink,)
+
+
+class CreateServiceChainInstanceLink(tables.LinkAction):
+    name = "create_scinstance_link"
+    verbose_name = _("Create Service Chain Instance")
+    url = "horizon:project:network_services:create_sc_instance"
+    classes = ("ajax-modal","btn-create_scinstance") 
+
+class EditServiceChainInstanceLink(tables.LinkAction):
+    name = "edit_sc_instance"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, scinstance):
+        base_url = reverse("horizon:project:network_services:update_sc_instance", kwargs={'scinstance_id': scinstance.id})
+        return base_url
+  
+class DeleteServiceChainInstanceLink(tables.DeleteAction):
+	name = "delete_servicechain_instance"
+	action_present = _("Delete")
+	action_past = _("Scheduled deletion of %(data_type)s")
+	data_type_singular = _("ServiceChainInstance")
+	data_type_plural = _("ServiceChainInstances")
+ 
+class ServiceChainInstanceTable(tables.DataTable):
+	name = tables.Column("name",
+			verbose_name=_("Name"),
+ 			link="horizon:project:network_services:sc_instance_details")
+	description = tables.Column("description", 
+			verbose_name=_("Description"))
+	provider_ptg = tables.Column("provider_ptg", verbose_name=_("Provider PTG"))
+   	consumer_ptg = tables.Column("consumer_ptg", verbose_name=_("Consumer PTG")) 
+	servicechain_spec = tables.Column("servicechain_spec", verbose_name=_("Service Chain Spec"))
+	classifier = tables.Column("classifier",verbose_name=_("Classifier"))
+
+
+	class Meta:
+		name = "service_chain_instance_table"
+		verbose_name = _("Service Chain Instance")  
+		table_actions = (CreateServiceChainInstanceLink,)
+		row_actions = (EditServiceChainInstanceLink,DeleteServiceChainInstanceLink,)
