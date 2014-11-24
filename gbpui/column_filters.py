@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -70,7 +67,7 @@ def update_policy_target_attributes(request, pt):
     l2url = "horizon:project:network_policy:l2policy_details"
     if pt.l2_policy_id is not None:
         policy = client.l2policy_get(request, pt.l2_policy_id)
-        u = reverse(l2url, {'l2policy_id': policy.id})
+        u = reverse(l2url, kwargs={'l2policy_id': policy.id})
         atag = mark_safe(
             "<a href='" + u + "'>" + policy.name + "</a>")
         setattr(pt, 'l2_policy_id', atag)
@@ -87,17 +84,29 @@ def update_policyrule_attributes(request, prule):
     return prule
 
 
+def update_policyaction_attributes(request, paction):
+    if paction.action_type == 'redirect':
+        spec = client.get_servicechain_spec(request,
+                paction.action_value)
+        url = "horizon:project:network_services:sc_spec_details"
+        url = reverse(url, kwargs={'scspec_id': spec.id})
+        tag_content = (url, spec.name + ":" + spec.id)
+        tag = "<a href='%s'>%s</a>" % tag_content
+        setattr(paction, 'action_value', mark_safe(tag))
+    return paction
+
+
 def update_sc_spec_attributes(request, scspec):
     nodes = scspec.nodes
     nodes = [client.get_servicechain_node(request, item) for item in nodes]
-    value = ["<table class='table table-condensed'> \
-        <tr><td><span class='glyphicon glyphicon-remove-circle'>< /span></td>"]
+    t = "<table class='table table-condensed'><tr><td>"
+    val = [t + "<span class='glyphicon glyphicon-remove-circle'></span></td>"]
     for n in nodes:
-        value.append(
+        val.append(
             "<td><span class='glyphicon glyphicon-arrow-right'></span></td>")
-        value.append("<td>" + n.name + "(" + n.service_type + ")</td>")
-    value.append("</tr></table>")
-    setattr(scspec, 'nodes', mark_safe("".join(value)))
+        val.append("<td>" + n.name + "(" + n.service_type + ")</td>")
+    val.append("</tr></table>")
+    setattr(scspec, 'nodes', mark_safe("".join(val)))
     return scspec
 
 

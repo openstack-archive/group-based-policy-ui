@@ -9,10 +9,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 from django.core.urlresolvers import reverse_lazy
+from django.utils import simplejson
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -114,6 +113,13 @@ class ServiceChainSpecDetailsTab(tabs.Tab):
         scspec_id = self.tab_group.kwargs['scspec_id']
         try:
             scspec = client.get_servicechain_spec(request, scspec_id)
+            nodes = []
+            gn = lambda x, y: client.get_servicechain_node(x, y)
+            for node in scspec.nodes:
+                n = gn(self.request, node)
+                setattr(n, 'config', simplejson.loads(n.config))
+                nodes.append(n)
+            setattr(scspec, 'nodes', nodes)
         except Exception:
             exceptions.handle(request, _(
                 'Unable to retrieve service chain spec details.'),

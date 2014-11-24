@@ -12,14 +12,43 @@
 
 		<dt>{% trans "ID" %}</dt>
 		<dd>{{ scspec.id }} </dd>
-
-		<dt>{% trans "Nodes" %}</dt>
-		<dd>
-			<ul class="list-unstyled">
-				{% for node in scspec.nodes %}
-				<li>{{ node}}</li>
-				{% endfor %}
-			</ul>
-		 </dd>
 	</dl>
+    {% if scspec.nodes %}
+    <div class="panel panel-default">
+        <div class="panel-heading">Nodes</div>
+        <div class="panel-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Service Type</th>
+                        <th>Config</th>
+                    </tr>
+                </thead>
+                {% for node in scspec.nodes %}
+                <tr>
+                    <td>{{node.name}}</td>
+                    <td>{{node.service_type}}</td>
+                    <td>
+                        <strong>Heat Template Version:</strong> {{node.config.heat_template_version}}
+                        <dl>
+                        {% for k, v in node.config.resources.items %}
+                            <dt>{{k}}</dt>
+                            <dd>
+                                <dl class="dl-horizontal">
+                                    <dt>type</dt><dd>{{v.type}}</dd>
+                                    {% for key, value in v.properties.items %}
+                                    <dt>{{key}}</dt><dd>{{value}}</dd>
+                                    {% endfor %}
+                                </d>
+                             </dd>
+                        {% endfor %}
+                        </dl>
+                    </td>
+                </tr>
+				{% endfor %}
+            </table>                                                
+        </div>
+    </div>
+    {% endif %}
 </div>

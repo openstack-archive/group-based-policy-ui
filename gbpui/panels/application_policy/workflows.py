@@ -21,8 +21,8 @@ from gbpui import client
 from gbpui import fields
 
 ADD_POLICY_ACTION_URL = "horizon:project:application_policy:addpolicyaction"
-ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:\
-        addpolicyclassifier"
+ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:"
+ADD_POLICY_CLASSIFIER_URL = ADD_POLICY_CLASSIFIER_URL + "addpolicyclassifier"
 ADD_POLICY_RULE_URL = "horizon:project:application_policy:addpolicyrule"
 
 
