@@ -4,19 +4,19 @@
 	<hr class="header_rule">
 	<dl>
 		<dt>{% trans "Name" %}</dt>
-		<dd>{{ contract.name|default:_("-") }}</dd>
+		<dd>{{ policy_rule_set.name|default:_("-") }}</dd>
 
 		<dt>{% trans "Description" %}</dt>
-		<dd>{{ contract.description|default:_("-") }}</dd>
+		<dd>{{ ppolicy_rule_set.description|default:_("-") }}</dd>
 
 		<dt>{% trans "ID" %}</dt>
-		<dd>{{ contract.id }} </dd>
+		<dd>{{ policy_rule_set.id }} </dd>
 
 		<dt>{% trans "Project ID" %}</dt>
-		<dd>{{ contract.tenant_id }}</dd>
+		<dd>{{ policy_rule_set.tenant_id }}</dd>
 	</dl>
 </div>
-{% if contract.policy_rules %}
+{% if rules_with_details %}
 <div class="panel panel-default">
 	<div class="panel-heading"> {% trans "Policy Rules" %} </div>
 	<div class="panel-body">
@@ -39,7 +39,7 @@
 				<td>{{rule.classifier.direction}}</td>
 				<td>&nbsp;
 					{% for a in rule.actions %}
-					  {{a}}</br>
+                    <a href="{% url 'horizon:project:application_policy:policyactiondetails' policyaction_id=a.id %}">{{a.name}}</a>
 					{% endfor %}
 				</td>
 			</tr>

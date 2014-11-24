@@ -35,7 +35,7 @@ class EditL2PolicyLink(tables.LinkAction):
 
 
 class DeleteL2PolicyLink(tables.DeleteAction):
-    name = "delete_l2policy"
+    name = "deletel2policy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("L2Policy")
@@ -77,7 +77,7 @@ class EditL3PolicyLink(tables.LinkAction):
 
 
 class DeleteL3PolicyLink(tables.DeleteAction):
-    name = "delete_l3policy"
+    name = "deletel3policy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("L3Policy")
@@ -121,7 +121,7 @@ class EditServicePolicyLink(tables.LinkAction):
 
 
 class DeleteServicePolicyLink(tables.DeleteAction):
-    name = "delete_service_policy"
+    name = "deletespolicy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServicePolicy")

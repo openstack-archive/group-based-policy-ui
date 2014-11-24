@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -121,7 +118,7 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
         except Exception as e:
             msg = _("Failed to create Service Chain Node.  %s") % (str(e))
             LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+            exceptions.handle(request, msg, redirect=url)
 
 
 class CreateServiceChainSpecForm(forms.SelfHandlingForm):
@@ -153,7 +150,7 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
         except Exception as e:
             msg = _("Failed to create Service Chain Spec.  %s") % (str(e))
             LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+            exceptions.handle(request, msg, redirect=url)
 
 
 class UpdateServiceChainSpecForm(CreateServiceChainSpecForm):
