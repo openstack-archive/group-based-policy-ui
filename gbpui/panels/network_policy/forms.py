@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 import logging
 
@@ -23,8 +21,11 @@ from horizon import exceptions
 from horizon import forms
 
 from gbpui import client
+from gbpui import fields
 
 LOG = logging.getLogger(__name__)
+
+NETWORK_PARAM_URL = "horizon:project:network_policy:add_network_service_param"
 
 
 class AddL3PolicyForm(forms.SelfHandlingForm):
@@ -96,7 +97,7 @@ class UpdateL3PolicyForm(forms.SelfHandlingForm):
     subnet_prefix_length = forms.CharField(max_length=80,
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2-30 for IP4"
-                                           "and 2-127 for IP6."),)
+                                                       "and 2-127 for IP6."),)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
@@ -204,6 +205,9 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
+    network_service_params = fields.DynamicMultiChoiceField(label=_(
+        "Network Service Parameters"), add_item_link=NETWORK_PARAM_URL,
+        required=False)
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
@@ -218,20 +222,40 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
+class NetworkServiceParam(object):
+
+    def __init__(self, context):
+        self.ptype = context['param_type']
+        self.pname = context['param_name']
+        self.pvalue = context['param_value']
+        self.name = "%s_%s_%s" % (self.ptype, self.pname, self.pvalue)
+        self.id = self.name
+
+
+class CreateNetworkServiceParamForm(forms.SelfHandlingForm):
+    param_type = forms.CharField(max_length=80, label=_("Type"))
+    param_name = forms.CharField(max_length=80, label=_("Name"))
+    param_value = forms.CharField(max_length=80, label=_("Value"))
+
+    def handle(self, request, context):
+        return NetworkServiceParam(context)
+
+
 class UpdateServicePolicyForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
 
     def __init__(self, request, *args, **kwargs):
-        super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
+        super(UpdateServicePolicyForm, self).__init__(request, *args, **kwargs)
         try:
             policy_id = self.initial['service_policy_id']
-            policy = client.get_service_policy(request, policy_id)
+            policy = client.get_networkservice_policy(request, policy_id)
             self.fields['name'].initial = policy.name
             self.fields['description'].initial = policy.description
-        except Exception:
-            pass
+        except Exception as e:
+            msg = _("Failed to retrive service policy details. %s") % (str(e))
+            LOG.debug(msg)
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
@@ -239,10 +263,10 @@ class UpdateServicePolicyForm(forms.SelfHandlingForm):
             policy_id = self.initial['service_policy_id']
             client.update_networkservice_policy(
                 request, policy_id, **context)
-            msg = _("Service policy created successfully!")
+            msg = _("Service policy updatedsuccessfully!")
             LOG.debug(msg)
             return http.HttpResponseRedirect(url)
         except Exception:
-            msg = _("Failed to create service policy")
+            msg = _("Failed to update service policy")
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
