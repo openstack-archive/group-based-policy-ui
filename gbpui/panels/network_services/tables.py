@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -37,7 +35,7 @@ class EditServiceChainSpecLink(tables.LinkAction):
 
 
 class DeleteServiceChainSpecLink(tables.DeleteAction):
-    name = "delete_servicechain_spec"
+    name = "deletescspec"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServiceChainSpec")
@@ -78,7 +76,7 @@ class EditServiceChainNodeLink(tables.LinkAction):
 
 
 class DeleteServiceChainNodeLink(tables.DeleteAction):
-    name = "delete_servicechain_node"
+    name = "deletescnode"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServiceChainNode")
@@ -120,7 +118,7 @@ class EditServiceChainInstanceLink(tables.LinkAction):
 
 
 class DeleteServiceChainInstanceLink(tables.DeleteAction):
-    name = "delete_servicechain_instance"
+    name = "deletescinstance"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServiceChainInstance")
