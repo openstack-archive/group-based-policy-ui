@@ -21,8 +21,8 @@ from gbpui import client
 from gbpui import fields
 
 ADD_POLICY_ACTION_URL = "horizon:project:application_policy:addpolicyaction"
-ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:\
-        addpolicyclassifier"
+ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:"
+ADD_POLICY_CLASSIFIER_URL = ADD_POLICY_CLASSIFIER_URL + "addpolicyclassifier"
 ADD_POLICY_RULE_URL = "horizon:project:application_policy:addpolicyrule"
 
 
@@ -174,6 +174,8 @@ class SelectPolicyActionAction(workflows.Action):
             actions = sorted(actions,
                              key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
+            if len(action_list) > 0:
+                self.fields['actions'].initial = action_list[0]
         except Exception as e:
             action_list = []
             exceptions.handle(request,

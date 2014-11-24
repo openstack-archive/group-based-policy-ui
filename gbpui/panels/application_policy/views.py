@@ -28,7 +28,7 @@ import tabs as policy_rule_set_tabs
 import workflows as policy_rule_set_workflows
 
 PolicyRuleSetTabs = policy_rule_set_tabs.ApplicationPoliciesTabs
-PolicyRuleSetDetailsTabs = policy_rule_set_tabs.ContractDetailsTabs
+PolicyRuleSetDetailsTabs = policy_rule_set_tabs.PolicyRuleSetDetailsTabs
 PolicyRuleDetailsTabs = policy_rule_set_tabs.PolicyRuleDetailsTabs
 PolicyClassifierDetailsTabs = policy_rule_set_tabs.PolicyClassifierDetailsTabs
 PolicyActionDetailsTabs = policy_rule_set_tabs.PolicyActionDetailsTabs
@@ -44,7 +44,7 @@ class IndexView(tabs.TabView):
     def post(self, request, *args, **kwargs):
         obj_ids = request.POST.getlist('object_ids')
         action = request.POST['action']
-        obj_type = re.search('.delete([a-z]+)', action).group(1)
+        obj_type = re.search('delete([a-z]+)', action).group(1)
         if not obj_ids:
             obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
         if obj_type == 'policyaction':
@@ -53,8 +53,8 @@ class IndexView(tabs.TabView):
                     client.policyaction_delete(request, obj_id)
                     messages.success(request, _('Deleted action %s') % obj_id)
                 except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete action. %s') % e)
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
         if obj_type == 'policyclassifier':
             for obj_id in obj_ids:
                 try:
@@ -62,8 +62,8 @@ class IndexView(tabs.TabView):
                     messages.success(
                         request, _('Deleted classifer %s') % obj_id)
                 except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete classifier. %s') % e)
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
         if obj_type == 'policyrule':
             for obj_id in obj_ids:
                 try:
@@ -71,17 +71,17 @@ class IndexView(tabs.TabView):
                     messages.success(request,
                                      _('Deleted rule %s') % obj_id)
                 except Exception as e:
-                    exceptions.handle(request,
-                                      _('Unable to delete rule. %s') % e)
-        if obj_type == 'policy_rule_set':
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
+        if obj_type == 'policyruleset':
             for obj_id in obj_ids:
                 try:
                     client.policy_rule_set_delete(request, obj_id)
                     messages.success(request,
                                      _('Deleted rule %s') % obj_id)
                 except Exception as e:
-                    exceptions.handle(request,
-                            _('Unabled to delete policy_rule_set. %s') % e)
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
 
         return self.get(request, *args, **kwargs)
 

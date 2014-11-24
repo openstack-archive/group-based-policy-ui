@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -63,3 +60,8 @@ class DynamicMultiChoiceField(fields.MultipleChoiceField):
         super(DynamicMultiChoiceField, self).__init__(*args, **kwargs)
         self.widget.add_item_link = add_item_link
         self.widget.add_item_link_args = add_item_link_args
+
+
+class CustomMultiChoiceField(DynamicMultiChoiceField):
+    def validate(self, *args, **kwargs):
+        return True

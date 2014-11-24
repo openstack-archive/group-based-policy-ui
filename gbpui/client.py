@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -226,6 +223,13 @@ def policyrule_create(request, **kwargs):
     return PolicyRule(policy_rule)
 
 
+def policyrule_update(request, prid, **kwargs):
+    body = {'policy_rule': kwargs}
+    policy_rule = gbpclient(request).update_policy_rule(prid,
+            body).get('policy_rule')
+    return PolicyRule(policy_rule)
+
+
 def policyrule_list(request, **kwargs):
     policyrules = gbpclient(request).list_policy_rules(
         **kwargs).get('policy_rules')
@@ -268,6 +272,13 @@ def policyaction_get(request, pa_id):
     return PolicyAction(policyaction)
 
 
+def policyaction_update(request, pc_id, **kwargs):
+    body = {'policy_action': kwargs}
+    classifier = gbpclient(request).update_policy_action(pc_id,
+            body).get('policy_action')
+    return PolicyClassifier(classifier)
+
+
 def policyrule_get(request, pr_id):
     policyrule = gbpclient(request).show_policy_rule(
         pr_id).get('policy_rule')
@@ -276,10 +287,6 @@ def policyrule_get(request, pr_id):
 
 def policyrule_delete(request, pr_id):
     return gbpclient(request).delete_policy_rule(pr_id)
-
-
-def policyrule_update(request, pr_id, **kwargs):
-    return gbpclient(request).update_policy_rule(pr_id, kwargs)
 
 
 def policyclassifier_get(request, pc_id):
@@ -295,7 +302,7 @@ def policyclassifier_delete(request, pc_id):
 def policyclassifier_update(request, pc_id, **kwargs):
     body = {'policy_classifier': kwargs}
     classifier = gbpclient(request).update_policy_classifier(pc_id,
-                                               body).get('policy_classifier')
+            body).get('policy_classifier')
     return PolicyClassifier(classifier)
 
 
@@ -324,13 +331,32 @@ def create_networkservice_policy(request, **kwargs):
 
 def update_networkservice_policy(request, policy_id, **kwargs):
     body = {'network_service_policy': kwargs}
-    spolicy = gbpclient.update_network_service_policy(
+    spolicy = gbpclient(request).update_network_service_policy(
         policy_id, body).get('network_service_policy')
+    return NetworkServicePolicy(spolicy)
+
+
+def delete_networkservice_policy(request, policy_id, **kwargs):
+    gbpclient(request).delete_network_service_policy(policy_id)
+
+
+def get_networkservice_policy(request, policy_id):
+    spolicy = gbpclient(request).show_network_service_policy(
+        policy_id).get('network_service_policy')
     return NetworkServicePolicy(spolicy)
 
 
 def l3policy_get(request, pc_id, **kwargs):
     return gbpclient(request).show_l3_policy(pc_id).get('l3_policy')
+
+
+def l3policy_create(request, **kwargs):
+    body = {'l3_policy': kwargs}
+    return gbpclient(request).create_l3_policy(body).get('l3_policy')
+
+
+def l3policy_delete(request, policy_id):
+    gbpclient(request).delete_l3_policy(policy_id)
 
 
 def l2policy_get(request, pc_id, **kwargs):
@@ -349,9 +375,8 @@ def l2policy_update(request, pc_id, **kwargs):
     return L2Policy(policy)
 
 
-def l3policy_create(request, **kwargs):
-    body = {'l3_policy': kwargs}
-    return gbpclient(request).create_l3_policy(body).get('l3_policy')
+def l2policy_delete(request, policy_id):
+    gbpclient(request).delete_l2_policy(policy_id)
 
 
 def servicechainnode_list(request, **kwargs):
@@ -392,6 +417,10 @@ def update_servicechain_node(request, scnode_id, **kwargs):
     return ServiceChainNode(sc_node)
 
 
+def delete_servicechain_node(request, scnode_id):
+    gbpclient(request).delete_servicechain_node(scnode_id)
+
+
 def get_servicechain_spec(request, scspec_id):
     sc_spec = gbpclient(request).show_servicechain_spec(
         scspec_id).get('servicechain_spec')
@@ -412,6 +441,10 @@ def update_servicechain_spec(request, scspec_id, **kwargs):
     return ServiceChainSpec(sc_spec)
 
 
+def delete_servicechain_spec(request, scspec_id):
+    gbpclient(request).delete_servicechain_spec(scspec_id)
+
+
 def get_servicechain_instance(request, scinstance_id):
     sc_instance = gbpclient(request).show_servicechain_instance(
         scinstance_id).get('servicechain_instance')
@@ -430,3 +463,7 @@ def update_servicechain_instance(request, scinstance_id, **kwargs):
     sc_instance = gbpclient(request).update_servicechain_instance(
         scinstance_id, body).get('servicechain_instance')
     return ServiceChainInstance(sc_instance)
+
+
+def delete_servicechain_instance(request, scinstance_id):
+    gbpclient(request).delete_servicechain_instance(scinstance_id)
