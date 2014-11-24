@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -186,6 +183,8 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse('horizon:project:application_policy:index')
         try:
+            if not bool(context['port_range']):
+                context['port_range'] = None
             classifier = client.policyclassifier_create(request, **context)
             messages.success(
                 request, _('Policy Classifier successfully created.'))
@@ -222,8 +221,10 @@ class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
+            if not bool(context['port_range']):
+                context['port_range'] = None
             client.policyclassifier_update(self.request,
-                                           policyclassifier_id, context)
+                    policyclassifier_id, **context)
             messages.success(
                 request, _('Policy classifier successfully updated.'))
             return http.HttpResponseRedirect(url)
@@ -266,9 +267,10 @@ class UpdatePolicyRuleForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse('horizon:project:application_policy:index')
         try:
-            self.initial['policyrule_id']
+            prid = self.initial['policyrule_id']
+            client.policyrule_update(request, prid, **context)
             messages.success(request, _('Policy rule successfully updated.'))
             return http.HttpResponseRedirect(url)
-        except Exception:
-            exceptions.handle(
-                request, _("Unable to update policy rule."), redirect=url)
+        except Exception as e:
+            msg = _("Unable to update policy rule. %s") % (str(e))
+            exceptions.handle(request, msg, redirect=url)

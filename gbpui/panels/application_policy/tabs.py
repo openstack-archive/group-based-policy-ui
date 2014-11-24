@@ -28,30 +28,28 @@ PolicyActionsTable = tables.PolicyActionsTable
 
 class PolicyActionsTab(tabs.TableTab):
     table_classes = (PolicyActionsTable,)
-    name = _("Policy-Actions")
+    name = _("Policy Actions")
     slug = "policyactions"
     template_name = "horizon/common/_detail_table.html"
 
     def get_policyactionstable_data(self):
+        actions = []
         try:
             tenant_id = self.request.user.tenant_id
             actions = client.policyaction_list(
                 self.tab_group.request,
                 tenant_id=tenant_id)
-        except Exception:
-            actions = []
-            exceptions.handle(self.tab_group.request,
-                              _('Unable to retrieve actions list.'))
-
-        for action in actions:
-            action.set_id_as_name_if_empty()
-
+            a = lambda x, y: gfilters.update_policyaction_attributes(x, y)
+            actions = [a(self.request, item) for item in actions]
+        except Exception as e:
+            msg = _('Unable to retrieve actions list. %s') % (str(e))
+            exceptions.handle(self.tab_group.request, msg)
         return actions
 
 
 class PolicyClassifiersTab(tabs.TableTab):
     table_classes = (PolicyClassifiersTable,)
-    name = _("Policy-Classifiers")
+    name = _("Policy Classifiers")
     slug = "policyclassifiers"
     template_name = "horizon/common/_detail_table.html"
 
@@ -74,7 +72,7 @@ class PolicyClassifiersTab(tabs.TableTab):
 
 class PolicyRulesTab(tabs.TableTab):
     table_classes = (PolicyRulesTable,)
-    name = _("Policy-Rules")
+    name = _("Policy Rules")
     slug = "policyrules"
     template_name = "horizon/common/_detail_table.html"
 
@@ -130,7 +128,7 @@ class ApplicationPoliciesTabs(tabs.TabGroup):
     sticky = True
 
 
-class ContractDetailsTab(tabs.Tab):
+class PolicyRuleSetDetailsTab(tabs.Tab):
     name = _("Policy Rule Set Details")
     slug = "policy_rule_setdetails"
     template_name = "project/application_policy/_policy_rule_set_details.html"
@@ -163,21 +161,20 @@ class ContractDetailsTab(tabs.Tab):
                 r['classifier'] = client.policyclassifier_get(
                     request, rule.policy_classifier_id)
                 rules_with_details.append(r)
-        except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve policy_rule_set details.'),
-                              redirect=self.failure_url)
+        except Exception as e:
+            msg = _('Unable to retrieve policy_rule_set details.') % (str(e))
+            exceptions.handle(request, msg, redirect=self.failure_url)
         return {'policy_rule_set': policy_rule_set,
                 'rules_with_details': rules_with_details}
 
 
-class ContractDetailsTabs(tabs.TabGroup):
+class PolicyRuleSetDetailsTabs(tabs.TabGroup):
     slug = "policy_rule_settabs"
-    tabs = (ContractDetailsTab,)
+    tabs = (PolicyRuleSetDetailsTab,)
 
 
 class PolicyRulesDetailsTab(tabs.Tab):
-    name = _("PolicyRule Details")
+    name = _("Policy Rule Details")
     slug = "policyruledetails"
     template_name = "project/application_policy/_policyrules_details.html"
     failure_url = reverse_lazy('horizon:project:policyrule:index')
@@ -212,7 +209,7 @@ class PolicyRuleDetailsTabs(tabs.TabGroup):
 
 
 class PolicyClassifierDetailsTab(tabs.Tab):
-    name = _("Policyclassifier Details")
+    name = _("Policy Classifier Details")
     slug = "policyclassifierdetails"
     template_name = "project/application_policy/_policyclassifier_details.html"
     failure_url = reverse_lazy('horizon:project:policy_rule_set:index')
@@ -234,7 +231,7 @@ class PolicyClassifierDetailsTabs(tabs.TabGroup):
 
 
 class PolicyActionDetailsTab(tabs.Tab):
-    name = _("PolicyAction Details")
+    name = _("Policy Action Details")
     slug = "policyactiondetails"
     template_name = "project/application_policy/_policyaction_details.html"
     failure_url = reverse_lazy('horizon:project:policy_rule_set:index')
@@ -243,6 +240,8 @@ class PolicyActionDetailsTab(tabs.Tab):
         paid = self.tab_group.kwargs['policyaction_id']
         try:
             policyaction = client.policyaction_get(request, paid)
+            policyaction = gfilters.update_policyaction_attributes(request,
+                    policyaction)
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve policyaction details.'),

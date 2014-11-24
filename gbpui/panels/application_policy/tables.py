@@ -36,23 +36,23 @@ class UpdateAppPolicyLink(tables.LinkAction):
 
 
 class DeleteAppPolicyLink(tables.DeleteAction):
-    name = "deletepolicy_rule_set"
+    name = "deletepolicyruleset"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Policy Rule Set")
-    data_type_plural = _("Policy Rule Set")
+    data_type_plural = _("Policy Rule Sets")
 
 
 class AddPolicyRuleLink(tables.LinkAction):
     name = "addpolicyrules"
-    verbose_name = _("Create Policy-Rule")
+    verbose_name = _("Create Policy Rule")
     url = "horizon:project:application_policy:addpolicyrule"
     classes = ("ajax-modal", "btn-addpolicyrule",)
 
 
 class UpdatePolicyRuleLink(tables.LinkAction):
     name = "updatepolicyrule"
-    verbose_name = _("Edit PolicyRule")
+    verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
 
     def get_link_url(self, policy_rule):
@@ -66,13 +66,13 @@ class DeletePolicyRuleLink(tables.DeleteAction):
     name = "deletepolicyrule"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("PolicyRule")
-    data_type_plural = _("PolicyRules")
+    data_type_singular = _("Policy Rule")
+    data_type_plural = _("Policy Rules")
 
 
 class AddPolicyClassifierLink(tables.LinkAction):
     name = "addpolicyclassifiers"
-    verbose_name = _("Create Policy-Classifier")
+    verbose_name = _("Create Policy Classifier")
     url = "horizon:project:application_policy:addpolicyclassifier"
     classes = ("ajax-modal", "btn-addpolicyclassifier",)
 
@@ -93,20 +93,20 @@ class DeletePolicyClassifierLink(tables.DeleteAction):
     name = "deletepolicyclassifier"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("PolicyClassifier")
-    data_type_plural = _("PolicyClassifiers")
+    data_type_singular = _("Policy Classifier")
+    data_type_plural = _("Policy Classifiers")
 
 
 class AddPolicyActionLink(tables.LinkAction):
     name = "addpolicyactions"
-    verbose_name = _("Create Policy-Action")
+    verbose_name = _("Create Policy Action")
     url = "horizon:project:application_policy:addpolicyaction"
     classes = ("ajax-modal", "btn-addpolicyaction",)
 
 
 class UpdatePolicyActionLink(tables.LinkAction):
     name = "updatepolicyaction"
-    verbose_name = _("Edit PolicyAction")
+    verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
 
     def get_link_url(self, policy_action):
@@ -120,8 +120,8 @@ class DeletePolicyActionLink(tables.DeleteAction):
     name = "deletepolicyaction"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("PolicyAction")
-    data_type_plural = _("PolicyActions")
+    data_type_singular = _("Policy Action")
+    data_type_plural = _("Policy Actions")
 
 
 class ApplicationPoliciesTable(tables.DataTable):
@@ -151,6 +151,8 @@ class PolicyRulesTable(tables.DataTable):
                             verbose_name=_("Enabled"))
     policy_classifier = tables.Column("policy_classifier_id",
                                       verbose_name=_("Policy Classifier"))
+    policy_actions = tables.Column("policy_actions",
+                                      verbose_name=_("Policy Actions"))
 
     class Meta:
         name = "policyrulestable"

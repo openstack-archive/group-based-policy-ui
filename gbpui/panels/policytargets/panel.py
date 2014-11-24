@@ -15,9 +15,6 @@ from django.utils.translation import ugettext_lazy as _
 import horizon
 
 
-class GroupPolicyPanels(horizon.PanelGroup):
-    name = _("Policy")
-    slug = "group_policy"
-    panels = ('endpoint_groups',
-              'network_policy',
-              'application_policy',)
+class PolicyTargetGroup(horizon.Panel):
+    name = _("Groups")
+    slug = "policytargets"

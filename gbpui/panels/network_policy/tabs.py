@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
@@ -109,6 +107,10 @@ class L2PolicyDetailsTab(tabs.Tab):
         l2policy_id = self.tab_group.kwargs['l2policy_id']
         try:
             l2policy = client.l2policy_get(request, l2policy_id)
+            ptgs = []
+            for item in l2policy.policy_target_groups:
+                ptgs.append(client.policy_target_get(request, item))
+            setattr(l2policy, 'ptgs', ptgs)
         except Exception:
             exceptions.handle(
                 request, _('Unable to retrieve l2 policy details.'),
