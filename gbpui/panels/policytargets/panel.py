@@ -10,7 +10,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-PANEL = 'policytargets_panel'
-PANEL_DASHBOARD = 'project'
-PANEL_GROUP = 'panel_group.GroupPolicyPanels'
-ADD_PANEL = 'gbpui.panels.policytargets.panel.PolicyTargetGroup'
+from django.utils.translation import ugettext_lazy as _
+
+import horizon
+
+
+class PolicyTargetGroup(horizon.Panel):
+    name = _("Groups")
+    slug = "policytargets"
