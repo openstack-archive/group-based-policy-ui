@@ -1,0 +1,54 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+<div class="info row detail">
+	<hr class="header_rule">
+	<dl>
+		<dt>{% trans "Name" %}</dt>
+		<dd>{{ contract.name|default:_("-") }}</dd>
+
+		<dt>{% trans "Description" %}</dt>
+		<dd>{{ contract.description|default:_("-") }}</dd>
+
+		<dt>{% trans "ID" %}</dt>
+		<dd>{{ contract.id }} </dd>
+
+		<dt>{% trans "Project ID" %}</dt>
+		<dd>{{ contract.tenant_id }}</dd>
+	</dl>
+</div>
+{% if contract.policy_rules %}
+<div class="panel panel-default">
+	<div class="panel-heading"> {% trans "Policy Rules" %} </div>
+	<div class="panel-body">
+		<table class="table">
+			<thead>
+				<th>Name</th>
+				<th>ID</th>
+				<th>Protocol</th>
+				<th>Port</th>
+				<th>Direction</th>
+				<th>Action</th>
+			</thead>
+			<tbody>
+			{% for rule in rules_with_details %}
+			<tr>
+				<td>{{rule.name|default:_("-") }}</td>
+				<td>{{rule.id}}</td>
+				<td>{{rule.classifier.protocol}}</td>
+				<td>{{rule.classifier.port_range}}</td>
+				<td>{{rule.classifier.direction}}</td>
+				<td>&nbsp;
+					{% for a in rule.actions %}
+					  {{a}}</br>
+					{% endfor %}
+				</td>
+			</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% else %}
+{% trans "-" %}
+{% endif %} 
+
