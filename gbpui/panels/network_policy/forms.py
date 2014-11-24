@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 import logging
 
@@ -224,14 +222,15 @@ class UpdateServicePolicyForm(forms.SelfHandlingForm):
         max_length=80, label=_("Description"), required=False)
 
     def __init__(self, request, *args, **kwargs):
-        super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
+        super(UpdateServicePolicyForm, self).__init__(request, *args, **kwargs)
         try:
             policy_id = self.initial['service_policy_id']
-            policy = client.get_service_policy(request, policy_id)
+            policy = client.get_networkservice_policy(request, policy_id)
             self.fields['name'].initial = policy.name
             self.fields['description'].initial = policy.description
-        except Exception:
-            pass
+        except Exception as e:
+            msg = _("Failed to retrive service policy details. %s") % (str(e))
+            LOG.error(msg)
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
@@ -239,10 +238,10 @@ class UpdateServicePolicyForm(forms.SelfHandlingForm):
             policy_id = self.initial['service_policy_id']
             client.update_networkservice_policy(
                 request, policy_id, **context)
-            msg = _("Service policy created successfully!")
+            msg = _("Service policy updatedsuccessfully!")
             LOG.debug(msg)
             return http.HttpResponseRedirect(url)
         except Exception:
-            msg = _("Failed to create service policy")
+            msg = _("Failed to update service policy")
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)

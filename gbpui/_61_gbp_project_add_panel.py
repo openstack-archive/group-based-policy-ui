@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -13,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-PANEL = 'policytargets_panel'
+PANEL = 'application_policy_panel'
 PANEL_DASHBOARD = 'project'
 PANEL_GROUP = 'panel_group.GroupPolicyPanels'
-ADD_PANEL = 'gbpui.panels.policytargets.panel.PolicyTargetGroup'
+ADD_PANEL = 'gbpui.panels.application_policy.panel.ApplicationPolicy'
