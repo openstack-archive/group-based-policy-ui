@@ -36,11 +36,11 @@ class UpdateAppPolicyLink(tables.LinkAction):
 
 
 class DeleteAppPolicyLink(tables.DeleteAction):
-    name = "deletepolicy_rule_set"
+    name = "deletepolicyruleset"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Policy Rule Set")
-    data_type_plural = _("Policy Rule Set")
+    data_type_plural = _("Policy Rule Sets")
 
 
 class AddPolicyRuleLink(tables.LinkAction):

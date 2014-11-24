@@ -33,19 +33,26 @@ class PolicyActionsTab(tabs.TableTab):
     template_name = "horizon/common/_detail_table.html"
 
     def get_policyactionstable_data(self):
+        actions = []
         try:
             tenant_id = self.request.user.tenant_id
             actions = client.policyaction_list(
                 self.tab_group.request,
                 tenant_id=tenant_id)
-        except Exception:
-            actions = []
-            exceptions.handle(self.tab_group.request,
-                              _('Unable to retrieve actions list.'))
-
-        for action in actions:
-            action.set_id_as_name_if_empty()
-
+            a = []
+            for item in actions:
+                if item.action_type == 'redirect':
+                    spec = client.get_servicechain_spec(self.request,
+                            item.action_value)
+                    setattr(item, 'action_value',
+                            spec.name + ":" + str(spec.id))
+                    a.append(item)
+                else:
+                    a.append(item)
+            actions = a
+        except Exception as e:
+            msg = _('Unable to retrieve actions list.') % (str(e))
+            exceptions.handle(self.tab_group.request, msg)
         return actions
 
 
@@ -130,7 +137,7 @@ class ApplicationPoliciesTabs(tabs.TabGroup):
     sticky = True
 
 
-class ContractDetailsTab(tabs.Tab):
+class PolicyRuleSetDetailsTab(tabs.Tab):
     name = _("Policy Rule Set Details")
     slug = "policy_rule_setdetails"
     template_name = "project/application_policy/_policy_rule_set_details.html"
@@ -163,17 +170,16 @@ class ContractDetailsTab(tabs.Tab):
                 r['classifier'] = client.policyclassifier_get(
                     request, rule.policy_classifier_id)
                 rules_with_details.append(r)
-        except Exception:
-            exceptions.handle(request,
-                              _('Unable to retrieve policy_rule_set details.'),
-                              redirect=self.failure_url)
+        except Exception as e:
+            msg = _('Unable to retrieve policy_rule_set details.') % (str(e))
+            exceptions.handle(request, msg, redirect=self.failure_url)
         return {'policy_rule_set': policy_rule_set,
                 'rules_with_details': rules_with_details}
 
 
-class ContractDetailsTabs(tabs.TabGroup):
+class PolicyRuleSetDetailsTabs(tabs.TabGroup):
     slug = "policy_rule_settabs"
-    tabs = (ContractDetailsTab,)
+    tabs = (PolicyRuleSetDetailsTab,)
 
 
 class PolicyRulesDetailsTab(tabs.Tab):

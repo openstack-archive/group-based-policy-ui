@@ -23,7 +23,7 @@
     <dd>
       {% for action in actions%}
 	  {{action.name}}
-      {% url 'horizon:project:application_policy:policyactiondetails' action as action_url %}
+      {% url 'horizon:project:application_policy:policyactiondetails' action.id as action_url %}
       {{ action.position }} : <a href="{{ action_url }}">{{ action.id }}</a><br>
       {% endfor %}
     </dd>
