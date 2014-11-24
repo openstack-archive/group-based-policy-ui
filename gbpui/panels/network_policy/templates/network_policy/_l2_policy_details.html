@@ -13,5 +13,17 @@
 		<dt>{% trans "ID" %}</dt>
 		<dd>{{ l2policy.id }} </dd>
 	</dl>
+    {% if l2policy.ptgs %}
+    <div class="panel panel-default">
+        <div class="panel-heading"> Policy Target Groups </div>
+        <div class="panel-body">
+            <ul class='list-unstyled'>
+            {% for ptg in l2policy.ptgs %}
+            <li><a href="{% url 'horizon:project:policytargets:policy_targetdetails' policy_target_id=ptg.id %}">{{ptg.name}}:{{ptg.id}}</a></li>
+            {% endfor %}
+        </ul>
+        </div>
+    </div>
+    {% endif %}
 </div>
  
