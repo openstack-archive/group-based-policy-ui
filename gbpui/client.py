@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -391,7 +388,9 @@ def update_servicechain_node(request, scnode_id, **kwargs):
         scnode_id, body).get('servicechain_node')
     return ServiceChainNode(sc_node)
 
-
+def delete_servicechain_node(request,scnode_id):
+    gbpclient(request).delete_servicechain_node(scnode_id)
+ 
 def get_servicechain_spec(request, scspec_id):
     sc_spec = gbpclient(request).show_servicechain_spec(
         scspec_id).get('servicechain_spec')
@@ -411,7 +410,9 @@ def update_servicechain_spec(request, scspec_id, **kwargs):
         scspec_id, body).get('servicechain_spec')
     return ServiceChainSpec(sc_spec)
 
-
+def delete_servicechain_spec(request,scspec_id):
+    gbpclient(request).delete_servicechain_spec(scspec_id)
+ 
 def get_servicechain_instance(request, scinstance_id):
     sc_instance = gbpclient(request).show_servicechain_instance(
         scinstance_id).get('servicechain_instance')
@@ -430,3 +431,6 @@ def update_servicechain_instance(request, scinstance_id, **kwargs):
     sc_instance = gbpclient(request).update_servicechain_instance(
         scinstance_id, body).get('servicechain_instance')
     return ServiceChainInstance(sc_instance)
+
+def delete_servicechain_instance(request,scinstance_id):
+    gbpclient(request).delete_servicechain_instance(scinstance_id) 

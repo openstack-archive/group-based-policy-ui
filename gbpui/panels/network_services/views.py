@@ -9,17 +9,58 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import re
 
+from django.utils.translation import ugettext_lazy as _
+
+from horizon import exceptions
 from horizon import forms
 from horizon import tabs
+from horizon import messages
 
 import forms as ns_forms
 import tabs as ns_tabs
 
+from gbpui import client
 
 class IndexView(tabs.TabView):
     tab_group_class = (ns_tabs.ServiceChainTabs)
     template_name = 'project/network_services/details_tabs.html'
+    
+    def post(self, request, *args, **kwargs):
+        obj_ids = request.POST.getlist('object_ids')
+        action = request.POST['action']
+        obj_type = re.search('delete([a-z]+)', action).group(1)
+        if not obj_ids:
+            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
+        if obj_type == 'scnode':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_servicechain_node(request, obj_id)
+                    messages.success(request, _('Deleted %s') % obj_id)
+                except Exception as e:
+                    exceptions.handle(request,
+                                      _('Unable to delete . %s') % e)
+        if obj_type == 'scinstance':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_servicechain_instance(request, obj_id)
+                    messages.success(
+                        request, _('Deleted  %s') % obj_id)
+                except Exception as e:
+                    exceptions.handle(request,
+                                      _('Unable to delete . %s') % e)
+        if obj_type == 'scspec':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_servicechain_spec(request, obj_id)
+                    messages.success(request,
+                                     _('Deleted %s') % obj_id)
+                except Exception as e:
+                    exceptions.handle(request,
+                                      _('Unable to delete . %s') % e)
+        return self.get(request, *args, **kwargs)
+ 
 
 
 class CreateServiceChainNodeView(forms.ModalFormView):
@@ -82,8 +123,8 @@ class ServiceChainSpecDetailsView(tabs.TabView):
 
 class CreateServiceChainInstanceView(forms.ModalFormView):
     form_class = ns_forms.CreateServiceChainInstanceForm
-    template_name = "project / network_services/"\
-        "ceate_service_chain_instance.html"
+    template_name = "project/network_services/"\
+        "create_service_chain_instance.html"
 
     def get_context_data(self, **kwargs):
         context = super(
