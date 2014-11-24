@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -37,11 +35,11 @@ class EditServiceChainSpecLink(tables.LinkAction):
 
 
 class DeleteServiceChainSpecLink(tables.DeleteAction):
-    name = "delete_servicechain_spec"
+    name = "deletescspec"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ServiceChainSpec")
-    data_type_plural = _("ServiceChainSpecs")
+    data_type_singular = _("Service Chain Spec")
+    data_type_plural = _("Service Chain Specs")
 
 
 class ServiceChainSpecTable(tables.DataTable):
@@ -55,8 +53,10 @@ class ServiceChainSpecTable(tables.DataTable):
     class Meta:
         name = "service_chain_spec_table"
         verbose_name = _("Service Chain Specs")
-        table_actions = (CreateServiceChainSpecLink,)
-        row_actions = (EditServiceChainSpecLink, DeleteServiceChainSpecLink,)
+        table_actions = (CreateServiceChainSpecLink,
+                            DeleteServiceChainSpecLink,)
+        row_actions = (EditServiceChainSpecLink,
+                        DeleteServiceChainSpecLink,)
 
 
 class CreateServiceChainNodeLink(tables.LinkAction):
@@ -78,11 +78,11 @@ class EditServiceChainNodeLink(tables.LinkAction):
 
 
 class DeleteServiceChainNodeLink(tables.DeleteAction):
-    name = "delete_servicechain_node"
+    name = "deletescnode"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ServiceChainNode")
-    data_type_plural = _("ServiceChainNodes")
+    data_type_singular = _("Service Chain Node")
+    data_type_plural = _("Service Chain Nodes")
 
 
 class ServiceChainNodeTable(tables.DataTable):
@@ -97,8 +97,10 @@ class ServiceChainNodeTable(tables.DataTable):
     class Meta:
         name = "service_chain_node_table"
         verbose_name = _("Service Chain Node")
-        table_actions = (CreateServiceChainNodeLink,)
-        row_actions = (EditServiceChainNodeLink, DeleteServiceChainNodeLink,)
+        table_actions = (CreateServiceChainNodeLink,
+                DeleteServiceChainNodeLink,)
+        row_actions = (EditServiceChainNodeLink,
+                DeleteServiceChainNodeLink,)
 
 
 class CreateServiceChainInstanceLink(tables.LinkAction):
@@ -120,7 +122,7 @@ class EditServiceChainInstanceLink(tables.LinkAction):
 
 
 class DeleteServiceChainInstanceLink(tables.DeleteAction):
-    name = "delete_servicechain_instance"
+    name = "deletescinstance"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServiceChainInstance")

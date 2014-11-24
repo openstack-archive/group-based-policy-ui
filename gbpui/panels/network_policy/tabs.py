@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
@@ -19,6 +17,7 @@ from horizon import exceptions
 from horizon import tabs
 
 from gbpui import client
+from gbpui import column_filters as gfilters
 
 import tables
 
@@ -27,7 +26,7 @@ class L3PolicyDetailsTab(tabs.Tab):
     name = _("L3 Policy Details")
     slug = "l3_policy_details"
     template_name = "project/endpoint_groups/_l3_policy_details.html"
-    failure_url = reverse_lazy('horizon:project:endpoint_group:index')
+    failure_url = reverse_lazy('horizon:project:network_policy:index')
 
     def get_context_data(self, request):
         l3policy_id = self.tab_group.kwargs['l3policy_id']
@@ -86,11 +85,35 @@ class ServicePolicyTab(tabs.TableTab):
         policies = []
         try:
             policies = client.networkservicepolicy_list(self.request)
+            update = lambda x: gfilters.update_service_policy_attributes(x)
+            policies = [update(item) for item in policies]
         except Exception:
-            policies = []
             exceptions.handle(self.tab_group.request,
                     _('Unable to retrieve network service policy list.'))
         return policies
+
+
+class ServicePolicyDetailsTab(tabs.Tab):
+    name = _("Service Policy Details")
+    slug = "service_policy_details"
+    template_name = "project/network_policy/_service_policy_details.html"
+    failure_url = reverse_lazy('horizon:project:network_policy:index')
+
+    def get_context_data(self, request):
+        policy_id = self.tab_group.kwargs['service_policy_id']
+        try:
+            policy = client.get_networkservice_policy(request, policy_id)
+        except Exception:
+            exceptions.handle(
+                request, _('Unable to retrieve service policy details.'),
+                redirect=self.failure_url)
+        return {'policy': policy}
+
+
+class ServicePolicyDetailsTabs(tabs.TabGroup):
+    slug = "service_policy_details_tab"
+    tabs = (ServicePolicyDetailsTab,)
+    sticky = True
 
 
 class L3PolicyTabs(tabs.TabGroup):
@@ -109,6 +132,10 @@ class L2PolicyDetailsTab(tabs.Tab):
         l2policy_id = self.tab_group.kwargs['l2policy_id']
         try:
             l2policy = client.l2policy_get(request, l2policy_id)
+            ptgs = []
+            for item in l2policy.policy_target_groups:
+                ptgs.append(client.policy_target_get(request, item))
+            setattr(l2policy, 'ptgs', ptgs)
         except Exception:
             exceptions.handle(
                 request, _('Unable to retrieve l2 policy details.'),

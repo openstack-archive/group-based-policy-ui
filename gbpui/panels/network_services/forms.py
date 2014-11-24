@@ -1,6 +1,3 @@
-# Copyright 2010-2011 OpenStack Foundation
-# Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -40,12 +37,25 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
         max_length=80, label=_("Description"), required=False)
     service_type = forms.ChoiceField(
         label=_("Service Type"), choices=SERVICE_TYPES)
-    template_file = forms.FileField(label=_('Template File'),
-                                    help_text=_(
-                                        'A local template file to upload.'),
-                                    required=False)
-    template_string = forms.CharField(label=_("Template String"),
-                                      widget=forms.Textarea, required=False)
+    config_type = forms.ChoiceField(label=_("Config Type"),
+                                    choices=[('file', 'Heat Template'),
+                                             ('string', 'Config String')],
+                                    widget=forms.Select(attrs={'class':
+                                                'switchable',
+                                                'data-slug': 'source'}))
+    template_file = forms.FileField(label=_('Configuration File'),
+                        help_text=_('A local Heat template file to upload.'),
+                        required=False,
+                        widget=forms.FileInput(attrs={'class': 'switched',
+                            'data-switch-on': 'source',
+                            'data-source-file': _("Configuration File")}))
+    template_string = forms.CharField(label=_("Configuration String"),
+                          help_text=_('A local Heat template string.'),
+                          widget=forms.Textarea(attrs={'class': 'switched',
+                                                'data-switch-on': 'source',
+                                                'data-source-string':
+                                                _("Configuration String")}),
+                                            required=False)
 
     def clean(self):
         cleaned_data = super(CreateServiceChainNodeForm, self).clean()
@@ -79,6 +89,7 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
             try:
                 del context['template_string']
                 del context['template_file']
+                del context['config_type']
             except KeyError:
                 pass
             context['config'] = json.dumps(context['config'])
@@ -121,7 +132,7 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
         except Exception as e:
             msg = _("Failed to create Service Chain Node.  %s") % (str(e))
             LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+            exceptions.handle(request, msg, redirect=url)
 
 
 class CreateServiceChainSpecForm(forms.SelfHandlingForm):
@@ -153,7 +164,7 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
         except Exception as e:
             msg = _("Failed to create Service Chain Spec.  %s") % (str(e))
             LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+            exceptions.handle(request, msg, redirect=url)
 
 
 class UpdateServiceChainSpecForm(CreateServiceChainSpecForm):
