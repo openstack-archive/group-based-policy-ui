@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 import re
 
@@ -36,16 +34,36 @@ class IndexView(tabs.TabView):
     def post(self, request, *args, **kwargs):
         obj_ids = request.POST.getlist('object_ids')
         action = request.POST['action']
+        obj_type = re.search('delete([0-9a-z]+)', action).group(1)
         if not obj_ids:
             obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        for obj_id in obj_ids:
-            try:
-                client.epg_delete(request, obj_id)
-                messages.success(request,
-                                 _('Deleted EPG %s') % obj_id)
-            except Exception as e:
-                exceptions.handle(request,
-                                  _('Unable to delete EPG. %s') % e)
+        if obj_type == 'spolicy':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_networkservice_policy(request, obj_id)
+                    messages.success(request,
+                            _('Deleted service policy %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
+        if obj_type == 'l3policy':
+            for obj_id in obj_ids:
+                try:
+                    client.l3policy_delete(request, obj_id)
+                    messages.success(request,
+                            _('Deleted L3 policy %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
+        if obj_type == 'l2policy':
+            for obj_id in obj_ids:
+                try:
+                    client.l2policy_delete(request, obj_id)
+                    messages.success(request,
+                            _('Deleted L2 policy %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
         return self.get(request, *args, **kwargs)
 
 
@@ -136,15 +154,28 @@ class CreateServicePolicyView(forms.ModalFormView):
         return context
 
 
+class AddNetworkServiceParamView(forms.ModalFormView):
+    form_class = np_forms.CreateNetworkServiceParamForm
+    template_name = "project/network_policy/create_network_service_param.html"
+
+    def get_object_id(self, params):
+        return params.name
+
+
 class UpdateServicePolicyView(forms.ModalFormView):
     form_class = np_forms.UpdateServicePolicyForm
     template_name = "project/network_policy/update_service_policy.html"
 
     def get_context_data(self, **kwargs):
         context = super(
-            CreateServicePolicyView, self).get_context_data(**kwargs)
+            UpdateServicePolicyView, self).get_context_data(**kwargs)
         context['service_policy_id'] = self.kwargs['service_policy_id']
         return context
 
     def get_initial(self):
         return self.kwargs
+
+
+class ServicePolicyDetailsView(tabs.TabView):
+    tab_group_class = (np_tabs.ServicePolicyDetailsTabs)
+    template_name = 'project/network_policy/details_tabs.html'

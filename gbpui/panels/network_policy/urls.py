@@ -9,8 +9,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# @author: Ronak Shah
 
 
 from django.conf.urls import patterns  # noqa
@@ -26,9 +24,15 @@ urlpatterns = patterns('',
                    url(r'^addserviceolicy$',
                           views.CreateServicePolicyView.as_view(),
                        name='create_servicepolicy'),
+                   url(r'^addnetworkserviceparam$',
+                          views.AddNetworkServiceParamView.as_view(),
+                       name='add_network_service_param'),
                    url(r'^update_servicepolicy/(?P<service_policy_id>[^/]+)/$',
                        views.UpdateServicePolicyView.as_view(),
                        name='update_service_policy'),
+                   url(r'^servicepolicy/(?P<service_policy_id>[^/]+)/$',
+                       views.ServicePolicyDetailsView.as_view(),
+                       name='service_policy_details'),
                    url(r'^addl2policy$',
                        views.AddL2policyView.as_view(),
                                                name='addl2policy'),

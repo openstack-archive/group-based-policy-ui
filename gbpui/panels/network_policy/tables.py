@@ -35,7 +35,7 @@ class EditL2PolicyLink(tables.LinkAction):
 
 
 class DeleteL2PolicyLink(tables.DeleteAction):
-    name = "delete_l2policy"
+    name = "deletel2policy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("L2Policy")
@@ -77,11 +77,11 @@ class EditL3PolicyLink(tables.LinkAction):
 
 
 class DeleteL3PolicyLink(tables.DeleteAction):
-    name = "delete_l3policy"
+    name = "deletel3policy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("L3Policy")
-    data_type_plural = _("L3Policies")
+    data_type_singular = _("L3 Policy")
+    data_type_plural = _("L3 Policies")
 
 
 class L3PolicyTable(tables.DataTable):
@@ -121,7 +121,7 @@ class EditServicePolicyLink(tables.LinkAction):
 
 
 class DeleteServicePolicyLink(tables.DeleteAction):
-    name = "delete_service_policy"
+    name = "deletespolicy"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServicePolicy")
@@ -129,8 +129,11 @@ class DeleteServicePolicyLink(tables.DeleteAction):
 
 
 class ServicePolicyTable(tables.DataTable):
-    name = tables.Column("name", verbose_name=_("Name"))
+    name = tables.Column("name", verbose_name=_("Name"),
+            link="horizon:project:network_policy:service_policy_details")
     description = tables.Column("description", verbose_name=_("Description"))
+    network_service_params = tables.Column('network_service_params',
+                                    verbose_name=_("Network Service Params"))
 
     class Meta:
         name = "service_policy_table"
