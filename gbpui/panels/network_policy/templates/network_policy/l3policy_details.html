@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "L3 Policy Details"%}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("L3 Policy Details: ") %}
+{% endblock page_header %}
+
+                                       
+{% block main %}
+ <div class="info row detail">
+	<hr class="header_rule">
+	<dl>
+		<dt>{% trans "Name" %}</dt>
+		<dd>{{ l3policy.name|default:_("-") }}</dd>
+
+		<dt>{% trans "Description" %}</dt>
+		<dd>{{ l3policy.description|default:_("-") }}</dd>
+
+		<dt>{% trans "ID" %}</dt>
+		<dd>{{ l3policy.id }} </dd>
+	</dl>
+<hr>
+{{ l2policy_table_table.render }}
+</div>
+{% endblock %} 
