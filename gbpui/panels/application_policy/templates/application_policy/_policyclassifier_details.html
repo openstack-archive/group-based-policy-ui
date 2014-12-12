@@ -1,0 +1,29 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+  <hr class="header_rule">
+  <dl>
+    <dt>{% trans "Name" %}</dt>
+    <dd>{{ policyclassifier.name|default:_("-") }}</dd>
+
+    <dt>{% trans "Description" %}</dt>
+    <dd>{{ policyclassifier.description|default:_("-") }}</dd>
+
+    <dt>{% trans "ID" %}</dt>
+    <dd>{{ policyclassifier.id }}</dd>
+
+    <dt>{% trans "Project ID" %}</dt>
+    <dd>{{ policyclassifier.tenant_id }}</dd>
+    
+    <dt>{% trans "Direction" %}</dt>
+    <dd>{{ policyclassifier.direction|default:_("-") }}</dd>
+
+    <dt>{% trans "Protocol" %}</dt>
+    <dd>{{ policyclassifier.protocol|default:_("-") }}</dd>
+
+    <dt>{% trans "Port Range" %}</dt>
+    <dd>{{ policyclassifier.port_range }}</dd>
+    
+  </dl>
+</div>

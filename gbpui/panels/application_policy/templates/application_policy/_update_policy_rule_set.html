@@ -1,0 +1,26 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}update_policy_rule_set_form{% endblock %}
+{% block form_action %}{% url "horizon:project:application_policy:updatepolicy_rule_set" policy_rule_set_id %}{% endblock %}
+
+{% block modal_id %}update_policy_rule_set_modal{% endblock %}
+{% block modal-header %}{% trans "Edit Policy Rule Set" %}{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+  <fieldset>
+  {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+</div>
+<div class="right">
+  <h3>{% trans "Description" %}:</h3>
+  <p>{% trans "Select one or multiple rules by pressing Ctrl" %}</p>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Update Policy Rule Set" %}" />
+  <a href="{% url "horizon:project:application_policy:index" %}" class="btn btn-default secondary cancel close">{% trans "Cancel" %}</a>
+{% endblock %}
