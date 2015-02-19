@@ -36,9 +36,7 @@ class PTGsTab(tabs.TableTab):
     def get_policy_targetstable_data(self):
         policy_targets = []
         try:
-            tenant_id = self.request.user.tenant_id
-            policy_targets = client.policy_target_list(self.tab_group.request,
-                                                       tenant_id=tenant_id)
+            policy_targets = client.policy_target_list(self.tab_group.request)
             a = lambda x, y: gfilters.update_policy_target_attributes(x, y)
             policy_targets = [a(self.request, item) for item in policy_targets]
         except Exception as e:

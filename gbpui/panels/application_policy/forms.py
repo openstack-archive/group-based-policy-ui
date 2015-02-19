@@ -109,8 +109,7 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
         super(AddPolicyActionForm, self).__init__(request, *args, **kwargs)
         url = reverse('horizon:project:application_policy:index')
         try:
-            sc_specs = client.servicechainspec_list(request,
-                    tenant_id=request.user.tenant_id)
+            sc_specs = client.servicechainspec_list(request)
             self.fields['action_value'].choices = \
                 [(spec.id,
                   (spec.name if spec.name is not None else "") + ":" + spec.id)
@@ -248,21 +247,19 @@ class UpdatePolicyRuleForm(forms.SelfHandlingForm):
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyRuleForm, self).__init__(request, *args, **kwargs)
         try:
-            tenant_id = request.user.tenant_id
             policyrule_id = self.initial['policyrule_id']
             rule = client.policyrule_get(request, policyrule_id)
             for item in ['name', 'description',
                          'policy_classifier_id', 'policy_actions']:
                 self.fields[item].initial = getattr(rule, item)
-            actions = client.policyaction_list(request, tenant_id=tenant_id)
+            actions = client.policyaction_list(request)
             action_list = [a.id for a in actions]
             for action in actions:
                 action.set_id_as_name_if_empty()
             actions = sorted(actions, key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
             self.fields['policy_actions'].choices = action_list
-            classifiers = client.policyclassifier_list(
-                request, tenant_id=tenant_id)
+            classifiers = client.policyclassifier_list(request)
             classifier_list = [(c.id, c.name) for c in classifiers]
             self.fields['policy_classifier_id'].choices = classifier_list
         except Exception:
