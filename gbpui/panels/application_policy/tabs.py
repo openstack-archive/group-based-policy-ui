@@ -35,10 +35,7 @@ class PolicyActionsTab(tabs.TableTab):
     def get_policyactionstable_data(self):
         actions = []
         try:
-            tenant_id = self.request.user.tenant_id
-            actions = client.policyaction_list(
-                self.tab_group.request,
-                tenant_id=tenant_id)
+            actions = client.policyaction_list(self.tab_group.request)
             a = lambda x, y: gfilters.update_policyaction_attributes(x, y)
             actions = [a(self.request, item) for item in actions]
         except Exception as e:
@@ -55,10 +52,7 @@ class PolicyClassifiersTab(tabs.TableTab):
 
     def get_policyclassifierstable_data(self):
         try:
-            tenant_id = self.request.user.tenant_id
-            classifiers = client.policyclassifier_list(
-                self.tab_group.request,
-                tenant_id=tenant_id)
+            classifiers = client.policyclassifier_list(self.tab_group.request)
         except Exception:
             classifiers = []
             exceptions.handle(self.tab_group.request,
@@ -78,10 +72,7 @@ class PolicyRulesTab(tabs.TableTab):
 
     def get_policyrulestable_data(self):
         try:
-            tenant_id = self.request.user.tenant_id
-            policy_rules = client.policyrule_list(
-                self.tab_group.request,
-                tenant_id=tenant_id)
+            policy_rules = client.policyrule_list(self.tab_group.request)
             policy_rules = [gfilters.update_policyrule_attributes(
                 self.request, item) for item in policy_rules]
         except Exception:
@@ -104,9 +95,8 @@ class ApplicationPoliciesTab(tabs.TableTab):
     def get_application_policies_table_data(self):
         policy_rule_sets = []
         try:
-            tenant_id = self.request.user.tenant_id
             policy_rule_sets = client.policy_rule_set_list(
-                self.tab_group.request, tenant_id=tenant_id)
+                self.tab_group.request)
             policy_rule_sets = [gfilters.update_pruleset_attributes(
                 self.request, item) for item in policy_rule_sets]
         except Exception:
