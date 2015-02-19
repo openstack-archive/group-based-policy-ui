@@ -39,9 +39,7 @@ class SelectPolicyRuleAction(workflows.Action):
 
     def populate_policy_rules_choices(self, request, context):
         try:
-            tenant_id = self.request.user.tenant_id
-            rules = client.policyrule_list(request,
-                                           tenant_id=tenant_id)
+            rules = client.policyrule_list(request)
             for r in rules:
                 r.set_id_as_name_if_empty()
             rules = sorted(rules,
@@ -136,9 +134,7 @@ class SelectPolicyClassifierAction(workflows.Action):
 
     def populate_classifier_choices(self, request, context):
         try:
-            tenant_id = self.request.user.tenant_id
-            classifiers = client.policyclassifier_list(request,
-                                                       tenant_id=tenant_id)
+            classifiers = client.policyclassifier_list(request)
             for classifier in classifiers:
                 classifier.set_id_as_name_if_empty()
             classifiers = sorted(classifiers,
@@ -165,9 +161,7 @@ class SelectPolicyActionAction(workflows.Action):
 
     def populate_actions_choices(self, request, context):
         try:
-            tenant_id = self.request.user.tenant_id
-            actions = client.policyaction_list(request,
-                                               tenant_id=tenant_id)
+            actions = client.policyaction_list(request)
             action_list = [a.id for a in actions]
             for action in actions:
                 action.set_id_as_name_if_empty()

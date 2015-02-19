@@ -49,9 +49,8 @@ class SelectPolicyRuleSetAction(workflows.Action):
         name = _("Application Policy")
         help_text = _("Select Policy Rule Set for Group.")
 
-    def _policy_rule_set_list(self, request, tenant_id):
-        policy_rule_sets = client.policy_rule_set_list(request,
-                                                       tenant_id=tenant_id)
+    def _policy_rule_set_list(self, request):
+        policy_rule_sets = client.policy_rule_set_list(request)
         for c in policy_rule_sets:
             c.set_id_as_name_if_empty()
         policy_rule_sets = sorted(policy_rule_sets,
@@ -61,8 +60,7 @@ class SelectPolicyRuleSetAction(workflows.Action):
     def populate_provided_policy_rule_set_choices(self, request, context):
         policy_rule_set_list = []
         try:
-            tenant_id = self.request.user.tenant_id
-            rsets = self._policy_rule_set_list(request, tenant_id)
+            rsets = self._policy_rule_set_list(request)
             if len(rsets) == 0:
                 rsets.extend([('None', 'No Provided Policy Rule Sets')])
             policy_rule_set_list = rsets
@@ -75,10 +73,9 @@ class SelectPolicyRuleSetAction(workflows.Action):
     def populate_consumed_policy_rule_set_choices(self, request, context):
         policy_rule_set_list = []
         try:
-            tenant_id = self.request.user.tenant_id
             policy_rule_set_list = [('None', 'No Consumed Policy Rule Sets')]
             policy_rule_set_list =\
-                self._policy_rule_set_list(request, tenant_id)
+                self._policy_rule_set_list(request)
         except Exception as e:
             msg = _('Unable to retrieve policy rule set. %s.') % (str(e))
             exceptions.handle(request, msg)
@@ -118,8 +115,7 @@ class SelectL2policyAction(workflows.Action):
     def populate_network_service_policy_id_choices(self, request, context):
         policies = []
         try:
-            policies = client.networkservicepolicy_list(
-                request, tenant_id=request.user.tenant_id)
+            policies = client.networkservicepolicy_list(request)
             for p in policies:
                 p.set_id_as_name_if_empty()
             policies = [(p.id, p.name + ":" + p.id) for p in policies]
