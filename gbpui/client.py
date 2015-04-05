@@ -158,12 +158,14 @@ def pt_create(request, **kwargs):
 
 
 def pt_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policy_targets = gbpclient(request).list_policy_targets(
         **kwargs).get('policy_targets')
     return [PT(pt) for pt in policy_targets]
 
 
 def policy_target_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policy_targets = gbpclient(request).list_policy_target_groups(
         **kwargs).get('policy_target_groups')
     return [PTG(policy_target) for policy_target in policy_targets]
@@ -194,6 +196,7 @@ def policy_rule_set_create(request, **kwargs):
 
 
 def policy_rule_set_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policy_rule_sets = gbpclient(request).list_policy_rule_sets(
         **kwargs).get('policy_rule_sets')
     return [Contract(policy_rule_set) for policy_rule_set in policy_rule_sets]
@@ -231,6 +234,7 @@ def policyrule_update(request, prid, **kwargs):
 
 
 def policyrule_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policyrules = gbpclient(request).list_policy_rules(
         **kwargs).get('policy_rules')
     return [PolicyRule(pr) for pr in policyrules]
@@ -244,6 +248,7 @@ def policyclassifier_create(request, **kwargs):
 
 
 def policyclassifier_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     classifiers = gbpclient(request).list_policy_classifiers(
         **kwargs).get('policy_classifiers')
     return [PolicyClassifier(pc) for pc in classifiers]
@@ -307,11 +312,13 @@ def policyclassifier_update(request, pc_id, **kwargs):
 
 
 def l3policy_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policies = gbpclient(request).list_l3_policies(**kwargs).get('l3_policies')
     return [L2Policy(item) for item in policies]
 
 
 def l2policy_list(request, **kwargs):
+    kwargs['tenant_id'] = request.user.tenant_id
     policies = gbpclient(request).list_l2_policies(**kwargs).get('l2_policies')
     return [L2Policy(item) for item in policies]
 
