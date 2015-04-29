@@ -50,7 +50,7 @@ class ServiceChainSpecTable(tables.DataTable):
                                 verbose_name=_("Description"))
     nodes = tables.Column("nodes", verbose_name=_("Nodes"))
 
-    class Meta:
+    class Meta(object):
         name = "service_chain_spec_table"
         verbose_name = _("Service Chain Specs")
         table_actions = (CreateServiceChainSpecLink,
@@ -94,7 +94,7 @@ class ServiceChainNodeTable(tables.DataTable):
     service_type = tables.Column("service_type",
                                  verbose_name=_("Service Type"))
 
-    class Meta:
+    class Meta(object):
         name = "service_chain_node_table"
         verbose_name = _("Service Chain Node")
         table_actions = (CreateServiceChainNodeLink,
@@ -143,7 +143,7 @@ class ServiceChainInstanceTable(tables.DataTable):
         "servicechain_spec", verbose_name=_("Service Chain Spec"))
     classifier = tables.Column("classifier", verbose_name=_("Classifier"))
 
-    class Meta:
+    class Meta(object):
         name = "service_chain_instance_table"
         verbose_name = _("Service Chain Instance")
         table_actions = (CreateServiceChainInstanceLink,)

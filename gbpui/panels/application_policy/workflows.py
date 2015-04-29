@@ -33,7 +33,7 @@ class SelectPolicyRuleAction(workflows.Action):
         add_item_link=ADD_POLICY_RULE_URL,
         help_text=_("Create a policy rule set with selected rules."))
 
-    class Meta:
+    class Meta(object):
         name = _("Rules")
         help_text = _("Select policy rules for your policy rule set.")
 
@@ -77,7 +77,7 @@ class AddContractAction(workflows.Action):
     def __init__(self, request, *args, **kwargs):
         super(AddContractAction, self).__init__(request, *args, **kwargs)
 
-    class Meta:
+    class Meta(object):
         name = _("Create Policy Rule Set")
         help_text = _("Create a new Policy Rule Set")
 
@@ -128,7 +128,7 @@ class SelectPolicyClassifierAction(workflows.Action):
         help_text=_("Create a policy with selected classifier."),
         add_item_link=ADD_POLICY_CLASSIFIER_URL)
 
-    class Meta:
+    class Meta(object):
         name = _("Classifiers")
         help_text = _("Select classifiers for your policy-rule.")
 
@@ -155,7 +155,7 @@ class SelectPolicyActionAction(workflows.Action):
         help_text=_("Create a policy-rule with selected action."),
         add_item_link=ADD_POLICY_ACTION_URL)
 
-    class Meta:
+    class Meta(object):
         name = _("actions")
         help_text = _("Select actions for your policy-rule.")
 
@@ -214,7 +214,7 @@ class AddPolicyRuleAction(workflows.Action):
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyRuleAction, self).__init__(request, *args, **kwargs)
 
-    class Meta:
+    class Meta(object):
         name = _("Create Policy-Rule")
         help_text = _("Create a new Policy-Rule")
 
@@ -277,7 +277,7 @@ class AddClassifierAction(workflows.Action):
     def __init__(self, request, *args, **kwargs):
         super(AddClassifierAction, self).__init__(request, *args, **kwargs)
 
-    class Meta:
+    class Meta(object):
         name = _("Create Classifier")
         help_text = _("Create a new Classifier")
 

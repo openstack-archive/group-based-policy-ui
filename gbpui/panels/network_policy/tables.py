@@ -51,7 +51,7 @@ class L2PolicyTable(tables.DataTable):
     l3_policy_id = tables.Column(
         "l3_policy_id", verbose_name=_("L3 Policy ID"))
 
-    class Meta:
+    class Meta(object):
         name = "l2policy_table"
         verbose_name = _("L2 Policies")
         table_actions = (CreateL2PolicyLink, DeleteL2PolicyLink)
@@ -95,7 +95,7 @@ class L3PolicyTable(tables.DataTable):
     subnet_prefix_length = tables.Column(
         "subnet_prefix_length", verbose_name=_("Subnet Prefix Length"))
 
-    class Meta:
+    class Meta(object):
         name = "l3policy_table"
         verbose_name = _("L3 Policy")
         table_actions = (CreateL3PolicyLink, DeleteL3PolicyLink,)
@@ -135,7 +135,7 @@ class ServicePolicyTable(tables.DataTable):
     network_service_params = tables.Column('network_service_params',
                                     verbose_name=_("Network Service Params"))
 
-    class Meta:
+    class Meta(object):
         name = "service_policy_table"
         verbose_name = _("Service Policies")
         table_actions = (CreateServicePolicyLink, DeleteServicePolicyLink,)

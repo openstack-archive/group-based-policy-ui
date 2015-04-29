@@ -134,7 +134,7 @@ class ApplicationPoliciesTable(tables.DataTable):
                                  sortable=False,
                                  verbose_name=_("Policy Rules"))
 
-    class Meta:
+    class Meta(object):
         name = "application_policies_table"
         verbose_name = _("Policy Rule Set")
         table_actions = (AddAppPolicyLink, DeleteAppPolicyLink)
@@ -154,7 +154,7 @@ class PolicyRulesTable(tables.DataTable):
     policy_actions = tables.Column("policy_actions",
                                       verbose_name=_("Policy Actions"))
 
-    class Meta:
+    class Meta(object):
         name = "policyrulestable"
         verbose_name = _("Policy Rules")
         table_actions = (AddPolicyRuleLink, DeletePolicyRuleLink)
@@ -174,7 +174,7 @@ class PolicyClassifiersTable(tables.DataTable):
     direction = tables.Column("direction",
                               verbose_name=_("Direction"))
 
-    class Meta:
+    class Meta(object):
         name = "policyclassifierstable"
         verbose_name = _("Policy Classifiers")
         table_actions = (AddPolicyClassifierLink, DeletePolicyClassifierLink)
@@ -192,7 +192,7 @@ class PolicyActionsTable(tables.DataTable):
     action_value = tables.Column("action_value",
                                  verbose_name=_("Value"))
 
-    class Meta:
+    class Meta(object):
         name = "policyactionstable"
         verbose_name = _("Policy Actions")
         table_actions = (AddPolicyActionLink, DeletePolicyActionLink)

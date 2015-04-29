@@ -45,7 +45,7 @@ class SelectPolicyRuleSetAction(workflows.Action):
         add_item_link=POLICY_RULE_SET_URL,
         required=False)
 
-    class Meta:
+    class Meta(object):
         name = _("Application Policy")
         help_text = _("Select Policy Rule Set for Group.")
 
@@ -91,7 +91,7 @@ class SelectL2policyAction(workflows.Action):
         help_text=_("Select network services policy for Group."),
         required=False)
 
-    class Meta:
+    class Meta(object):
         name = _("Network Policy")
         help_text = _(
             "Select network policy for Group."
@@ -176,7 +176,7 @@ class AddPTGAction(workflows.Action):
     def __init__(self, request, *args, **kwargs):
         super(AddPTGAction, self).__init__(request, *args, **kwargs)
 
-    class Meta:
+    class Meta(object):
         name = _("Create Group")
         help_text = _("Create a new Group")
 

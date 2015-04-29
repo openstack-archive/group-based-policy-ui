@@ -66,7 +66,7 @@ class PTGsTable(tables.DataTable):
     l2_policy_id = tables.Column("l2_policy_id",
                                  verbose_name=_("L2 Policy"))
 
-    class Meta:
+    class Meta(object):
         name = "policy_targetstable"
         verbose_name = _("Groups")
         table_actions = (AddPTGLink, DeletePTGLink)
@@ -142,7 +142,7 @@ class InstancesTable(tables.DataTable):
     def get_empty_message(self, *args, **kwargs):
         return "No members in this group, create one"
 
-    class Meta:
+    class Meta(object):
         name = "instances"
         verbose_name = _("Members")
         table_actions = (LaunchVMLink,)
@@ -180,7 +180,7 @@ class ProvidedContractsTable(tables.DataTable):
                                  sortable=False,
                                  verbose_name=_("Policy Rules"))
 
-    class Meta:
+    class Meta(object):
         name = 'provided_policy_rule_sets'
         verbose_name = _("Provided Policy Rule Set")
         table_actions = (AddProvidedLink, RemoveProvidedLink,)
@@ -218,7 +218,7 @@ class ConsumedContractsTable(tables.DataTable):
                                  sortable=False,
                                  verbose_name=_("Policy Rules"))
 
-    class Meta:
+    class Meta(object):
         name = 'consumed_policy_rule_sets'
         verbose_name = _("Consumed Policy Rule Set")
         table_actions = (AddConsumedLink, RemoveConsumedLink,)
