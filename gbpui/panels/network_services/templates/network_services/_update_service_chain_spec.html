@@ -8,14 +8,35 @@
 {% block modal-header %}{% trans "Update Service Chain Spec" %}{% endblock %}
 
 {% block modal-body %}
+<link href="/static/dashboard/css/scspec.css" rel='stylesheet' type='text/css'>
 <div class="left">
-    <fieldset>
-    {% include "horizon/common/_form_fields.html" %}
-    </fieldset>
-</div>
-<div class="right">
-    <h3>{% trans "Description:" %}</h3>
-    <p>{% trans "Update Service Chain Spec." %}</p>
+<table class="table-fixed" id="nodeListIdContainer">
+  <tbody>
+    <tr>
+      <td class="actions">
+          <div id="nodeListId">
+            {% include "horizon/common/_form_fields.html" %}
+          </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<table class="table-fixed" id="nodeListSortContainer">
+  <tbody>
+    <tr>
+      <td class="actions">
+        <label id="selected_node_label">{% trans "Selected nodes" %}</label>
+        <ul id="selected_node" class="nodelist">
+        </ul>
+        <label>{% trans "Available nodes" %}</label>
+        <ul id="available_node" class="nodelist">
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 </div>
 {% endblock %}
 
@@ -23,3 +44,19 @@
   <input class="btn btn-primary pull-right" type="submit" value="{% trans "Save Changes" %}" />
   <a href="{% url 'horizon:project:network_services:index' %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
 {% endblock %}  
+
+
+
+{% block modal-js %}
+<script src='/static/dashboard/js/horizon.scspec.js' type='text/javascript'></script>
+  <script>
+  if (typeof $ !== 'undefined') {
+    horizon.Node.sc_init($(".workflow"));
+  } else {
+    addHorizonLoadEvent(function() {
+      horizon.Node.sc_init($(".workflow"));
+    });
+  }
+</script>
+
+{% endblock %}
