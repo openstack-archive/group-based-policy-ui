@@ -21,7 +21,7 @@ from django import shortcuts
 
 from horizon import exceptions
 from horizon import forms
-
+from horizon import messages
 
 from gbpui import client
 
@@ -139,23 +139,33 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
 
 
 class CreateServiceChainSpecForm(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=80, label=_("Name"))
+    name = forms.CharField(max_length=255, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
-    nodes = forms.MultipleChoiceField(label=_("Nodes"))
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+    nodes = forms.MultipleChoiceField(label=_("Nodes"),
+                                        widget=forms.CheckboxSelectMultiple(),
+                                        error_messages={
+                                            'required': _(
+                                                "At least one node must"
+                                                " be specified.")},
+                              help_text=_("Create service chain spec with"
+                                                    " these nodes"))
 
     def __init__(self, request, *args, **kwargs):
         super(CreateServiceChainSpecForm, self).__init__(
             request, *args, **kwargs)
         try:
+            node_list = []
             nodes = client.servicechainnode_list(request)
-            nodes = [(item.id, item.name + ":" + str(item.id))
-                     for item in nodes]
-            self.fields['nodes'].choices = nodes
+            for n in nodes:
+                n.set_id_as_name_if_empty()
+                node_list.append((n.id, n.name))
+            self.fields['nodes'].choices = sorted(
+                node_list, key=lambda obj: obj[1])
         except Exception:
-            msg = _("Failed to retrive service chain nodes.")
+            msg = _("Failed to retrieve service chain spec")
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
@@ -165,6 +175,7 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
             client.create_servicechain_spec(request, **context)
             msg = _("Service Chain Spec Created Successfully!")
             LOG.debug(msg)
+            messages.success(request, msg)
             return http.HttpResponseRedirect(url)
         except Exception as e:
             msg = _("Failed to create Service Chain Spec.  %s") % (str(e))
@@ -182,19 +193,28 @@ class UpdateServiceChainSpecForm(CreateServiceChainSpecForm):
             scspec = client.get_servicechain_spec(request, scspec_id)
             for attr in ['name', 'description', 'nodes', 'shared']:
                 self.fields[attr].initial = getattr(scspec, attr)
+            nodes_available = dict(self.fields['nodes'].choices)
+            nodes_selected = [
+                (x, nodes_available[x]) for x in self.fields['nodes'].initial]
+            nodes_unselected = set(self.fields['nodes'].choices) - set(
+                nodes_selected)
+            self.fields['nodes'].choices = nodes_selected + list(
+                nodes_unselected)
         except Exception:
-            pass
+            msg = _("Failed to retrieve service chain spec")
+            LOG.error(msg)
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_services:index")
         try:
             scspec_id = self.initial['scspec_id']
             client.update_servicechain_spec(request, scspec_id, **context)
-            msg = _("Service Chain Spec Created Successfully!")
+            msg = _("Service Chain Spec Updated Successfully!")
             LOG.debug(msg)
+            messages.success(request, msg)
             return http.HttpResponseRedirect(url)
         except Exception as e:
-            msg = _("Failed to create Service Chain Spec.  %s") % (str(e))
+            msg = _("Failed to update Service Chain Spec.  %s") % (str(e))
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
