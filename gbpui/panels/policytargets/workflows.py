@@ -172,6 +172,8 @@ class AddPTGAction(workflows.Action):
     description = forms.CharField(max_length=80,
                                   label=_("Description"),
                                   required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddPTGAction, self).__init__(request, *args, **kwargs)
@@ -183,7 +185,7 @@ class AddPTGAction(workflows.Action):
 
 class AddPTGStep(workflows.Step):
     action_class = AddPTGAction
-    contributes = ("name", "description")
+    contributes = ("name", "description", "shared")
 
     def contribute(self, data, context):
         context = super(AddPTGStep, self).contribute(data, context)
