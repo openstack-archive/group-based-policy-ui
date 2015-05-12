@@ -1,0 +1,104 @@
+#nodeListSortContainer,#nodeListIdContainer{
+  width:100%;
+}
+
+#selected_node {
+  margin-bottom: 1.5em;
+  counter-reset: v1 0;
+  background: #edf9ff;
+  border: 1px solid #c0d9e4;
+}
+
+#selected_node li {
+  position: relative;
+}
+
+#selected_node li a.btn:before {
+  content: "-";
+}
+
+#selected_node li:before {
+  content: "Node:" counter(v1);
+  counter-increment: v1;
+  display: inline-block;
+  margin-right: 5px;
+  background: #555555;
+  color: #ffffff;
+  font-size: 90%;
+  padding: 0px 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+  position: absolute;
+  left: -4em;
+}
+
+#selected_node.dragging li:before {
+  content: "Node:";
+  background-color: rgba(102, 102, 102, 0.5);
+  padding-right: 10px;
+}
+
+#selected_node.dragging li.ui-state-highlight:before {
+  content: "";
+  background: transparent;
+}
+.nodelist {
+                  padding: 6px;
+                  background: #eee;
+                  border: 1px solid #dddddd;
+                  min-height: 2em;
+                  width: auto !important;
+                  -webkit-box-sizing: border-box;
+                  -moz-box-sizing: border-box;
+                  box-sizing: border-box; }
+                  .nodelist li {
+                    width: 226px;
+                    list-style-type: none;
+                    margin: 6px auto;
+                    padding: 3px;
+                    background: #ffffff;
+                    border: 1px solid #aaa;
+                    line-height: 18px;
+                    border-radius: 3px;
+                    cursor: move;
+                    padding-left: 23px;
+                    background: #ffffff url('/static/dashboard/img/drag.png?93ec7e23f795') no-repeat 11px 50%; }
+                    .nodelist li em {
+                      font-size: 0.5em;
+                      line-height: 1em;
+                      color: #999;
+                      font-style: normal;
+                      margin-left: 0.8em; }
+                      .nodelist li i {
+                        margin-right: 5px;
+                        vertical-align: middle; }
+                        .nodelist li a.btn {
+                          -webkit-box-sizing: border-box;
+                          -moz-box-sizing: border-box;
+                          box-sizing: border-box;
+                          font-size: 11px;
+                          line-height: 12px;
+                          padding: 2px 5px 3px;
+                          margin-right: 1px;
+                          width: 18px;
+                          text-align: center;
+                          right: 5px;
+                          vertical-align: middle;
+                          float: right; }
+                          .nodelist li a.btn:before {
+                            content: "+"; }
+                  .nodelist li.ui-sortable-helper {
+                    background-color: #def; }
+                    .nodelist li.ui-state-highlight {
+                      border: 1px dotted #cccccc;
+                      background: #efefef;
+                      height: 0.5em; }
+                      .nodelist li:after {
+                        visibility: hidden;
+                        display: block;
+                        font-size: 0;
+                        content: " ";
+                        clear: both;
+                        height: 0; }
+
+
