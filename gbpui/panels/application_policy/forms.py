@@ -46,6 +46,7 @@ class UpdatePolicyRuleSetForm(forms.SelfHandlingForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"), required=False)
     rules = forms.MultipleChoiceField(label=_("Policy Rules"),)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyRuleSetForm, self).__init__(request, *args, **kwargs)
@@ -59,6 +60,7 @@ class UpdatePolicyRuleSetForm(forms.SelfHandlingForm):
                 self.fields['name'].initial = policy_rule_set.name
                 self.fields[
                     'description'].initial = policy_rule_set.description
+                self.fields['shared'].initial = policy_rule_set.shared
                 existing = [item for item in policy_rule_set.policy_rules]
                 self.fields['rules'].initial = existing
         except Exception:
@@ -74,6 +76,7 @@ class UpdatePolicyRuleSetForm(forms.SelfHandlingForm):
                                           description=context[
                                               'description'],
                                           policy_rules=context['rules'],
+                                          shared=context['shared'],
                                           )
             messages.success(request, _('PolicyRuleSet successfully updated.'))
             url = reverse('horizon:project:application_policy:index')
@@ -104,6 +107,8 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
                                          'data-source-redirect':
                                          _('Service Chain Spec')
                                      }))
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyActionForm, self).__init__(request, *args, **kwargs)
@@ -135,6 +140,7 @@ class UpdatePolicyActionForm(forms.SelfHandlingForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"),
                                   required=False)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyActionForm, self).__init__(request, *args, **kwargs)
@@ -144,6 +150,7 @@ class UpdatePolicyActionForm(forms.SelfHandlingForm):
             pa = client.policyaction_get(request, policyaction_id)
             self.fields['name'].initial = pa.name
             self.fields['description'].initial = pa.description
+            self.fields['shared'].initial = pa.shared
         except Exception:
             pass
 
@@ -180,6 +187,8 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
         choices=[('in', _('IN')),
                  ('out', _('OUT')),
                  ('bi', _('BI'))])
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyClassifierForm, self).__init__(request, *args, **kwargs)
@@ -206,6 +215,7 @@ class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
     port_range = forms.CharField(max_length=80, label=_("Port/Range(min:max)"),
             required=False)
     direction = forms.ChoiceField(label=_("Direction"), choices=DIRECTIONS)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyClassifierForm, self).__init__(
@@ -215,7 +225,7 @@ class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
             classifier = client.policyclassifier_get(
                 request, policyclassifier_id)
             for item in ['name', 'description',
-                         'protocol', 'port_range', 'direction']:
+                         'protocol', 'port_range', 'direction', 'shared']:
                 self.fields[item].initial = getattr(classifier, item)
         except Exception:
             exceptions.handle(
@@ -243,6 +253,7 @@ class UpdatePolicyRuleForm(forms.SelfHandlingForm):
     description = forms.CharField(label=_("Description"), required=False)
     policy_classifier_id = forms.ChoiceField(label=_("Policy Classifier"))
     policy_actions = forms.MultipleChoiceField(label=_("Policy Actions"))
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyRuleForm, self).__init__(request, *args, **kwargs)
@@ -250,7 +261,7 @@ class UpdatePolicyRuleForm(forms.SelfHandlingForm):
             policyrule_id = self.initial['policyrule_id']
             rule = client.policyrule_get(request, policyrule_id)
             for item in ['name', 'description',
-                         'policy_classifier_id', 'policy_actions']:
+                         'policy_classifier_id', 'policy_actions', 'shared']:
                 self.fields[item].initial = getattr(rule, item)
             actions = client.policyaction_list(request)
             action_list = [a.id for a in actions]

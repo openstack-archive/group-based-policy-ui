@@ -49,6 +49,8 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2 - 30 for IP4"
                                                        "and 2-127 for IP6."),)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL3PolicyForm, self).__init__(request, *args, **kwargs)
@@ -98,6 +100,7 @@ class UpdateL3PolicyForm(forms.SelfHandlingForm):
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2-30 for IP4"
                                                        "and 2-127 for IP6."),)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
@@ -208,6 +211,8 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
     network_service_params = fields.CustomMultiChoiceField(label=_(
         "Network Service Parameters"), add_item_link=NETWORK_PARAM_URL,
         required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
@@ -264,6 +269,7 @@ class UpdateServicePolicyForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateServicePolicyForm, self).__init__(request, *args, **kwargs)
@@ -272,6 +278,7 @@ class UpdateServicePolicyForm(forms.SelfHandlingForm):
             policy = client.get_networkservice_policy(request, policy_id)
             self.fields['name'].initial = policy.name
             self.fields['description'].initial = policy.description
+            self.fields['shared'].initial = policy.shared
         except Exception as e:
             msg = _("Failed to retrive service policy details. %s") % (str(e))
             LOG.debug(msg)

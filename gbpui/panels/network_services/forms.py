@@ -56,6 +56,8 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
                                                 'data-source-string':
                                                 _("Configuration String")}),
                                             required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def clean(self):
         cleaned_data = super(CreateServiceChainNodeForm, self).clean()
@@ -107,6 +109,7 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateServiceChainNodeForm, self).__init__(
@@ -114,7 +117,7 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
         try:
             scnode_id = self.initial['scnode_id']
             scnode = client.get_servicechain_node(request, scnode_id)
-            for item in ['name', 'description']:
+            for item in ['name', 'description', 'shared']:
                 self.fields[item].initial = getattr(scnode, item)
         except Exception:
             msg = _("Failed to retrive Service Chain Node details.")
@@ -140,6 +143,8 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     nodes = forms.MultipleChoiceField(label=_("Nodes"))
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(CreateServiceChainSpecForm, self).__init__(
@@ -175,7 +180,7 @@ class UpdateServiceChainSpecForm(CreateServiceChainSpecForm):
         try:
             scspec_id = self.initial['scspec_id']
             scspec = client.get_servicechain_spec(request, scspec_id)
-            for attr in ['name', 'description', 'nodes']:
+            for attr in ['name', 'description', 'nodes', 'shared']:
                 self.fields[attr].initial = getattr(scspec, attr)
         except Exception:
             pass
