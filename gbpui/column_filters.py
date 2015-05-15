@@ -11,6 +11,7 @@
 # under the License.
 
 import logging
+import os
 
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -129,14 +130,36 @@ def update_policyaction_attributes(request, paction):
 
 
 def update_sc_spec_attributes(request, scspec):
+    img_path = "/static/dashboard/images/"
+    provider = "default"
     nodes = scspec.nodes
     nodes = [client.get_servicechain_node(request, item) for item in nodes]
-    t = "<table class='table table-condensed'><tr><td>"
+    t = "<table class='table table-condensed' \
+        style='margin-bottom:0px'><tr><td>"
     val = [t + "<span class='glyphicon glyphicon-remove-circle'></span></td>"]
+    ds_path = "/opt/stack/horizon/static/dashboard/images/"
+    if os.path.exists(ds_path):
+        local_img_path = ds_path
+    else:
+        local_img_path = "/usr/share/openstack-dashboard/openstack_dashboard/" \
+            + "static/dashboard/images/"
+    if os.path.exists(local_img_path):
+        providers = os.listdir(local_img_path)
+        for p in providers:
+            if p in scspec.description:
+                provider = p
+                break
+
+    img_src = img_path + provider + "/"
+    scn_url = "horizon:project:network_services:sc_node_details"
     for n in nodes:
+        url = reverse(scn_url, kwargs={'scnode_id': n.id})
         val.append(
             "<td><span class='glyphicon glyphicon-arrow-right'></span></td>")
-        val.append("<td>" + n.name + "(" + n.service_type + ")</td>")
+        scnode = "<td><a href='" + url + "' style='font-size: 9px;' >" \
+            + "<img src='" + img_src + n.service_type + ".png'>" \
+            + "<br>" + n.name + " (" + n.service_type + ")</a></td>"
+        val.append(scnode)
     val.append("</tr></table>")
     setattr(scspec, 'nodes', mark_safe("".join(val)))
     return scspec
