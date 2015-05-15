@@ -12,6 +12,8 @@
 
 import json
 
+import yaml
+
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
@@ -90,6 +92,15 @@ class ServiceChainNodeDetailsTab(tabs.Tab):
         scnode_id = self.tab_group.kwargs['scnode_id']
         try:
             scnode = client.get_servicechain_node(request, scnode_id)
+            config = scnode.config
+            config = config.strip()
+            if config.startswith('{'):
+                config = json.loads(config)
+                scnode.config = json.dumps(config, sort_keys=False, indent=4)
+            else:
+                config = yaml.load(config)
+                scnode.config = yaml.dump(
+                    config, default_flow_style=False, indent=4)
         except Exception:
             exceptions.handle(request, _(
                 'Unable to retrieve service node details.'),
