@@ -129,14 +129,26 @@ def update_policyaction_attributes(request, paction):
 
 
 def update_sc_spec_attributes(request, scspec):
+    img_path = "/static/dashboard/images/"
     nodes = scspec.nodes
     nodes = [client.get_servicechain_node(request, item) for item in nodes]
-    t = "<table class='table table-condensed'><tr><td>"
+    t = "<table class='table table-condensed' \
+        style='margin-bottom:0px'><tr><td>"
     val = [t + "<span class='glyphicon glyphicon-remove-circle'></span></td>"]
+    if "cisco" in scspec.description:
+        img_src = img_path + "cisco/"
+    elif "oneconvergence" in scspec.description:
+        img_src = img_path + "oneconvergence/"
+    else:
+        img_src = img_path + "default/"
     for n in nodes:
         val.append(
             "<td><span class='glyphicon glyphicon-arrow-right'></span></td>")
-        val.append("<td>" + n.name + "(" + n.service_type + ")</td>")
+        scnode = "<td>" + '<a href="/project/network_services/sc_node/' \
+            + n.id + '/" title="' + n.name + '(' + n.service_type + ')' \
+            + '">' + '<img src="' + img_src + n.service_type + '.png">' \
+            + '</a>' + "</td>"
+        val.append(scnode)
     val.append("</tr></table>")
     setattr(scspec, 'nodes', mark_safe("".join(val)))
     return scspec
