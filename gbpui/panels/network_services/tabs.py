@@ -138,17 +138,78 @@ class ServiceChainNodeDetailsTab(tabs.Tab):
             config = scnode.config
             config = config.strip()
             if config.startswith('{'):
-                config = json.loads(config)
-                scnode.config = json.dumps(config, sort_keys=False, indent=4)
+                config = yaml.load(config)
+                if 'heat_template_version' in config:
+                    scnode.config = yaml.dump(
+                        config, default_flow_style=False, indent=4)
+                else:
+                    scnode.config = json.dumps(
+                        config, sort_keys=False, indent=4)
             else:
                 config = yaml.load(config)
                 scnode.config = yaml.dump(
                     config, default_flow_style=False, indent=4)
+            scnode.tree = self.prepare_config_as_tree(config)
         except Exception:
             exceptions.handle(request, _(
                 'Unable to retrieve service node details.'),
                 redirect=self.failure_url)
         return {'scnode': scnode}
+
+    def prepare_config_as_tree(self, config):
+        tree = []
+        for key, value in config.iteritems():
+            node = {}
+            if isinstance(value, dict):
+                node = self.prepare_root_node(value)
+                node["text"] = key
+            else:
+                node["text"] = key + " : " + str(value)
+                node["icon"] = "/static/dashboard/img/text.png"
+
+            tree.append(node)
+        return json.dumps(tree)
+
+    def prepare_root_node(self, obj):
+        node = {}
+        if obj:
+            children = self.prepare_children(obj)
+            node["children"] = children
+            state = {}
+            state["opened"] = True
+            node["state"] = state
+        return node
+
+    def prepare_children(self, obj):
+        children = []
+        for key, value in obj.iteritems():
+            node = {}
+            child = self.json2array(value)
+            node["text"] = key
+            node["children"] = child
+            children.append(node)
+
+        return children
+
+    def json2array(self, obj):
+        arr = []
+        for key, value in obj.iteritems():
+            node = {}
+            if isinstance(value, dict):
+                children = self.json2array(value)
+                node["text"] = key
+                node["children"] = children
+            elif isinstance(value, list):
+                items = []
+                for item in value:
+                    items.append(json.dumps(item))
+                node["children"] = items
+                node["text"] = key
+            else:
+                node["text"] = key + " : " + str(value)
+                node["icon"] = "/static/dashboard/img/text.png"
+            arr.append(node)
+        return arr
 
 
 class SCNodeDetailsTabGroup(tabs.TabGroup):
@@ -170,7 +231,20 @@ class ServiceChainSpecDetailsTab(tabs.Tab):
             gn = lambda x, y: client.get_servicechain_node(x, y)
             for node in scspec.nodes:
                 n = gn(self.request, node)
-                setattr(n, 'config', json.loads(n.config))
+                config = n.config
+                config = config.strip()
+                if config.startswith('{'):
+                    config = yaml.load(config)
+                    if 'heat_template_version' in config:
+                        config = yaml.dump(
+                            config, default_flow_style=False, indent=4)
+                    else:
+                        config = json.dumps(config, sort_keys=False, indent=4)
+                else:
+                    config = yaml.load(config)
+                    config = yaml.dump(
+                        config, default_flow_style=False, indent=4)
+                setattr(n, 'config', config)
                 nodes.append(n)
             setattr(scspec, 'nodes', nodes)
         except Exception:

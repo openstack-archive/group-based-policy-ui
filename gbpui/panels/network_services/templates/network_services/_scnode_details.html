@@ -1,9 +1,12 @@
 {% load i18n sizeformat parse_date %}
 {% load url from future %}
 
+{% block css %}
+    <link href="/static/dashboard/css/jstree.css" rel='stylesheet' type='text/css'>
+{% endblock %}
 <div class="info row detail">
 	<hr class="header_rule">
-	<dl>
+	<dl style="font-size:14px">
 		<dt>{% trans "Name" %}</dt>
 		<dd>{{ scnode.name|default:_("-") }}</dd>
 
@@ -16,9 +19,42 @@
         <dt>{% trans "Service Profile" %}</dt>
 	<dd><a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=scnode.service_profile_id %}">{{ scnode.service_profile_id }}</a></dd>
 
-		<dt>{% trans "Config" %}</dt>
-		<dd>
-                    <div style ="white-space:pre">{{ scnode.config }}</div>
-               </dd>
-	</dl>
-</div>                   
+	<dt>{% trans "Shared" %}</dt>
+	<dd>{{ scnode.shared }}</dd>
+
+        <dt>
+            <img src="/static/dashboard/img/config_as_text.png"
+               data-swap="/static/dashboard/img/config_as_tree.png"
+               id="display_format" alt="" > {% trans "Config" %}</dt>
+        <dd >
+            <div style="white-space:pre;display:none" id="config_text" >{{ scnode.config }} </div>
+            <div id="config_tree"></div>
+        </dd>
+
+    </dl>
+</div>
+
+{% block custom_js %}
+<script src='/static/dashboard/js/jstree.min.js' type='text/javascript'></script>
+<script type="text/javascript">
+    function display_config_as_tree(){
+        var data = JSON.stringify({{scnode.tree|safe}});
+        $('#config_tree').jstree({ 'core' : {
+            'data' : $.parseJSON(data),
+        } });
+    }
+    function swap_image(_this){
+            var current = _this.attr("src");
+            var swap = _this.attr("data-swap");
+            _this.attr('src', swap).attr("data-swap",current);
+    }
+    $(function(){
+        display_config_as_tree();
+        $("#display_format").click(function(){
+            $("#config_text").toggle();
+            $("#config_tree").toggle();
+            swap_image($(this));
+        });
+});
+</script>
+{% endblock %}
