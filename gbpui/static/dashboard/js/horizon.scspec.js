@@ -56,7 +56,7 @@ horizon.Node = {
       var active_nodes = $("#selected_node > li").map(function(){
         return $(this).attr("name");
       });
-      $("#nodeListId input:checkbox").removeAttr('checked');
+      $("#nodeListId .multiple-checkbox input:checkbox").removeAttr('checked');
       active_nodes.each(function(index, value){
         $("#nodeListId input:checkbox[value=" + value + "]")
           .prop('checked', true)
