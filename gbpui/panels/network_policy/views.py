@@ -55,15 +55,6 @@ class IndexView(tabs.TabView):
                 except Exception as e:
                     msg = _('Unable to delete action. %s') % (str(e))
                     exceptions.handle(request, msg)
-        if obj_type == 'l2policy':
-            for obj_id in obj_ids:
-                try:
-                    client.l2policy_delete(request, obj_id)
-                    messages.success(request,
-                            _('Deleted L2 policy %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
         return self.get(request, *args, **kwargs)
 
 
@@ -95,6 +86,23 @@ class L3PolicyUpdateView(forms.ModalFormView):
 class L3PolicyDetailsView(tables.MultiTableView):
     table_classes = (np_tables.L2PolicyTable,)
     template_name = 'project/network_policy/l3policy_details.html'
+
+    def post(self, request, *args, **kwargs):
+        obj_ids = request.POST.getlist('object_ids')
+        action = request.POST['action']
+        obj_type = re.search('delete([0-9a-z]+)', action).group(1)
+        if not obj_ids:
+            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
+        if obj_type == 'l2policy':
+            for obj_id in obj_ids:
+                try:
+                    client.l2policy_delete(request, obj_id)
+                    messages.success(request,
+                            _('Deleted L2 policy %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
+        return self.get(request, *args, **kwargs)
 
     def get_l2policy_table_data(self):
         policies = []
