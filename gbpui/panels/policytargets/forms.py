@@ -42,6 +42,7 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
         label=_("Network Services Policy"),
         required=False,
         help_text=_("Select network services policy for Group."))
+    shared = forms.BooleanField(label=_("Shared"), required=False)
     failure_url = 'horizon:project:policytargets:index'
 
     def __init__(self, request, *args, **kwargs):
@@ -78,7 +79,8 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
             for i in ['name',
                       'description',
                       'l2_policy_id',
-                      'network_service_policy_id']:
+                      'network_service_policy_id',
+                      'shared']:
                 self.fields[i].initial = getattr(policy_target, i)
         except Exception as e:
             msg = _('Unable to retrieve policy_rule_set details. %s') % (

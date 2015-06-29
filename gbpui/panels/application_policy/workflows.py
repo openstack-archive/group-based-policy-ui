@@ -73,6 +73,8 @@ class AddContractAction(workflows.Action):
     description = forms.CharField(max_length=80,
                                   label=_("Description"),
                                   required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddContractAction, self).__init__(request, *args, **kwargs)
@@ -84,7 +86,7 @@ class AddContractAction(workflows.Action):
 
 class AddContractStep(workflows.Step):
     action_class = AddContractAction
-    contributes = ("name", "description")
+    contributes = ("name", "description", "shared")
 
     def contribute(self, data, context):
         context = super(AddContractStep, self).contribute(data, context)
@@ -210,6 +212,8 @@ class AddPolicyRuleAction(workflows.Action):
     description = forms.CharField(max_length=80,
                                   label=_("Description"),
                                   required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyRuleAction, self).__init__(request, *args, **kwargs)
@@ -221,7 +225,7 @@ class AddPolicyRuleAction(workflows.Action):
 
 class AddPolicyRuleStep(workflows.Step):
     action_class = AddPolicyRuleAction
-    contributes = ("name", "description")
+    contributes = ("name", "description", "shared")
 
     def contribute(self, data, context):
         context = super(AddPolicyRuleStep, self).contribute(data, context)
@@ -273,6 +277,8 @@ class AddClassifierAction(workflows.Action):
         choices=[('in', _('IN')),
                  ('out', _('OUT')),
                  ('bi', _('BI'))])
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddClassifierAction, self).__init__(request, *args, **kwargs)
@@ -284,7 +290,7 @@ class AddClassifierAction(workflows.Action):
 
 class AddClassifierStep(workflows.Step):
     action_class = AddClassifierAction
-    contributes = ("name", "protocol", "port_range", "direction")
+    contributes = ("name", "protocol", "port_range", "direction", "shared")
 
     def contribute(self, data, context):
         context = super(AddClassifierStep, self).contribute(data, context)
