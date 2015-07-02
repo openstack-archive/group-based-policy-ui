@@ -23,6 +23,8 @@ from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.instances import tables as itables
 from openstack_dashboard.dashboards.project.instances import tabs
 
+from gbpui import client
+
 LOG = logging.getLogger(__name__)
 
 
@@ -85,14 +87,21 @@ class LaunchVMLink(tables.LinkAction):
 
 
 class RemoveVMLink(tables.DeleteAction):
-    data_type_singular = _("Instance")
-    data_type_plural = _("Instances")
+    data_type_singular = _("Member")
+    data_type_plural = _("Members")
 
     def delete(self, request, instance_id):
         url = reverse("horizon:project:policytargets:policy_targetdetails",
                       kwargs={'policy_target_id':
                           self.table.kwargs['policy_target_id']})
         try:
+            pts = []
+            for port in api.neutron.port_list(request, device_id=instance_id):
+                policytarget = client.pt_list(request, port_id=port.id)
+                if policytarget:
+                    pts.append(policytarget[0])
+            for pt in pts:
+                client.pt_delete(request, pt.id)
             api.nova.server_delete(request, instance_id)
             LOG.debug('Deleted instance %s successfully' % instance_id)
             return http.HttpResponseRedirect(url)
@@ -145,7 +154,7 @@ class InstancesTable(tables.DataTable):
     class Meta:
         name = "instances"
         verbose_name = _("Members")
-        table_actions = (LaunchVMLink,)
+        table_actions = (LaunchVMLink, RemoveVMLink,)
         row_actions = (ConsoleLink, RemoveVMLink,)
 
 
