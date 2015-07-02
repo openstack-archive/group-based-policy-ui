@@ -163,6 +163,10 @@ def pt_list(request, **kwargs):
     return [PT(pt) for pt in policy_targets]
 
 
+def pt_delete(request, pt_id):
+    gbpclient(request).delete_policy_target(pt_id)
+
+
 def policy_target_list(request, **kwargs):
     policy_targets = gbpclient(request).list_policy_target_groups(
         **kwargs).get('policy_target_groups')
