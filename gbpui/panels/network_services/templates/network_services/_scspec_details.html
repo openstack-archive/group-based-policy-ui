@@ -12,6 +12,9 @@
 
 		<dt>{% trans "ID" %}</dt>
 		<dd>{{ scspec.id }} </dd>
+
+		<dt>{% trans "Shared" %}</dt>
+		<dd>{{ scspec.shared }}</dd>
 	</dl>
     {% if scspec.nodes %}
     <div class="panel panel-default">
@@ -29,11 +32,11 @@
                 <tr>
                     <td>
                         <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
-                            {{node.name}}:{{node.id}}</a>
+                            {{node.name}}</a>
                     </td>
                     <td>{{node.service_type}}</td>
                     <td> 
-                        {{node.config}}
+                        <div style ="white-space:pre;overflow-y: scroll;height:300px;background-color:#EEEEEE">{{node.config}}</div>
                     </td>
                 </tr>
 				{% endfor %}
