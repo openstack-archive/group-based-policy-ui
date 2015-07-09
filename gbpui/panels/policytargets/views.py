@@ -32,7 +32,6 @@ PTGTabs = policy_target_tabs.PTGTabs
 PTGDetailsTabs = policy_target_tabs.PTGDetailsTabs
 
 AddPTG = policy_target_workflows.AddPTG
-LaunchVM = policy_target_workflows.CreateVM
 
 
 class IndexView(tabs.TabView):
@@ -76,11 +75,14 @@ class PTGDetailsView(tabs.TabbedTableView):
 
 
 class LaunchVMView(workflows.WorkflowView):
-    workflow_class = LaunchVM
+    workflow_class = policy_target_workflows.LaunchInstance
     template_name = "project/policytargets/add_vm.html"
 
     def get_initial(self):
-        return self.kwargs
+        initial = super(LaunchVMView, self).get_initial()
+        initial['project_id'] = self.request.user.tenant_id
+        initial['user_id'] = self.request.user.id
+        return initial
 
 
 class UpdatePTGView(forms.ModalFormView):
