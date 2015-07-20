@@ -13,17 +13,21 @@
 import logging
 
 from django.core.urlresolvers import reverse
-from django.template.defaultfilters import filesizeformat  # noqa
+from django.utils.text import normalize_newlines  # noqa
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.debug import sensitive_variables  # noqa
 
 from horizon import exceptions
 from horizon import forms
-from horizon import messages
+from horizon.utils import validators
 from horizon import workflows
 
 from openstack_dashboard import api
-from openstack_dashboard.dashboards.project.images import utils as imageutils
-from openstack_dashboard.dashboards.project.instances import utils
+
+from openstack_dashboard.dashboards.project.instances \
+    import utils as instance_utils
+from openstack_dashboard.dashboards.project.instances.workflows \
+    import create_instance as workflows_create_instance
 
 from gbpui import client
 from gbpui import fields
@@ -217,114 +221,183 @@ class AddPTG(workflows.Workflow):
             return False
 
 
-def _image_choice_title(img):
-    gb = filesizeformat(img.size)
-    return '%s (%s)' % (img.name or img.id, gb)
+KEYPAIR_IMPORT_URL = "horizon:project:access_and_security:keypairs:import"
 
 
-class LaunchInstance(workflows.Action):
-    availability_zone = forms.ChoiceField(
-        label=_("Availability Zone"), required=False)
-    name = forms.CharField(label=_("Instance Name"), max_length=255)
-    flavor = forms.ChoiceField(
-        label=_("Flavor"), help_text=_("Size of image to launch."))
-    count = forms.IntegerField(label=_(
-        "Instance Count"),
-        min_value=1,
-        initial=1,
-        help_text=_("Number of instances to launch."))
-    image = forms.ChoiceField(label=_("Select Image"),
-                              widget=forms.SelectWidget(
-                                  attrs={'class': 'image-selector'},
-                                  data_attrs=('size', 'display-name'),
-                                  transform=_image_choice_title))
+class SetAccessControlsAction(workflows.Action):
+    keypair = forms.DynamicChoiceField(label=_("Key Pair"),
+                                       required=False,
+                                       help_text=_("Key pair to use for "
+                                                   "authentication."),
+                                       add_item_link=KEYPAIR_IMPORT_URL)
+    admin_pass = forms.RegexField(
+        label=_("Admin Password"),
+        required=False,
+        widget=forms.PasswordInput(render_value=False),
+        regex=validators.password_validator(),
+        error_messages={'invalid': validators.password_validator_msg()})
+    confirm_admin_pass = forms.CharField(
+        label=_("Confirm Admin Password"),
+        required=False,
+        widget=forms.PasswordInput(render_value=False))
+
+    class Meta(object):
+        name = _("Access & Security")
+        help_text = _("Control access to your instance via key pairs "
+                      "and other mechanisms.")
 
     def __init__(self, request, *args, **kwargs):
-        super(LaunchInstance, self).__init__(request, *args, **kwargs)
-        images = imageutils.get_available_images(
-            request, request.user.tenant_id)
-        choices = [(image.id, image) for image in images]
-        if choices:
-            choices.insert(0, ("", _("Select Image")))
-        else:
-            choices.insert(0, ("", _("No images available")))
-        zones = self._availability_zone_choices(request)
-        self.fields['image'].choices = choices
-        self.fields['availability_zone'].choices = zones
-        self.fields['flavor'].choices = self._flavor_choices(request)
+        super(SetAccessControlsAction, self).__init__(request, *args, **kwargs)
+        if not api.nova.can_set_server_password():
+            del self.fields['admin_pass']
+            del self.fields['confirm_admin_pass']
 
-    def _flavor_choices(self, request):
-        flavors = utils.flavor_list(request)
-        if flavors:
-            return utils.sort_flavor_list(request, flavors)
-        return []
+    def populate_keypair_choices(self, request, context):
+        keypairs = instance_utils.keypair_field_data(request, True)
+        if len(keypairs) == 2:
+            self.fields['keypair'].initial = keypairs[1][0]
+        return keypairs
 
-    def _availability_zone_choices(self, request):
-        try:
-            zones = api.nova.availability_zone_list(request)
-        except Exception:
-            zones = []
-            exceptions.handle(
-                request, _('Unable to retrieve availability zones.'))
-        zone_list = [(zone.zoneName, zone.zoneName)
-                     for zone in zones if zone.zoneState['available']]
-        zone_list.sort()
-        if not zone_list:
-            zone_list.insert(0, ("", _("No availability zones found")))
-        elif len(zone_list) > 1:
-            zone_list.insert(0, ("", _("Any Availability Zone")))
-        return zone_list
-
-    def handle(self, request, context):
-        policy_target_id = self.request.path.split("/")[-2]
-        try:
-            msg = _('Member was successfully created.')
-            ep = client.pt_create(
-                request, policy_target_group_id=policy_target_id)
-            api.nova.server_create(request,
-                                   context['name'],
-                                   context['image'],
-                                   context['flavor'],
-                                   key_name=None,
-                                   user_data=None,
-                                   security_groups=None,
-                                   instance_count=context['count'],
-                                   nics=[{'port-id': ep.port_id}])
-            LOG.debug(msg)
-            messages.success(request, msg)
-        except Exception:
-            msg = _('Failed to launch VM')
-            LOG.error(msg)
-            u = "horizon:project:policytargets:policy_targetdetails"
-            redirect = reverse(u, kwargs={'policy_target_id':
-                policy_target_id})
-            exceptions.handle(request, msg, redirect=redirect)
+    def clean(self):
+        '''Check to make sure password fields match.'''
+        cleaned_data = super(SetAccessControlsAction, self).clean()
+        if 'admin_pass' in cleaned_data:
+            if cleaned_data['admin_pass'] != cleaned_data.get(
+                    'confirm_admin_pass', None):
+                raise forms.ValidationError(_('Passwords do not match.'))
+        return cleaned_data
 
 
-class LaunchVMStep(workflows.Step):
-    action_class = LaunchInstance
-    contributes = ("name", "availability_zone", "flavor", "count", "image")
+class SetAccessControls(workflows.Step):
+    action_class = SetAccessControlsAction
+    depends_on = ("project_id", "user_id")
+    contributes = ("keypair_id", "security_group_ids",
+                   "admin_pass", "confirm_admin_pass")
 
     def contribute(self, data, context):
-        context = super(LaunchVMStep, self).contribute(data, context)
+        if data:
+            post = self.workflow.request.POST
+            context['security_group_ids'] = post.getlist("groups")
+            context['keypair_id'] = data.get("keypair", "")
+            context['admin_pass'] = data.get("admin_pass", "")
+            context['confirm_admin_pass'] = data.get("confirm_admin_pass", "")
         return context
 
 
-class CreateVM(workflows.Workflow):
-    slug = "launch VM"
+class LaunchInstance(workflows.Workflow):
+    slug = "create_member"
     name = _("Create Member")
-
     finalize_button_name = _("Launch")
-    success_message = _('Create Member "%s".')
-    failure_message = _('Unable to create Member "%s".')
-    default_steps = (LaunchVMStep,)
-    wizard = True
+    success_message = _('Launched %(count)s.')
+    multipart = True
+    default_steps = (workflows_create_instance.SelectProjectUser,
+                     workflows_create_instance.SetInstanceDetails,
+                     SetAccessControls,
+                     workflows_create_instance.PostCreationStep,
+                     workflows_create_instance.SetAdvanced)
 
     def format_status_message(self, message):
-        return message % self.context.get('name')
+        count = self.context.get('count', 1)
+        if int(count) > 1:
+            return message % {"count": _("%s members") % count}
+        else:
+            return message % {"count": _("member")}
 
     def get_success_url(self):
         policy_targetid = self.request.path.split("/")[-2]
         u = "horizon:project:policytargets:policy_targetdetails"
         success_url = reverse(u, kwargs={'policy_target_id': policy_targetid})
         return success_url
+
+    @sensitive_variables('context')
+    def handle(self, request, context):
+        custom_script = context.get('script_data', '')
+
+        dev_mapping_1 = None
+        dev_mapping_2 = None
+
+        image_id = ''
+
+        # Determine volume mapping options
+        source_type = context.get('source_type', None)
+        if source_type in ['image_id', 'instance_snapshot_id']:
+            image_id = context['source_id']
+        elif source_type in ['volume_id', 'volume_snapshot_id']:
+            try:
+                if api.nova.extension_supported("BlockDeviceMappingV2Boot",
+                                                request):
+                    # Volume source id is extracted from the source
+                    volume_source_id = context['source_id'].split(':')[0]
+                    device_name = context.get('device_name', '') \
+                        .strip() or None
+                    dev_mapping_2 = [
+                        {'device_name': device_name,
+                         'source_type': 'volume',
+                         'destination_type': 'volume',
+                         'delete_on_termination':
+                             int(bool(context['delete_on_terminate'])),
+                         'uuid': volume_source_id,
+                         'boot_index': '0',
+                         'volume_size': context['volume_size']
+                         }
+                    ]
+                else:
+                    dev_mapping_1 = {context['device_name']: '%s::%s' %
+                                     (context['source_id'],
+                                     int(bool(context['delete_on_terminate'])))
+                                     }
+            except Exception:
+                msg = _('Unable to retrieve extensions information')
+                exceptions.handle(request, msg)
+
+        elif source_type == 'volume_image_id':
+            device_name = context.get('device_name', '').strip() or None
+            dev_mapping_2 = [
+                {'device_name': device_name,  # None auto-selects device
+                 'source_type': 'image',
+                 'destination_type': 'volume',
+                 'delete_on_termination':
+                     int(bool(context['delete_on_terminate'])),
+                 'uuid': context['source_id'],
+                 'boot_index': '0',
+                 'volume_size': context['volume_size']
+                 }
+            ]
+        avail_zone = context.get('availability_zone', None)
+        try:
+            policy_target_id = self.request.path.split("/")[-2]
+            instance_count = int(context['count'])
+            count = 1
+            while count <= instance_count:
+                ep = client.pt_create(
+                    request, policy_target_group_id=policy_target_id)
+                if instance_count == 1:
+                    instance_name = context['name']
+                else:
+                    instance_name = context['name'] + str(count)
+                api.nova.server_create(request,
+                                   instance_name,
+                                   image_id,
+                                   context['flavor'],
+                                   context['keypair_id'],
+                                   normalize_newlines(custom_script),
+                                   security_groups=None,
+                                   block_device_mapping=dev_mapping_1,
+                                   block_device_mapping_v2=dev_mapping_2,
+                                   nics=[{'port-id': ep.port_id}],
+                                   availability_zone=avail_zone,
+                                   instance_count=1,
+                                   admin_pass=context['admin_pass'],
+                                   disk_config=context.get('disk_config'),
+                                   config_drive=context.get('config_drive'))
+                count += 1
+            return True
+        except Exception:
+            error = _("Unable to launch member %(count)s with name %(name)s")
+            msg = error % {'count': count, 'name': instance_name}
+            LOG.error(msg)
+            u = "horizon:project:policytargets:policy_targetdetails"
+            redirect = reverse(u, kwargs={'policy_target_id':
+                policy_target_id})
+            exceptions.handle(request, msg, redirect=redirect)
+            return False
