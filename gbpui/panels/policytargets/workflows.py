@@ -24,8 +24,6 @@ from horizon import workflows
 
 from openstack_dashboard import api
 
-from openstack_dashboard.dashboards.project.instances \
-    import utils as instance_utils
 from openstack_dashboard.dashboards.project.instances.workflows \
     import create_instance as workflows_create_instance
 
@@ -253,10 +251,20 @@ class SetAccessControlsAction(workflows.Action):
             del self.fields['confirm_admin_pass']
 
     def populate_keypair_choices(self, request, context):
-        keypairs = instance_utils.keypair_field_data(request, True)
-        if len(keypairs) == 2:
-            self.fields['keypair'].initial = keypairs[1][0]
-        return keypairs
+        try:
+            keypairs = api.nova.keypair_list(request)
+            keypair_list = [(kp.name, kp.name) for kp in keypairs]
+        except Exception:
+            keypair_list = []
+            exceptions.handle(request,
+                              _('Unable to retrieve key pairs.'))
+        if keypair_list:
+            if len(keypair_list) == 1:
+                self.fields['keypair'].initial = keypair_list[0][0]
+            keypair_list.insert(0, ("", _("Select a key pair")))
+        else:
+            keypair_list = (("", _("No key pairs available")),)
+        return keypair_list
 
     def clean(self):
         '''Check to make sure password fields match.'''
@@ -369,12 +377,12 @@ class LaunchInstance(workflows.Workflow):
             instance_count = int(context['count'])
             count = 1
             while count <= instance_count:
-                ep = client.pt_create(
-                    request, policy_target_group_id=policy_target_id)
                 if instance_count == 1:
                     instance_name = context['name']
                 else:
                     instance_name = context['name'] + str(count)
+                ep = client.pt_create(
+                    request, policy_target_group_id=policy_target_id)
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
