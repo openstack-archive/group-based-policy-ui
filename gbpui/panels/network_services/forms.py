@@ -31,6 +31,16 @@ SERVICE_TYPES = [('LOADBALANCER', 'Load Balancer'),
                  ('FIREWALL', 'Firewall')]
 
 
+class BaseUpdateForm(forms.SelfHandlingForm):
+
+    def clean(self):
+        cleaned_data = super(BaseUpdateForm, self).clean()
+        updated_data = {d: cleaned_data[d] for d in cleaned_data
+            if d in self.changed_data or (d == 'nodes' and
+                self.fields['nodes'].initial != cleaned_data[d])}
+        return updated_data
+
+
 class CreateServiceChainNodeForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
@@ -105,7 +115,7 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
+class UpdateServiceChainNodeForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -129,8 +139,9 @@ class UpdateServiceChainNodeForm(forms.SelfHandlingForm):
             scnode_id = self.initial['scnode_id']
             client.update_servicechain_node(
                 request, scnode_id, **context)
-            msg = _("Service Chain Node Created Successfully!")
+            msg = _("Service Chain Node Updated Successfully!")
             LOG.debug(msg)
+            messages.success(request, msg)
             return http.HttpResponseRedirect(url)
         except Exception as e:
             msg = _("Failed to create Service Chain Node.  %s") % (str(e))
@@ -184,7 +195,7 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=url)
 
 
-class UpdateServiceChainSpecForm(CreateServiceChainSpecForm):
+class UpdateServiceChainSpecForm(CreateServiceChainSpecForm, BaseUpdateForm):
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateServiceChainSpecForm, self).__init__(
