@@ -359,6 +359,11 @@ def l3policy_create(request, **kwargs):
     return gbpclient(request).create_l3_policy(body).get('l3_policy')
 
 
+def l3policy_update(request, pc_id, **kwargs):
+    body = {'l3_policy': kwargs}
+    return gbpclient(request).update_l3_policy(pc_id, body).get('l3_policy')
+
+
 def l3policy_delete(request, policy_id):
     gbpclient(request).delete_l3_policy(policy_id)
 

@@ -19,6 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
 from horizon import forms
+from horizon import messages
 
 from gbpui import client
 from gbpui import fields
@@ -26,6 +27,15 @@ from gbpui import fields
 LOG = logging.getLogger(__name__)
 
 NETWORK_PARAM_URL = "horizon:project:network_policy:add_network_service_param"
+
+
+class BaseUpdateForm(forms.SelfHandlingForm):
+
+    def clean(self):
+        cleaned_data = super(BaseUpdateForm, self).clean()
+        updated_data = {d: cleaned_data[d] for d in cleaned_data
+            if d in self.changed_data}
+        return updated_data
 
 
 class AddL3PolicyForm(forms.SelfHandlingForm):
@@ -74,36 +84,24 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
             msg = _("L3 Policy Created Successfully!")
             LOG.debug(msg)
             return http.HttpResponseRedirect(url)
-        except Exception:
-            msg = _("Failed to create L3 policy.")
-            LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+        except Exception as e:
+            exceptions.handle(request, str(e), redirect=url)
 
 
-class UpdateL3PolicyForm(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=80, label=_("Name"))
-    description = forms.CharField(
-        max_length=80, label=_("Description"), required=False)
-    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
-                                   widget=forms.Select(attrs={
-                                       'class': 'switchable',
-                                       'data-slug': 'ipversion',
-                                   }), label=_("IP Version"))
-    ip_pool = forms.IPField(label=_("IP Pool"),
-                            initial="",
-                            help_text=_("Network address in CIDR format "
-                                        "(e.g. 192.168.0.0/24,"
-                                        "2001:DB8::/48)"),
-                            version=forms.IPv4 | forms.IPv6,
-                            mask=True)
-    subnet_prefix_length = forms.CharField(max_length=80,
-                                           label=_("Subnet Prefix Length"),
-                                           help_text=_("Between 2-30 for IP4"
-                                                       "and 2-127 for IP6."),)
-    shared = forms.BooleanField(label=_("Shared"), required=False)
-
+class UpdateL3PolicyForm(AddL3PolicyForm):
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
+        try:
+            l3policy_id = self.initial['l3policy_id']
+            l3 = client.l3policy_get(request, l3policy_id)
+            for item in ['name', 'description', 'ip_version',
+                         'ip_pool', 'subnet_prefix_length']:
+                self.fields[item].initial = str(l3[item])
+            self.fields['shared'].initial = l3['shared']
+        except Exception:
+            msg = _("Failed to get L3 policy")
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
     def clean(self):
         cleaned_data = super(UpdateL3PolicyForm, self).clean()
@@ -115,19 +113,22 @@ class UpdateL3PolicyForm(forms.SelfHandlingForm):
                 raise forms.ValidationError(msg)
             if ipversion == 6 and subnet_prefix_length not in range(2, 128):
                 raise forms.ValidationError(msg)
+            updated_data = {d: cleaned_data[d] for d in cleaned_data
+                if d in self.changed_data}
+            cleaned_data = updated_data
         return cleaned_data
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
         try:
-            client.l3policy_create(request, **context)
+            l3policy_id = self.initial['l3policy_id']
+            client.l3policy_update(request, l3policy_id, **context)
             msg = _("L3 Policy Updated Successfully!")
             LOG.debug(msg)
+            messages.success(request, msg)
             return http.HttpResponseRedirect(url)
-        except Exception:
-            msg = _("Failed to update L3 policy")
-            LOG.error(msg)
-            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+        except Exception as e:
+            exceptions.handle(request, str(e), redirect=url)
 
 
 class AddL2PolicyForm(forms.SelfHandlingForm):
@@ -265,7 +266,7 @@ class CreateNetworkServiceParamForm(forms.SelfHandlingForm):
         return NetworkServiceParam(context)
 
 
-class UpdateServicePolicyForm(forms.SelfHandlingForm):
+class UpdateServicePolicyForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
