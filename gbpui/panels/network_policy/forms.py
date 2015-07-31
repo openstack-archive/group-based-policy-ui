@@ -28,6 +28,15 @@ LOG = logging.getLogger(__name__)
 NETWORK_PARAM_URL = "horizon:project:network_policy:add_network_service_param"
 
 
+class BaseUpdateForm(forms.SelfHandlingForm):
+
+    def clean(self):
+        cleaned_data = super(BaseUpdateForm, self).clean()
+        updated_data = {d: cleaned_data[d] for d in cleaned_data
+            if d in self.changed_data}
+        return updated_data
+
+
 class AddL3PolicyForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
@@ -80,7 +89,7 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class UpdateL3PolicyForm(forms.SelfHandlingForm):
+class UpdateL3PolicyForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -265,7 +274,7 @@ class CreateNetworkServiceParamForm(forms.SelfHandlingForm):
         return NetworkServiceParam(context)
 
 
-class UpdateServicePolicyForm(forms.SelfHandlingForm):
+class UpdateServicePolicyForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
