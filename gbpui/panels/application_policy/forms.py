@@ -42,7 +42,16 @@ POLICY_ACTION_TYPES = [('allow', _('ALLOW')),
                        ('qos', _('QoS'))]
 
 
-class UpdatePolicyRuleSetForm(forms.SelfHandlingForm):
+class BaseUpdateForm(forms.SelfHandlingForm):
+
+    def clean(self):
+        cleaned_data = super(BaseUpdateForm, self).clean()
+        updated_data = {d: cleaned_data[d] for d in cleaned_data
+            if d in self.changed_data}
+        return updated_data
+
+
+class UpdatePolicyRuleSetForm(BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"), required=False)
     rules = forms.MultipleChoiceField(label=_("Policy Rules"),)
@@ -72,11 +81,7 @@ class UpdatePolicyRuleSetForm(forms.SelfHandlingForm):
             policy_rule_set_id = self.initial['policy_rule_set_id']
             client.policy_rule_set_update(request,
                                           policy_rule_set_id,
-                                          name=context['name'],
-                                          description=context[
-                                              'description'],
-                                          policy_rules=context['rules'],
-                                          shared=context['shared'],
+                                          **context
                                           )
             messages.success(request, _('PolicyRuleSet successfully updated.'))
             url = reverse('horizon:project:application_policy:index')
@@ -136,7 +141,7 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
                 request, _("Unable to create policy action."), redirect=url)
 
 
-class UpdatePolicyActionForm(forms.SelfHandlingForm):
+class UpdatePolicyActionForm(BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"),
                                   required=False)
@@ -196,7 +201,7 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse('horizon:project:application_policy:index')
         try:
-            if not bool(context['port_range']):
+            if not context.get('port_range'):
                 context['port_range'] = None
             classifier = client.policyclassifier_create(request, **context)
             messages.success(
@@ -208,7 +213,7 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
                 redirect=url)
 
 
-class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
+class UpdatePolicyClassifierForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     protocol = forms.ChoiceField(label=_("Protocol"), choices=PROTOCOLS)
@@ -235,7 +240,7 @@ class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
-            if not bool(context['port_range']):
+            if not context.get('port_range'):
                 context['port_range'] = None
             client.policyclassifier_update(self.request,
                     policyclassifier_id, **context)
@@ -248,7 +253,7 @@ class UpdatePolicyClassifierForm(forms.SelfHandlingForm):
                 redirect=url)
 
 
-class UpdatePolicyRuleForm(forms.SelfHandlingForm):
+class UpdatePolicyRuleForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     policy_classifier_id = forms.ChoiceField(label=_("Policy Classifier"))
