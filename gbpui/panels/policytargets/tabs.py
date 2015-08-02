@@ -98,8 +98,17 @@ class InstancesTab(tabs.TableTab):
             policy_target_ports = [x.port_id for x in policytargets]
             marker = self.request.GET.get(
                 tables.InstancesTable._meta.pagination_param, None)
+            # TODO(Sumit): Setting paginate to False is a temporary
+            # fix. Earlier, when paginate was set to True we were
+            # retrieving instances in pages and were only processing
+            # the first page. While pagination is required for
+            # scaling to a large number of instances, we need to first
+            # retrieve the instances in pages, then process them,
+            # and then show the filtered list (filtered_instances)
+            # in pages.
             instances, self._has_more = api.nova.server_list(
-                self.request, search_opts={'marker': marker, 'paginate': True})
+                self.request, search_opts={'marker': marker, 'paginate': False})
+            self._has_more = False
             instances = [item for item in instances
                     if not itables.is_deleting(item)]
             for item in instances:
