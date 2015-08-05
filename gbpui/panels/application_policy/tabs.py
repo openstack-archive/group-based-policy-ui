@@ -35,7 +35,8 @@ class PolicyActionsTab(tabs.TableTab):
     def get_policyactionstable_data(self):
         actions = []
         try:
-            actions = client.policyaction_list(self.tab_group.request)
+            actions = client.policyaction_list(self.tab_group.request,
+                tenant_id=self.tab_group.request.user.tenant_id)
             a = lambda x, y: gfilters.update_policyaction_attributes(x, y)
             actions = [a(self.request, item) for item in actions]
         except Exception as e:
@@ -52,7 +53,8 @@ class PolicyClassifiersTab(tabs.TableTab):
 
     def get_policyclassifierstable_data(self):
         try:
-            classifiers = client.policyclassifier_list(self.tab_group.request)
+            classifiers = client.policyclassifier_list(self.tab_group.request,
+                tenant_id=self.tab_group.request.user.tenant_id)
         except Exception:
             classifiers = []
             exceptions.handle(self.tab_group.request,
@@ -72,7 +74,8 @@ class PolicyRulesTab(tabs.TableTab):
 
     def get_policyrulestable_data(self):
         try:
-            policy_rules = client.policyrule_list(self.tab_group.request)
+            policy_rules = client.policyrule_list(self.tab_group.request,
+                tenant_id=self.tab_group.request.user.tenant_id)
             policy_rules = [gfilters.update_policyrule_attributes(
                 self.request, item) for item in policy_rules]
         except Exception:
@@ -96,7 +99,8 @@ class ApplicationPoliciesTab(tabs.TableTab):
         policy_rule_sets = []
         try:
             policy_rule_sets = client.policy_rule_set_list(
-                self.tab_group.request)
+                self.tab_group.request,
+                tenant_id=self.tab_group.request.user.tenant_id)
             policy_rule_sets = [gfilters.update_pruleset_attributes(
                 self.request, item) for item in policy_rule_sets]
         except Exception:
@@ -129,7 +133,8 @@ class PolicyRuleSetDetailsTab(tabs.Tab):
         try:
             policy_rule_set = client.policy_rule_set_get(request, cid)
             rules = client.policyrule_list(
-                request, policy_rule_set_id=policy_rule_set.id)
+                request, tenant_id=request.user.tenant_id,
+                policy_rule_set_id=policy_rule_set.id)
             rules = [
                 item for item in rules if item.id in
                 policy_rule_set.policy_rules]
@@ -183,12 +188,14 @@ class PolicyRulesDetailsTab(tabs.Tab):
         classifiers = []
         try:
             policyrule = client.policyrule_get(request, ruleid)
-            actions = client.policyaction_list(request, policyrule_id=ruleid)
+            actions = client.policyaction_list(request,
+                tenant_id=request.user.tenant_id, policyrule_id=ruleid)
             actions = [
                 item for item in actions if item.id in
                 policyrule.policy_actions]
             classifiers = client.policyclassifier_list(
-                request, policyrule_id=ruleid)
+                request, tenant_id=request.user.tenant_id,
+                policyrule_id=ruleid)
             classifiers = [
                 item for item in classifiers if
                 item.id == policyrule.policy_classifier_id]

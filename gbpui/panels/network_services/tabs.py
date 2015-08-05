@@ -35,7 +35,8 @@ class ServiceChainSpecTab(tabs.TableTab):
     def get_service_chain_spec_table_data(self):
         specs = []
         try:
-            specs = client.servicechainspec_list(self.request)
+            specs = client.servicechainspec_list(self.request,
+                tenant_id=self.request.user.tenant_id)
             specs = [gfilters.update_sc_spec_attributes(
                 self.request, item) for item in specs]
         except Exception:
@@ -52,7 +53,8 @@ class ServiceChainNodeTab(tabs.TableTab):
     def get_service_chain_node_table_data(self):
         nodes = []
         try:
-            nodes = client.servicechainnode_list(self.request)
+            nodes = client.servicechainnode_list(self.request,
+                tenant_id=self.request.user.tenant_id)
         except Exception:
             pass
         return nodes
@@ -67,7 +69,8 @@ class ServiceChainInstanceTab(tabs.TableTab):
     def get_service_chain_instance_table_data(self):
         instances = []
         try:
-            instances = client.servicechaininstance_list(self.request)
+            instances = client.servicechaininstance_list(self.request,
+                tenant_id=self.request.user.tenant_id)
             instances = [gfilters.update_sc_instance_attributes(
                 self.request, item) for item in instances]
         except Exception:

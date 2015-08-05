@@ -50,7 +50,8 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
         try:
             policy_target_id = self.initial['policy_target_id']
             policy_target = client.policy_target_get(request, policy_target_id)
-            policy_rule_sets = client.policy_rule_set_list(request)
+            policy_rule_sets = client.policy_rule_set_list(request,
+                tenant_id=request.user.tenant_id)
             for c in policy_rule_sets:
                 c.set_id_as_name_if_empty()
             policy_rule_sets = sorted(
@@ -69,8 +70,10 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
                     consumed_init.append(item[0])
             self.fields['provided_policy_rule_sets'].initial = provided_init
             self.fields['consumed_policy_rule_sets'].initial = consumed_init
-            n_policies = client.l2policy_list(request)
-            ns_policies = client.networkservicepolicy_list(request)
+            n_policies = client.l2policy_list(request,
+                tenant_id=request.user.tenant_id)
+            ns_policies = client.networkservicepolicy_list(request,
+                tenant_id=request.user.tenant_id)
             n_policies = [(item.id, item.name) for item in n_policies]
             ns_policies = [(item.id, item.name) for item in ns_policies]
             ns_policies.insert(0, ('None', 'None'))
@@ -121,10 +124,12 @@ class AddProvidedPRSForm(forms.SelfHandlingForm):
         policy_rule_sets = []
         try:
             policy_target_id = kwargs['initial']['policy_target_id']
-            policy_target = client.policy_target_get(request, policy_target_id)
+            policy_target = client.policy_target_get(request,
+                policy_target_id)
             providedpolicy_rule_sets = policy_target.get(
                 "provided_policy_rule_sets")
-            items = client.policy_rule_set_list(request)
+            items = client.policy_rule_set_list(request,
+                tenant_id=request.user.tenant_id)
             policy_rule_sets = [
                 (p.id, p.name) for p in items
                 if p.id not in providedpolicy_rule_sets]
@@ -169,10 +174,12 @@ class RemoveProvidedPRSForm(forms.SelfHandlingForm):
         policy_rule_sets = []
         try:
             policy_target_id = kwargs['initial']['policy_target_id']
-            policy_target = client.policy_target_get(request, policy_target_id)
+            policy_target = client.policy_target_get(request,
+                policy_target_id)
             providedpolicy_rule_sets = policy_target.get(
                 "provided_policy_rule_sets")
-            items = client.policy_rule_set_list(request)
+            items = client.policy_rule_set_list(request,
+                tenant_id=request.user.tenant_id)
             policy_rule_sets = [(p.id, p.name)
                                 for p in items if p.id in
                                 providedpolicy_rule_sets]
@@ -218,10 +225,12 @@ class AddConsumedPRSForm(forms.SelfHandlingForm):
         policy_rule_sets = []
         try:
             policy_target_id = kwargs['initial']['policy_target_id']
-            policy_target = client.policy_target_get(request, policy_target_id)
+            policy_target = client.policy_target_get(request,
+                policy_target_id)
             consumedpolicy_rule_sets = policy_target.get(
                 "consumed_policy_rule_sets")
-            items = client.policy_rule_set_list(request)
+            items = client.policy_rule_set_list(request,
+                tenant_id=request.user.tenant_id)
             policy_rule_sets = [
                 (p.id, p.name) for p in items
                 if p.id not in consumedpolicy_rule_sets]
@@ -267,7 +276,8 @@ class RemoveConsumedPRSForm(forms.SelfHandlingForm):
             policy_target = client.policy_target_get(request, policy_target_id)
             consumedpolicy_rule_sets = policy_target.get(
                 "consumed_policy_rule_sets")
-            items = client.policy_rule_set_list(request)
+            items = client.policy_rule_set_list(request,
+                tenant_id=request.user.tenant_id)
             policy_rule_sets = [(p.id, p.name)
                                 for p in items if p.id
                                 in consumedpolicy_rule_sets]

@@ -36,7 +36,8 @@ class PTGsTab(tabs.TableTab):
     def get_policy_targetstable_data(self):
         policy_targets = []
         try:
-            policy_targets = client.policy_target_list(self.tab_group.request)
+            policy_targets = client.policy_target_list(self.tab_group.request,
+            tenant_id=self.tab_group.request.user.tenant_id)
             a = lambda x, y: gfilters.update_policy_target_attributes(x, y)
             policy_targets = [a(self.request, item) for item in policy_targets]
         except Exception as e:
@@ -63,8 +64,10 @@ class PTGDetailsTab(tabs.Tab):
         policy_targetid = self.tab_group.kwargs['policy_target_id']
         try:
             policy_target = client.policy_target_get(request, policy_targetid)
-            l3list = client.l3policy_list(request)
-            l2list = client.l2policy_list(request)
+            l3list = client.l3policy_list(request,
+                tenant_id=request.user.tenant_id)
+            l2list = client.l2policy_list(request,
+                tenant_id=request.user.tenant_id)
             l2list = [
                 item for item in l2list
                 if item.id == policy_target.l2_policy_id]
@@ -94,7 +97,8 @@ class InstancesTab(tabs.TableTab):
         filtered_instances = []
         try:
             policytargets = client.pt_list(self.request,
-                                      policy_target_group_id=policy_targetid)
+            tenant_id=self.request.user.tenant_id,
+            policy_target_group_id=policy_targetid)
             policy_target_ports = [x.port_id for x in policytargets]
             marker = self.request.GET.get(
                 tables.InstancesTable._meta.pagination_param, None)

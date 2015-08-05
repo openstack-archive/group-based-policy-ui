@@ -48,7 +48,8 @@ class L3PolicyTab(tabs.TableTab):
     def get_l3policy_table_data(self):
         policies = []
         try:
-            policies = client.l3policy_list(self.request)
+            policies = client.l3policy_list(self.request,
+                tenant_id=self.request.user.tenant_id)
         except Exception:
             policies = []
             exceptions.handle(self.tab_group.request,
@@ -65,7 +66,8 @@ class L2PolicyTab(tabs.TableTab):
     def get_l2policy_table_data(self):
         policies = []
         try:
-            policies = client.l2policy_list(self.request)
+            policies = client.l2policy_list(self.request,
+                tenant_id=self.request.user.tenant_id)
         except Exception:
             policies = []
             exceptions.handle(self.tab_group.request,
@@ -82,7 +84,8 @@ class ServicePolicyTab(tabs.TableTab):
     def get_service_policy_table_data(self):
         policies = []
         try:
-            policies = client.networkservicepolicy_list(self.request)
+            policies = client.networkservicepolicy_list(self.request,
+                tenant_id=self.request.user.tenant_id)
             update = lambda x: gfilters.update_service_policy_attributes(x)
             policies = [update(item) for item in policies]
         except Exception:
