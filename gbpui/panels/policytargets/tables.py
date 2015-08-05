@@ -97,7 +97,8 @@ class RemoveVMLink(tables.DeleteAction):
         try:
             pts = []
             for port in api.neutron.port_list(request, device_id=instance_id):
-                policytarget = client.pt_list(request, port_id=port.id)
+                policytarget = client.pt_list(request,
+                tenant_id=request.user.tenant_id, port_id=port.id)
                 if policytarget:
                     pts.append(policytarget[0])
             for pt in pts:

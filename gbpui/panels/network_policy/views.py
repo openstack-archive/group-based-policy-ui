@@ -107,7 +107,8 @@ class L3PolicyDetailsView(tables.MultiTableView):
     def get_l2policy_table_data(self):
         policies = []
         try:
-            policies = client.l2policy_list(self.request)
+            policies = client.l2policy_list(self.request,
+                tenant_id=self.request.user.tenant_id)
         except Exception:
             policies = []
             exceptions.handle(self.tab_group.request,
