@@ -88,14 +88,28 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg)
             pass
 
+    def clean(self):
+        cleaned_data = super(UpdatePolicyTargetForm, self).clean()
+        updated_data = {d: cleaned_data[d] for d in cleaned_data
+            if d in self.changed_data}
+        return updated_data
+
     def handle(self, request, context):
         policy_target_id = self.initial['policy_target_id']
         name_or_id = context.get('name') or policy_target_id
         try:
-            context['provided_policy_rule_sets'] = dict(
-                [(i, 'string') for i in context['provided_policy_rule_sets']])
-            context['consumed_policy_rule_sets'] = dict(
-                [(i, 'string') for i in context['consumed_policy_rule_sets']])
+            if context.get('provided_policy_rule_sets'):
+                context['provided_policy_rule_sets'] = dict(
+                    [(i, 'string')
+                        for i in context['provided_policy_rule_sets']])
+            else:
+                context['provided_policy_rule_sets'] = None
+            if context.get('consumed_policy_rule_sets'):
+                context['consumed_policy_rule_sets'] = dict(
+                    [(i, 'string')
+                        for i in context['consumed_policy_rule_sets']])
+            else:
+                context['consumed_policy_rule_sets'] = None
             if context['network_service_policy_id'] == 'None':
                 context['network_service_policy_id'] = None
             policy_target = client.policy_target_update(
