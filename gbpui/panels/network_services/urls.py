@@ -18,6 +18,12 @@ import views
 
 urlpatterns = patterns('',
                        url(r'^$', views.IndexView.as_view(), name='index'),
+                       url(r'^create_service_profile$',
+                           views.CreateServiceProfileView.as_view(),
+                           name='create_service_profile'),
+                       url(r'^serviceprofile/(?P<sp_id>[^/]+)/$',
+                           views.ServiceProfileDetailsView.as_view(),
+                           name='service_profile_details'),
                        url(r'^create_sc_node$',
                            views.CreateServiceChainNodeView.as_view(),
                            name='create_sc_node'),

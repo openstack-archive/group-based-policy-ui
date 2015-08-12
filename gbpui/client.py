@@ -144,6 +144,15 @@ class ServiceChainInstance(neutron.NeutronAPIDictWrapper):
         return sc_instance_dict
 
 
+class ServiceProfile(neutron.NeutronAPIDictWrapper):
+
+    """Wrapper for neutron service profile."""
+
+    def get_dict(self):
+        sc_profile_dict = self._apidict
+        return sc_profile_dict
+
+
 def policy_target_create(request, **kwargs):
     body = {'policy_target_group': kwargs}
     policy_target = gbpclient(request).create_policy_target_group(
@@ -389,7 +398,7 @@ def l2policy_delete(request, policy_id):
 
 
 def servicechainnode_list(request, **kwargs):
-    sc_nodes = gbpclient(request).list_servicechain_nodes(
+    sc_nodes = gbpclient(request).list_servicechain_nodes(True,
         **kwargs).get('servicechain_nodes')
     return [ServiceChainNode(item) for item in sc_nodes]
 
@@ -476,3 +485,26 @@ def update_servicechain_instance(request, scinstance_id, **kwargs):
 
 def delete_servicechain_instance(request, scinstance_id):
     gbpclient(request).delete_servicechain_instance(scinstance_id)
+
+
+def serviceprofile_list(request, **kwargs):
+    sc_profile = gbpclient(request).list_service_profiles(True,
+        **kwargs).get('service_profiles')
+    return [ServiceProfile(item) for item in sc_profile]
+
+
+def get_service_profile(request, service_profile_id):
+    service_profile = gbpclient(request).show_service_profile(
+        service_profile_id).get('service_profile')
+    return ServiceProfile(service_profile)
+
+
+def create_service_profile(request, **kwargs):
+    body = {'service_profile': kwargs}
+    service_profile = gbpclient(request).create_service_profile(
+        body).get('service_profile')
+    return ServiceProfile(service_profile)
+
+
+def delete_service_profile(request, service_profile_id):
+    gbpclient(request).delete_service_profile(service_profile_id)

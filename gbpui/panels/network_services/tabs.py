@@ -53,6 +53,8 @@ class ServiceChainNodeTab(tabs.TableTab):
         nodes = []
         try:
             nodes = client.servicechainnode_list(self.request)
+            nodes = [gfilters.update_sc_node_attributes(
+                self.request, item) for item in nodes]
         except Exception:
             pass
         return nodes
@@ -75,10 +77,48 @@ class ServiceChainInstanceTab(tabs.TableTab):
         return instances
 
 
+class ServiceProfileTab(tabs.TableTab):
+    name = _("Service Profiles")
+    table_classes = (ns_tables.ServiceProfileTable,)
+    slug = "service_profile"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_service_profile_table_data(self):
+        service_profiles = []
+        try:
+            service_profiles = client.serviceprofile_list(self.request)
+        except Exception:
+            pass
+        return service_profiles
+
+
 class ServiceChainTabs(tabs.TabGroup):
     slug = "service_chain_spec_tabs"
-    tabs = (ServiceChainSpecTab, ServiceChainNodeTab,)
+    tabs = (ServiceChainSpecTab, ServiceChainNodeTab, ServiceProfileTab,)
     sticky = True
+
+
+class ServiceProfileDetailsTab(tabs.Tab):
+    name = _("Service Profile Details")
+    slug = "serviceprofile_details"
+    template_name = "project/network_services/_serviceprofile_details.html"
+    failure_url = reverse_lazy('horizon:project:network_services:index')
+
+    def get_context_data(self, request):
+        service_profile_id = self.tab_group.kwargs['sp_id']
+        try:
+            service_profile = client.get_service_profile(
+                request, service_profile_id)
+        except Exception:
+            exceptions.handle(request, _(
+                'Unable to retrieve service profile details.'),
+                redirect=self.failure_url)
+        return {'service_profile': service_profile}
+
+
+class ServiceProfileDetailsTabGroup(tabs.TabGroup):
+    slug = 'scnode_details'
+    tabs = (ServiceProfileDetailsTab,)
 
 
 class ServiceChainNodeDetailsTab(tabs.Tab):
