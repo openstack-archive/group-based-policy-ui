@@ -21,7 +21,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Service Type</th>
+                        <th>Service Profile</th>
                         <th>Config</th>
                     </tr>
                 </thead>
@@ -31,7 +31,10 @@
                         <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
                             {{node.name}}:{{node.id}}</a>
                     </td>
-                    <td>{{node.service_type}}</td>
+                    <td>
+                        <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=node.service_profile_id %}">
+                           {{ node.service_profile_id }}</a>
+                    </td>
                     <td> 
                         {{node.config}}
                     </td>

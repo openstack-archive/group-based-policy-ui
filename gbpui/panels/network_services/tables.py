@@ -91,8 +91,8 @@ class ServiceChainNodeTable(tables.DataTable):
                      link="horizon:project:network_services:sc_node_details")
     description = tables.Column("description",
                                 verbose_name=_("Description"))
-    service_type = tables.Column("service_type",
-                                 verbose_name=_("Service Type"))
+    service_profile = tables.Column("service_profile",
+                                 verbose_name=_("Service Profile"))
 
     class Meta:
         name = "service_chain_node_table"
@@ -149,3 +149,37 @@ class ServiceChainInstanceTable(tables.DataTable):
         table_actions = (CreateServiceChainInstanceLink,)
         row_actions = (
             EditServiceChainInstanceLink, DeleteServiceChainInstanceLink,)
+
+
+class CreateServiceProfileLink(tables.LinkAction):
+    name = "create_service_profile_link"
+    verbose_name = _("Create Service Profile")
+    url = "horizon:project:network_services:create_service_profile"
+    classes = ("ajax-modal", "btn-create_service_profile")
+
+
+class DeleteServiceProfileLink(tables.DeleteAction):
+    name = "deleteserviceprofile"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of %(data_type)s")
+    data_type_singular = _("ServiceProfile")
+    data_type_plural = _("ServiceProfiles")
+
+
+class ServiceProfileTable(tables.DataTable):
+    name = tables.Column("name", verbose_name=_("Name"),
+        link="horizon:project:network_services:service_profile_details")
+    description = tables.Column("description",
+        verbose_name=_("Description"))
+    service_type = tables.Column("service_type",
+        verbose_name=_("Service Type"))
+    insertion_mode = tables.Column("insertion_mode",
+        verbose_name=_("Insertion Mode"))
+    vendor = tables.Column("vendor", verbose_name=_("Vendor"))
+
+    class Meta(object):
+        name = "service_profile_table"
+        verbose_name = _("Service Profile")
+        table_actions = (CreateServiceProfileLink,
+                DeleteServiceProfileLink,)
+        row_actions = (DeleteServiceProfileLink,)

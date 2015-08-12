@@ -13,8 +13,8 @@
 		<dt>{% trans "ID" %}</dt>
 		<dd>{{ scnode.id }} </dd>
 		
-        <dt>{% trans "Service Type" %}</dt>
-		<dd>{{ scnode.service_type }} </dd>
+        <dt>{% trans "Service Profile" %}</dt>
+	<dd><a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=scnode.service_profile_id %}">{{ scnode.service_profile_id }}</a></dd>
 
 		<dt>{% trans "Config" %}</dt>
 		<dd>
