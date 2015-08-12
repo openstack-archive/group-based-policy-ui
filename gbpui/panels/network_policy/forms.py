@@ -15,6 +15,7 @@ import logging
 from django.core.urlresolvers import reverse
 from django import http
 from django import shortcuts
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -80,6 +81,10 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.l3policy_create(request, **context)
             msg = _("L3 Policy Created Successfully!")
             LOG.debug(msg)
@@ -122,6 +127,10 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
         url = reverse("horizon:project:network_policy:index")
         try:
             l3policy_id = self.initial['l3policy_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.l3policy_update(request, l3policy_id, **context)
             msg = _("L3 Policy Updated Successfully!")
             LOG.debug(msg)
@@ -155,6 +164,10 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
         url = reverse("horizon:project:network_policy:index")
         try:
             del context['allow_broadcast']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.l2policy_create(request, **context)
             msg = _("L2 Policy Created Successfully!")
             LOG.debug(msg)
@@ -195,6 +208,10 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
         l2policy_id = self.initial['l2policy_id']
         try:
             del context['allow_broadcast']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.l2policy_update(request, l2policy_id, **context)
             msg = _("L2 Policy Updated Successfully!")
             LOG.debug(msg)
@@ -228,6 +245,10 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
                               'value': values[2]}
                     p.append(values)
             context['network_service_params'] = p
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.create_networkservice_policy(request, **context)
             msg = _("Service policy created successfully!")
             LOG.debug(msg)
@@ -242,8 +263,8 @@ class NetworkServiceParam(object):
 
     def __init__(self, context):
         self.ptype = context['param_type']
-        self.pname = context['param_name']
-        self.pvalue = context['param_value']
+        self.pname = html.escape(context['param_name'])
+        self.pvalue = html.escape(context['param_value'])
         self.name = "Type:%s,Name:%s,Value:%s" % (
             self.ptype, self.pname, self.pvalue)
         self.id = self.name
@@ -288,6 +309,10 @@ class UpdateServicePolicyForm(BaseUpdateForm):
         url = reverse("horizon:project:network_policy:index")
         try:
             policy_id = self.initial['service_policy_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.update_networkservice_policy(
                 request, policy_id, **context)
             msg = _("Service policy updatedsuccessfully!")

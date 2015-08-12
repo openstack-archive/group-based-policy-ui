@@ -13,6 +13,7 @@
 import logging
 
 from django.core.urlresolvers import reverse
+from django.utils import html
 from django.utils.text import normalize_newlines  # noqa
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_variables  # noqa
@@ -213,6 +214,10 @@ class AddPTG(workflows.Workflow):
 
     def handle(self, request, context):
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             group = client.policy_target_create(request, **context)
             return group
         except Exception as e:

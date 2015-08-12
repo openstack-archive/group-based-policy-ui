@@ -14,6 +14,7 @@ import logging
 
 from django.core.urlresolvers import reverse
 from django import http
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -112,6 +113,10 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
                 context['consumed_policy_rule_sets'] = None
             if context['network_service_policy_id'] == 'None':
                 context['network_service_policy_id'] = None
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             policy_target = client.policy_target_update(
                 request, policy_target_id, **context)
             msg = _('Group %s was successfully updated.') % name_or_id
