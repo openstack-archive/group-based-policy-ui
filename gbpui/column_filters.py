@@ -154,15 +154,39 @@ def update_sc_spec_attributes(request, scspec):
     scn_url = "horizon:project:network_services:sc_node_details"
     for n in nodes:
         url = reverse(scn_url, kwargs={'scnode_id': n.id})
+        service_profile_id = n.service_profile_id
+        try:
+            service_profile = client.get_service_profile(request,
+                service_profile_id)
+            service_type = service_profile.service_type
+        except Exception:
+            pass
         val.append(
             "<td><span class='glyphicon glyphicon-arrow-right'></span></td>")
         scnode = "<td><a href='" + url + "' style='font-size: 9px;' >" \
-            + "<img src='" + img_src + n.service_type + ".png'>" \
-            + "<br>" + n.name + " (" + n.service_type + ")</a></td>"
+            + "<img src='" + img_src + service_type + ".png'>" \
+            + "<br>" + n.name + " (" + service_type + ")</a></td>"
         val.append(scnode)
     val.append("</tr></table>")
     setattr(scspec, 'nodes', mark_safe("".join(val)))
     return scspec
+
+
+def update_sc_node_attributes(request, scnode):
+    t = "<p style='margin-bottom:0px'>"
+    val = [t]
+    sp_url = "horizon:project:network_services:service_profile_details"
+    url = reverse(sp_url, kwargs={'sp_id': scnode.service_profile_id})
+    try:
+        service_profile = client.get_service_profile(request,
+            scnode.service_profile_id)
+        sp = "<a href='" + url + "'>" + service_profile.name + ' : ' + \
+            service_profile.service_type + '</a></p>'
+        val.append(sp)
+    except Exception:
+        return scnode
+    setattr(scnode, 'service_profile', mark_safe("".join(val)))
+    return scnode
 
 
 def update_sc_instance_attributes(request, scinstance):
