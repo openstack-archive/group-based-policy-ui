@@ -15,6 +15,7 @@ import logging
 from django.core.urlresolvers import reverse
 from django import http
 from django import shortcuts
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -242,8 +243,8 @@ class NetworkServiceParam(object):
 
     def __init__(self, context):
         self.ptype = context['param_type']
-        self.pname = context['param_name']
-        self.pvalue = context['param_value']
+        self.pname = html.escape(context['param_name'])
+        self.pvalue = html.escape(context['param_value'])
         self.name = "Type:%s,Name:%s,Value:%s" % (
             self.ptype, self.pname, self.pvalue)
         self.id = self.name
