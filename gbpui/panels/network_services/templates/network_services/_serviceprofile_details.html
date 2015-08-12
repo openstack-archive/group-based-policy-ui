@@ -1,0 +1,32 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+    <hr class="header_rule">
+    <dl style="font-size:14px">
+        <dt>{% trans "Name" %}</dt>
+        <dd>{{ service_profile.name|default:_("-") }}</dd>
+
+        <dt>{% trans "Description" %}</dt>
+        <dd>{{ service_profile.description|default:_("-") }}</dd>
+
+        <dt>{% trans "ID" %}</dt>
+        <dd>{{ service_profile.id }} </dd>
+        
+        <dt>{% trans "Service Type" %}</dt>
+        <dd>{{ service_profile.service_type }} </dd>
+
+	<dt>{% trans "Insertion Mode" %}</dt>
+	<dd>{{ service_profile.insertion_mode }}</dd>
+
+	<dt>{% trans "Vendor" %}</dt>
+        <dd>{{ service_profile.vendor }}</dd>
+
+	<dt>{% trans "Service Flavor" %}</dt>
+        <dd>{{ service_profile.service_flavor|default:_("-") }}</dd>
+
+	<dt>{% trans "Shared" %}</dt>
+        <dd>{{ service_profile.shared }}</dd>     
+
+    </dl>
+</div>  
