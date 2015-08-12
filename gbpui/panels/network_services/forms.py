@@ -14,6 +14,7 @@ import json
 import logging
 
 from django.core.urlresolvers import reverse
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
 from django import http
@@ -105,6 +106,10 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
             except KeyError:
                 pass
             context['config'] = json.dumps(context['config'])
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.create_servicechain_node(request, **context)
             msg = _("Service Chain Node Created Successfully!")
             LOG.debug(msg)
@@ -137,6 +142,10 @@ class UpdateServiceChainNodeForm(BaseUpdateForm):
         url = reverse("horizon:project:network_services:index")
         try:
             scnode_id = self.initial['scnode_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.update_servicechain_node(
                 request, scnode_id, **context)
             msg = _("Service Chain Node Updated Successfully!")
@@ -184,6 +193,10 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse("horizon:project:network_services:index")
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.create_servicechain_spec(request, **context)
             msg = _("Service Chain Spec Created Successfully!")
             LOG.debug(msg)
@@ -220,6 +233,10 @@ class UpdateServiceChainSpecForm(CreateServiceChainSpecForm, BaseUpdateForm):
         url = reverse("horizon:project:network_services:index")
         try:
             scspec_id = self.initial['scspec_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.update_servicechain_spec(request, scspec_id, **context)
             msg = _("Service Chain Spec Updated Successfully!")
             LOG.debug(msg)
@@ -264,6 +281,10 @@ class CreateServiceChainInstanceForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse("horizon:project:network_services:index")
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.create_servicechain_instance(request, **context)
             msg = _("Service Chain Instance Created Successfully!")
             LOG.debug(msg)
@@ -300,6 +321,10 @@ class UpdateServiceChainInstanceForm(forms.SelfHandlingForm):
         url = reverse("horizon:project:network_services:index")
         try:
             scinstance_id = self.initial['scinstance_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.update_servicechain_instance(
                 request, scinstance_id, **context)
             msg = _("Service Chain Instance Created Successfully!")

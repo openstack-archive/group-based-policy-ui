@@ -11,6 +11,7 @@
 # under the License.
 
 from django.core.urlresolvers import reverse
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -112,6 +113,10 @@ class AddContract(workflows.Workflow):
 
     def _create_policy_rule_set(self, request, context):
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             return client.policy_rule_set_create(request, **context)
         except Exception as e:
             msg = self.format_status_message(self.failure_message) + str(e)
@@ -119,6 +124,10 @@ class AddContract(workflows.Workflow):
             return False
 
     def handle(self, request, context):
+        if context.get('name'):
+            context['name'] = html.escape(context['name'])
+        if context.get('description'):
+            context['description'] = html.escape(context['description'])
         policy_rule_set = self._create_policy_rule_set(request, context)
         self.object = policy_rule_set
         return policy_rule_set
@@ -254,6 +263,10 @@ class AddPolicyRule(workflows.Workflow):
 
     def handle(self, request, context):
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             rule = client.policyrule_create(request, **context)
             self.object = rule
             return rule
@@ -314,6 +327,10 @@ class AddPolicyClassifier(workflows.Workflow):
 
     def _create_classifer(self, request, context):
         try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.policyclassifier_create(request, **context)
             return True
         except Exception as e:
@@ -322,6 +339,10 @@ class AddPolicyClassifier(workflows.Workflow):
             return False
 
     def handle(self, request, context):
+        if context.get('name'):
+            context['name'] = html.escape(context['name'])
+        if context.get('description'):
+            context['description'] = html.escape(context['description'])
         classifier = self._create_classifer(request, context)
         if not classifier:
             return False

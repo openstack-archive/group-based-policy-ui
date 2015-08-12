@@ -13,6 +13,7 @@
 from django.core.urlresolvers import reverse
 from django import http
 from django.template.defaultfilters import filesizeformat  # noqa
+from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.debug import sensitive_variables  # noqa
 
@@ -80,6 +81,10 @@ class UpdatePolicyRuleSetForm(BaseUpdateForm):
     def handle(self, request, context):
         try:
             policy_rule_set_id = self.initial['policy_rule_set_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.policy_rule_set_update(request,
                                           policy_rule_set_id,
                                           **context
@@ -135,6 +140,10 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
         try:
             if not context['action_value']:
                 del context['action_value']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             action = client.policyaction_create(request, **context)
             messages.success(request, _('Policy Action successfully created.'))
             return action
@@ -165,6 +174,10 @@ class UpdatePolicyActionForm(BaseUpdateForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyaction_id = self.initial['policyaction_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.policyaction_update(request, policyaction_id, **context)
             messages.success(request, _('Policy Action successfully updated.'))
             return http.HttpResponseRedirect(url)
@@ -205,6 +218,8 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
         try:
             if not context.get('port_range'):
                 context['port_range'] = None
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
             classifier = client.policyclassifier_create(request, **context)
             messages.success(
                 request, _('Policy Classifier successfully created.'))
@@ -244,6 +259,10 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
             policyclassifier_id = self.initial['policyclassifier_id']
             if not context.get('port_range'):
                 context['port_range'] = None
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.policyclassifier_update(self.request,
                     policyclassifier_id, **context)
             messages.success(
@@ -290,6 +309,10 @@ class UpdatePolicyRuleForm(BaseUpdateForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             prid = self.initial['policyrule_id']
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
             client.policyrule_update(request, prid, **context)
             messages.success(request, _('Policy rule successfully updated.'))
             return http.HttpResponseRedirect(url)
