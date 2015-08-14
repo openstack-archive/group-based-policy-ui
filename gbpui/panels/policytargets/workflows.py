@@ -390,7 +390,8 @@ class LaunchInstance(workflows.Workflow):
                 else:
                     instance_name = context['name'] + str(count)
                 ep = client.pt_create(
-                    request, policy_target_group_id=policy_target_id)
+                    request, policy_target_group_id=policy_target_id,
+                    name=instance_name[:41] + "_gbpui")
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
