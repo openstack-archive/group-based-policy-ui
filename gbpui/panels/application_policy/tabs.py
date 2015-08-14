@@ -57,10 +57,8 @@ class PolicyClassifiersTab(tabs.TableTab):
             classifiers = []
             exceptions.handle(self.tab_group.request,
                               _('Unable to retrieve classifier list.'))
-
-        for classifier in classifiers:
-            classifier.set_id_as_name_if_empty()
-
+        else:
+            classifiers = gfilters.update_classifier_attributes(classifiers)
         return classifiers
 
 
@@ -216,6 +214,8 @@ class PolicyClassifierDetailsTab(tabs.Tab):
         pcid = self.tab_group.kwargs['policyclassifier_id']
         try:
             policyclassifier = client.policyclassifier_get(request, pcid)
+            policyclassifier = gfilters.update_classifier_attributes(
+                policyclassifier)
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve policy_rule_set details.'),
