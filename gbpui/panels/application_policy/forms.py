@@ -22,6 +22,7 @@ from horizon import forms
 from horizon import messages
 
 from gbpui import client
+from gbpui import column_filters as gfilters
 
 PROTOCOLS = [('tcp', _('TCP')),
              ('udp', _('UDP')),
@@ -41,6 +42,12 @@ POLICY_ACTION_TYPES = [('allow', _('ALLOW')),
                        ('copy', _('COPY')),
                        ('log', _('LOG')),
                        ('qos', _('QoS'))]
+PROTOCOL_MAP = {'http': 'tcp',
+                'https': 'tcp',
+                'smtp': 'tcp',
+                'ftp': 'tcp',
+                'dns': 'udp'
+                }
 
 
 class BaseUpdateForm(forms.SelfHandlingForm):
@@ -216,6 +223,8 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse('horizon:project:application_policy:index')
         try:
+            if context.get('protocol') in PROTOCOL_MAP:
+                context['protocol'] = PROTOCOL_MAP[context['protocol']]
             if not context.get('port_range'):
                 context['port_range'] = None
             if context.get('name'):
@@ -246,6 +255,7 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
             policyclassifier_id = self.initial['policyclassifier_id']
             classifier = client.policyclassifier_get(
                 request, policyclassifier_id)
+            classifier = gfilters.update_classifier_attributes(classifier)
             for item in ['name', 'description',
                          'protocol', 'port_range', 'direction', 'shared']:
                 self.fields[item].initial = getattr(classifier, item)
@@ -257,7 +267,9 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
-            if not context.get('port_range'):
+            if context.get('protocol') in PROTOCOL_MAP:
+                context['protocol'] = PROTOCOL_MAP[context['protocol']]
+            if 'port_range' in context and context['port_range'] == '':
                 context['port_range'] = None
             if context.get('name'):
                 context['name'] = html.escape(context['name'])

@@ -194,3 +194,19 @@ def update_sc_instance_attributes(request, scinstance):
         atag = "<a href='%s'>%s</a>" % (u, sc.name)
         setattr(scinstance, 'servicechain_spec', mark_safe(atag))
     return scinstance
+
+
+def update_classifier_attributes(classifiers):
+    port_protocol_map = {'21': 'ftp', '25': 'smtp', '53': 'dns',
+                        '80': 'http', '443': 'https'}
+    if type(classifiers) == list:
+        for classifier in classifiers:
+            classifier.set_id_as_name_if_empty()
+            if classifier.protocol in ['tcp', 'udp'] and classifier.port_range \
+                    in port_protocol_map:
+                classifier.protocol = port_protocol_map[classifier.port_range]
+    else:
+        if classifiers.protocol in ['tcp', 'udp'] and classifiers.port_range \
+                in port_protocol_map:
+            classifiers.protocol = port_protocol_map[classifiers.port_range]
+    return classifiers
