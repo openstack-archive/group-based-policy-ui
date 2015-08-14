@@ -374,12 +374,13 @@ class LaunchInstance(workflows.Workflow):
             instance_count = int(context['count'])
             count = 1
             while count <= instance_count:
-                ep = client.pt_create(
-                    request, policy_target_group_id=policy_target_id)
                 if instance_count == 1:
                     instance_name = context['name']
                 else:
                     instance_name = context['name'] + str(count)
+                ep = client.pt_create(
+                    request, policy_target_group_id=policy_target_id,
+                    name=instance_name[:41] + "_gbpui")
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
