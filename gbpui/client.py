@@ -157,9 +157,11 @@ def pt_create(request, **kwargs):
     return PTG(pt)
 
 
-def pt_list(request, **kwargs):
+def pt_list(request, tenant_id, **kwargs):
     policy_targets = gbpclient(request).list_policy_targets(
-        **kwargs).get('policy_targets')
+        tenant_id=tenant_id, shared=False, **kwargs).get('policy_targets')
+    policy_targets.extend(gbpclient(request).list_policy_targets(
+        shared=True, **kwargs).get('policy_targets'))
     return [PT(pt) for pt in policy_targets]
 
 
@@ -167,9 +169,12 @@ def pt_delete(request, pt_id):
     gbpclient(request).delete_policy_target(pt_id)
 
 
-def policy_target_list(request, **kwargs):
+def policy_target_list(request, tenant_id, **kwargs):
     policy_targets = gbpclient(request).list_policy_target_groups(
-        **kwargs).get('policy_target_groups')
+        tenant_id=tenant_id, shared=False, **kwargs).get(
+            'policy_target_groups')
+    policy_targets.extend(gbpclient(request).list_policy_target_groups(
+        shared=True, **kwargs).get('policy_target_groups'))
     return [PTG(policy_target) for policy_target in policy_targets]
 
 
@@ -197,9 +202,11 @@ def policy_rule_set_create(request, **kwargs):
     return Contract(policy_rule_set)
 
 
-def policy_rule_set_list(request, **kwargs):
+def policy_rule_set_list(request, tenant_id, **kwargs):
     policy_rule_sets = gbpclient(request).list_policy_rule_sets(
-        **kwargs).get('policy_rule_sets')
+        tenant_id=tenant_id, shared=False, **kwargs).get('policy_rule_sets')
+    policy_rule_sets.extend(gbpclient(request).list_policy_rule_sets(
+        shared=True, **kwargs).get('policy_rule_sets'))
     return [Contract(policy_rule_set) for policy_rule_set in policy_rule_sets]
 
 
@@ -234,9 +241,11 @@ def policyrule_update(request, prid, **kwargs):
     return PolicyRule(policy_rule)
 
 
-def policyrule_list(request, **kwargs):
-    policyrules = gbpclient(request).list_policy_rules(
-        **kwargs).get('policy_rules')
+def policyrule_list(request, tenant_id, **kwargs):
+    policyrules = gbpclient(request).list_policy_rules(tenant_id=tenant_id,
+        shared=False, **kwargs).get('policy_rules')
+    policyrules.extend(gbpclient(request).list_policy_rules(shared=True,
+        **kwargs).get('policy_rules'))
     return [PolicyRule(pr) for pr in policyrules]
 
 
@@ -247,9 +256,11 @@ def policyclassifier_create(request, **kwargs):
     return PolicyClassifier(classifier)
 
 
-def policyclassifier_list(request, **kwargs):
+def policyclassifier_list(request, tenant_id, **kwargs):
     classifiers = gbpclient(request).list_policy_classifiers(
-        **kwargs).get('policy_classifiers')
+        tenant_id=tenant_id, shared=False, **kwargs).get('policy_classifiers')
+    classifiers.extend(gbpclient(request).list_policy_classifiers(shared=True,
+        **kwargs).get('policy_classifiers'))
     return [PolicyClassifier(pc) for pc in classifiers]
 
 
@@ -260,9 +271,11 @@ def policyaction_create(request, **kwargs):
     return PolicyAction(action)
 
 
-def policyaction_list(request, **kwargs):
-    actions = gbpclient(request).list_policy_actions(
-        **kwargs).get('policy_actions')
+def policyaction_list(request, tenant_id, **kwargs):
+    actions = gbpclient(request).list_policy_actions(tenant_id=tenant_id,
+        shared=False, **kwargs).get('policy_actions')
+    actions.extend(gbpclient(request).list_policy_actions(shared=True,
+        **kwargs).get('policy_actions'))
     return [PolicyAction(pa) for pa in actions]
 
 
@@ -310,19 +323,28 @@ def policyclassifier_update(request, pc_id, **kwargs):
     return PolicyClassifier(classifier)
 
 
-def l3policy_list(request, **kwargs):
-    policies = gbpclient(request).list_l3_policies(**kwargs).get('l3_policies')
+def l3policy_list(request, tenant_id, **kwargs):
+    policies = gbpclient(request).list_l3_policies(tenant_id=tenant_id,
+        shared=False, **kwargs).get('l3_policies')
+    policies.extend(gbpclient(request).list_l3_policies(shared=True,
+        **kwargs).get('l3_policies'))
     return [L2Policy(item) for item in policies]
 
 
-def l2policy_list(request, **kwargs):
-    policies = gbpclient(request).list_l2_policies(**kwargs).get('l2_policies')
+def l2policy_list(request, tenant_id, **kwargs):
+    policies = gbpclient(request).list_l2_policies(tenant_id=tenant_id,
+        shared=False, **kwargs).get('l2_policies')
+    policies.extend(gbpclient(request).list_l2_policies(shared=True,
+        **kwargs).get('l2_policies'))
     return [L2Policy(item) for item in policies]
 
 
-def networkservicepolicy_list(request, **kwargs):
+def networkservicepolicy_list(request, tenant_id, **kwargs):
     policies = gbpclient(request).list_network_service_policies(
-        **kwargs).get('network_service_policies')
+        tenant_id=tenant_id, shared=False, **kwargs).get(
+            'network_service_policies')
+    policies.extend(gbpclient(request).list_network_service_policies(
+        shared=True, **kwargs).get('network_service_policies'))
     return [NetworkServicePolicy(item) for item in policies]
 
 
@@ -388,21 +410,28 @@ def l2policy_delete(request, policy_id):
     gbpclient(request).delete_l2_policy(policy_id)
 
 
-def servicechainnode_list(request, **kwargs):
-    sc_nodes = gbpclient(request).list_servicechain_nodes(
-        **kwargs).get('servicechain_nodes')
+def servicechainnode_list(request, tenant_id, **kwargs):
+    sc_nodes = gbpclient(request).list_servicechain_nodes(tenant_id=tenant_id,
+        shared=False, **kwargs).get('servicechain_nodes')
+    sc_nodes.extend(gbpclient(request).list_servicechain_nodes(shared=True,
+        **kwargs).get('servicechain_nodes'))
     return [ServiceChainNode(item) for item in sc_nodes]
 
 
-def servicechainspec_list(request, **kwargs):
-    sc_specs = gbpclient(request).list_servicechain_specs(
-        **kwargs).get('servicechain_specs')
+def servicechainspec_list(request, tenant_id, **kwargs):
+    sc_specs = gbpclient(request).list_servicechain_specs(tenant_id=tenant_id,
+        shared=False, **kwargs).get('servicechain_specs')
+    sc_specs.extend(gbpclient(request).list_servicechain_specs(shared=True,
+        **kwargs).get('servicechain_specs'))
     return [ServiceChainSpec(item) for item in sc_specs]
 
 
-def servicechaininstance_list(request, **kwargs):
+def servicechaininstance_list(request, tenant_id, **kwargs):
     sc_instances = gbpclient(request).list_servicechain_instances(
-        **kwargs).get('servicechain_instances')
+        tenant_id=tenant_id, shared=False, **kwargs).get(
+        'servicechain_instances')
+    sc_instances.extend(gbpclient(request).list_servicechain_instances(
+        shared=True, **kwargs).get('servicechain_instances'))
     return [ServiceChainInstance(item) for item in sc_instances]
 
 

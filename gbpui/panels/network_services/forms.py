@@ -178,7 +178,8 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
             request, *args, **kwargs)
         try:
             node_list = []
-            nodes = client.servicechainnode_list(request)
+            nodes = client.servicechainnode_list(request,
+                tenant_id=request.user.tenant_id)
             for n in nodes:
                 n.set_id_as_name_if_empty()
                 node_list.append((n.id, n.name))
@@ -260,10 +261,13 @@ class CreateServiceChainInstanceForm(forms.SelfHandlingForm):
         super(CreateServiceChainInstanceForm, self).__init__(
             request, *args, **kwargs)
         try:
-            sc_specs = client.servicechainspec_list(request)
-            ptgs = client.policy_target_list(request)
+            sc_specs = client.servicechainspec_list(request,
+                tenant_id=request.user.tenant_id)
+            ptgs = client.policy_target_list(request,
+                tenant_id=request.user.tenant_id)
             ptgs = [(item.id, item.name) for item in ptgs]
-            classifiers = client.policyclassifier_list(request)
+            classifiers = client.policyclassifier_list(request,
+                tenant_id=request.user.tenant_id)
             self.fields['servicechain_spec'].choices = [
                 (item.id, item.name) for item in sc_specs]
             self.fields['provider_ptg'].choices = ptgs
@@ -302,7 +306,8 @@ class UpdateServiceChainInstanceForm(forms.SelfHandlingForm):
             request, *args, **kwargs)
         try:
             scinstance_id = self.initial['scinstance_id']
-            sc_specs = client.servicechainspec_list(request)
+            sc_specs = client.servicechainspec_list(request,
+                tenant_id=request.user.tenant_id)
             self.fields['servicechain_spec'].choices = [
                 (item.id, item.name) for item in sc_specs]
             scinstance = client.get_servicechain_instance(

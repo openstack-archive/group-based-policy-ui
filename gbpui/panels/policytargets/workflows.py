@@ -55,7 +55,8 @@ class SelectPolicyRuleSetAction(workflows.Action):
         help_text = _("Select Policy Rule Set for Group.")
 
     def _policy_rule_set_list(self, request):
-        policy_rule_sets = client.policy_rule_set_list(request)
+        policy_rule_sets = client.policy_rule_set_list(request,
+            tenant_id=request.user.tenant_id)
         for c in policy_rule_sets:
             c.set_id_as_name_if_empty()
         policy_rule_sets = sorted(policy_rule_sets,
@@ -105,7 +106,8 @@ class SelectL2policyAction(workflows.Action):
     def populate_l2policy_id_choices(self, request, context):
         policies = []
         try:
-            policies = client.l2policy_list(request)
+            policies = client.l2policy_list(request,
+                tenant_id=request.user.tenant_id)
             for p in policies:
                 p.set_id_as_name_if_empty()
             policies = sorted(policies, key=lambda rule: rule.name)
@@ -120,7 +122,8 @@ class SelectL2policyAction(workflows.Action):
     def populate_network_service_policy_id_choices(self, request, context):
         policies = []
         try:
-            policies = client.networkservicepolicy_list(request)
+            policies = client.networkservicepolicy_list(request,
+                tenant_id=request.user.tenant_id)
             for p in policies:
                 p.set_id_as_name_if_empty()
             policies = [(p.id, p.name + ":" + p.id) for p in policies]

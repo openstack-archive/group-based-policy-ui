@@ -151,7 +151,8 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
     def __init__(self, request, *args, **kwargs):
         super(AddL2PolicyForm, self).__init__(request, *args, **kwargs)
         try:
-            policies = client.l3policy_list(request)
+            policies = client.l3policy_list(request,
+                tenant_id=request.user.tenant_id)
             policies = [(item['id'], item['name'] + ":" + item['id'])
                         for item in policies]
             self.fields['l3_policy_id'].choices = policies
@@ -191,7 +192,8 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
         try:
             l2policy_id = self.initial['l2policy_id']
             l2 = client.l2policy_get(request, l2policy_id)
-            policies = client.l3policy_list(request)
+            policies = client.l3policy_list(request,
+                tenant_id=request.user.tenant_id)
             policies = [(item['id'], item['name'] + ":" + item['id'])
                         for item in policies]
             self.fields['l3_policy_id'].choices = policies

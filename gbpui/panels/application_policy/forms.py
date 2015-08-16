@@ -62,7 +62,8 @@ class UpdatePolicyRuleSetForm(BaseUpdateForm):
         super(UpdatePolicyRuleSetForm, self).__init__(request, *args, **kwargs)
         rules = []
         try:
-            items = client.policyrule_list(request)
+            items = client.policyrule_list(request,
+                tenant_id=request.user.tenant_id)
             rules = [(p.id, p.name) for p in items]
             policy_rule_set = client.policy_rule_set_get(
                 request, self.initial['policy_rule_set_id'])
@@ -124,7 +125,8 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
         super(AddPolicyActionForm, self).__init__(request, *args, **kwargs)
         url = reverse('horizon:project:application_policy:index')
         try:
-            sc_specs = client.servicechainspec_list(request)
+            sc_specs = client.servicechainspec_list(request,
+                tenant_id=request.user.tenant_id)
             self.fields['action_value'].choices = \
                 [(spec.id,
                   (spec.name if spec.name is not None else "") + ":" + spec.id)
@@ -287,14 +289,16 @@ class UpdatePolicyRuleForm(BaseUpdateForm):
             for item in ['name', 'description',
                          'policy_classifier_id', 'policy_actions', 'shared']:
                 self.fields[item].initial = getattr(rule, item)
-            actions = client.policyaction_list(request)
+            actions = client.policyaction_list(request,
+                tenant_id=request.user.tenant_id)
             action_list = [a.id for a in actions]
             for action in actions:
                 action.set_id_as_name_if_empty()
             actions = sorted(actions, key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
             self.fields['policy_actions'].choices = action_list
-            classifiers = client.policyclassifier_list(request)
+            classifiers = client.policyclassifier_list(request,
+                tenant_id=request.user.tenant_id)
             classifier_list = [(c.id, c.name) for c in classifiers]
             self.fields['policy_classifier_id'].choices = classifier_list
         except Exception:
