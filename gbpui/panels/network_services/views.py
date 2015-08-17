@@ -60,7 +60,31 @@ class IndexView(tabs.TabView):
                 except Exception as e:
                     exceptions.handle(request,
                                       _('Unable to delete . %s') % e)
+        if obj_type == 'serviceprofile':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_service_profile(request, obj_id)
+                    messages.success(request,
+                                     _('Deleted %s') % obj_id)
+                except Exception as e:
+                    exceptions.handle(request,
+                                      _('Unable to delete . %s') % e)
         return self.get(request, *args, **kwargs)
+
+
+class ServiceProfileDetailsView(tabs.TabView):
+    tab_group_class = (ns_tabs.ServiceProfileDetailsTabGroup)
+    template_name = 'project/network_services/details_tabs.html'
+
+
+class CreateServiceProfileView(forms.ModalFormView):
+    form_class = ns_forms.CreateServiceProfileForm
+    template_name = "project/network_services/create_service_profile.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            CreateServiceProfileView, self).get_context_data(**kwargs)
+        return context
 
 
 class CreateServiceChainNodeView(forms.ModalFormView):

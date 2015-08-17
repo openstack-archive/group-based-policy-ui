@@ -42,12 +42,49 @@ class BaseUpdateForm(forms.SelfHandlingForm):
         return updated_data
 
 
+class CreateServiceProfileForm(forms.SelfHandlingForm):
+    name = forms.CharField(max_length=80, label=_("Name"))
+    description = forms.CharField(
+        max_length=80, label=_("Description"), required=False)
+    vendor = forms.CharField(
+        max_length=80, label=_("Vendor"), required=True)
+    service_flavor = forms.CharField(
+        max_length=80, label=_("Service Flavor"), required=False)
+    service_type = forms.ChoiceField(
+        label=_("Service Type"), choices=SERVICE_TYPES)
+    insertion_mode = forms.ChoiceField(
+        label=_("Insertion Mode"), choices=[('l3', 'L3'), ('l2', 'L2')])
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
+
+    def handle(self, request, context):
+        url = reverse("horizon:project:network_services:index")
+        try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
+            if context.get('vendor'):
+                context['vendor'] = html.escape(context['vendor'])
+            if context.get('service_flavor'):
+                context['service_flavor'] = html.escape(
+                    context['service_flavor'])
+            client.create_service_profile(request, **context)
+            msg = _("Service Profile  Created Successfully")
+            messages.success(request, msg)
+            return http.HttpResponseRedirect(url)
+        except Exception as e:
+            msg = _("Failed to create Service Profile. %s") % (str(e))
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
 class CreateServiceChainNodeForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
-    service_type = forms.ChoiceField(
-        label=_("Service Type"), choices=SERVICE_TYPES)
+    service_profile_id = forms.ChoiceField(
+        label=_("Service Profile"))
     config_type = forms.ChoiceField(label=_("Config Type"),
                                     choices=[('file', 'Heat Template'),
                                              ('string', 'Config String')],
@@ -69,6 +106,21 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
                                             required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(CreateServiceChainNodeForm, self).__init__(
+            request, *args, **kwargs)
+        try:
+            service_profile_tuples = []
+            service_profile_list = client.serviceprofile_list(self.request)
+            for service_profile in service_profile_list:
+                sp = (service_profile.id,
+                service_profile.name + ' : ' + service_profile.service_type)
+                service_profile_tuples.append(sp)
+            self.fields['service_profile_id'].choices = service_profile_tuples
+        except Exception:
+            msg = _("Failed to retrive Service profile details.")
+            LOG.error(msg)
 
     def clean(self):
         cleaned_data = super(CreateServiceChainNodeForm, self).clean()
