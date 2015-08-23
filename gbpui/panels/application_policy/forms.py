@@ -62,7 +62,7 @@ class BaseUpdateForm(forms.SelfHandlingForm):
 class UpdatePolicyRuleSetForm(BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"), required=False)
-    rules = forms.MultipleChoiceField(label=_("Policy Rules"),)
+    policy_rules = forms.MultipleChoiceField(label=_("Policy Rules"),)
     shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
@@ -80,10 +80,10 @@ class UpdatePolicyRuleSetForm(BaseUpdateForm):
                     'description'].initial = policy_rule_set.description
                 self.fields['shared'].initial = policy_rule_set.shared
                 existing = [item for item in policy_rule_set.policy_rules]
-                self.fields['rules'].initial = existing
+                self.fields['policy_rules'].initial = existing
         except Exception:
             exceptions.handle(request, _('Unable to retrieve policy rules'))
-        self.fields['rules'].choices = rules
+        self.fields['policy_rules'].choices = rules
 
     def handle(self, request, context):
         try:
