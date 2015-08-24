@@ -94,6 +94,8 @@ class L3PolicyTable(tables.DataTable):
     ip_pool = tables.Column("ip_pool", verbose_name=_("IP Pool"))
     subnet_prefix_length = tables.Column(
         "subnet_prefix_length", verbose_name=_("Subnet Prefix Length"))
+    external_segments = tables.Column("external_segments",
+        verbose_name=_("External Segment"))
 
     class Meta(object):
         name = "l3policy_table"
@@ -140,3 +142,47 @@ class ServicePolicyTable(tables.DataTable):
         verbose_name = _("Service Policies")
         table_actions = (CreateServicePolicyLink, DeleteServicePolicyLink,)
         row_actions = (EditServicePolicyLink, DeleteServicePolicyLink,)
+
+
+class CreateExternalConnectivityLink(tables.LinkAction):
+    name = "create_external_connectivity"
+    verbose_name = _("Create External Connectivity")
+    url = "horizon:project:network_policy:create_external_connectivity"
+    classes = ("ajax-modal", "btn-addexternalconnectivity")
+
+
+class EditExternalConnectivityLink(tables.LinkAction):
+    name = "update_external_connectivity"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, external_connectivity):
+        urlstring = \
+            "horizon:project:network_policy:update_externalconnectivity"
+        base_url = reverse(urlstring,
+            kwargs={'external_connectivity_id': external_connectivity.id})
+        return base_url
+
+
+class DeleteExternalConnectivityLink(tables.DeleteAction):
+    name = "deleteexternalconnectivity"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of %(data_type)s")
+    data_type_singular = _("ExternalConnectivity")
+    data_type_plural = _("ExternalConnectivities")
+
+
+class ExternalConnectivityTable(tables.DataTable):
+    name = tables.Column("name", verbose_name=_("Name"),
+        link="horizon:project:network_policy:external_connectivity_details")
+    description = tables.Column("description", verbose_name=_("Description"))
+    ip_version = tables.Column("ip_version", verbose_name=_("IP Version"))
+    cidr = tables.Column("cidr", verbose_name=_("CIDR"))
+
+    class Meta(object):
+        name = "external_connectivity_table"
+        verbose_name = _("External Connectivity")
+        table_actions = (CreateExternalConnectivityLink,
+            DeleteExternalConnectivityLink,)
+        row_actions = (EditExternalConnectivityLink,
+            DeleteExternalConnectivityLink,)

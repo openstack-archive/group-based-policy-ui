@@ -58,6 +58,26 @@ class PTG(neutron.NeutronAPIDictWrapper):
         return epg_dict
 
 
+class ExternalPTG(neutron.NeutronAPIDictWrapper):
+
+    """Wrapper for neutron external endpoint group."""
+
+    def get_dict(self):
+        eepg_dict = self._apidict
+        eepg_dict['eepg_id'] = eepg_dict['id']
+        return eepg_dict
+
+
+class ExternalConnectivity(neutron.NeutronAPIDictWrapper):
+
+    """Wrapper for neutron external segment."""
+
+    def get_dict(self):
+        ec_dict = self._apidict
+        ec_dict['ec_id'] = ec_dict['id']
+        return ec_dict
+
+
 class Contract(neutron.NeutronAPIDictWrapper):
 
     """Wrapper for neutron policy_rule_set."""
@@ -202,6 +222,38 @@ def policy_target_update(request, policy_target_id, **kwargs):
     policy_target = gbpclient(request).update_policy_target_group(
         policy_target_id, body).get('policy_target_group')
     return PTG(policy_target)
+
+
+def ext_policy_target_create(request, **kwargs):
+    body = {'external_policy': kwargs}
+    policy_target = gbpclient(request).create_external_policy(
+        body).get('endpoint_group')
+    return ExternalPTG(policy_target)
+
+
+def ext_policy_target_list(request, tenant_id, **kwargs):
+    policy_targets = gbpclient(request).list_external_policies(
+        tenant_id=tenant_id, shared=False, **kwargs).get('external_policies')
+    policy_targets.extend(gbpclient(request).list_external_policies(
+        shared=True, **kwargs).get('external_policies'))
+    return [ExternalPTG(policy_target) for policy_target in policy_targets]
+
+
+def ext_policy_target_get(request, ext_policy_target_id):
+    policy_target = gbpclient(request).show_external_policy(
+        ext_policy_target_id).get('external_policy')
+    return ExternalPTG(policy_target)
+
+
+def ext_policy_target_delete(request, ext_policy_target_id):
+    gbpclient(request).delete_external_policy(ext_policy_target_id)
+
+
+def ext_policy_target_update(request, ext_policy_target_id, **kwargs):
+    body = {'external_policy': kwargs}
+    policy_target = gbpclient(request).update_external_policy(
+        ext_policy_target_id, body).get('external_policy')
+    return ExternalPTG(policy_target)
 
 
 def policy_rule_set_create(request, **kwargs):
@@ -355,6 +407,39 @@ def networkservicepolicy_list(request, tenant_id, **kwargs):
     policies.extend(gbpclient(request).list_network_service_policies(
         shared=True, **kwargs).get('network_service_policies'))
     return [NetworkServicePolicy(item) for item in policies]
+
+
+def externalconnectivity_list(request, tenant_id, **kwargs):
+    external_connectivities = gbpclient(request).list_external_segments(
+        tenant_id=tenant_id, shared=False, **kwargs).get('external_segments')
+    external_connectivities.extend(gbpclient(request).list_external_segments(
+        shared=True, **kwargs).get('external_segments'))
+    return [ExternalConnectivity(external_connectivity)
+        for external_connectivity in external_connectivities]
+
+
+def create_externalconnectivity(request, **kwargs):
+    body = {'external_segment': kwargs}
+    es = gbpclient(request).create_external_segment(
+        body).get('external_segment')
+    return ExternalConnectivity(es)
+
+
+def get_externalconnectivity(request, external_connectivity_id):
+    es = gbpclient(request).show_external_segment(
+        external_connectivity_id).get('external_segment')
+    return ExternalConnectivity(es)
+
+
+def delete_externalconnectivity(request, external_connectivity_id, **kwargs):
+    gbpclient(request).delete_external_segment(external_connectivity_id)
+
+
+def update_externalconnectivity(request, external_connectivity_id, **kwargs):
+    body = {'external_segment': kwargs}
+    ec = gbpclient(request).update_external_segment(
+        external_connectivity_id, body).get('external_segment')
+    return NetworkServicePolicy(ec)
 
 
 def create_networkservice_policy(request, **kwargs):

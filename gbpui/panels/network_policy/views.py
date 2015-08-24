@@ -55,6 +55,15 @@ class IndexView(tabs.TabView):
                 except Exception as e:
                     msg = _('Unable to delete action. %s') % (str(e))
                     exceptions.handle(request, msg)
+        if obj_type == 'externalconnectivity':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_externalconnectivity(request, obj_id)
+                    messages.success(request,
+                            _('Deleted External Connectivity %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
         return self.get(request, *args, **kwargs)
 
 
@@ -170,6 +179,29 @@ class AddNetworkServiceParamView(forms.ModalFormView):
         return params.name
 
 
+class AddExternalRouteParamView(forms.ModalFormView):
+    form_class = np_forms.CreateExternalRouteParamForm
+    template_name = "project/network_policy/create_external_route_param.html"
+
+    def get_object_id(self, params):
+        return params.name
+
+
+class UpdateExternalConnectivityView(forms.ModalFormView):
+    form_class = np_forms.UpdateExternalConnectivityForm
+    template_name = "project/network_policy/update_external_connectivity.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            UpdateExternalConnectivityView, self).get_context_data(**kwargs)
+        context['external_connectivity_id'] = \
+            self.kwargs['external_connectivity_id']
+        return context
+
+    def get_initial(self):
+        return self.kwargs
+
+
 class UpdateServicePolicyView(forms.ModalFormView):
     form_class = np_forms.UpdateServicePolicyForm
     template_name = "project/network_policy/update_service_policy.html"
@@ -186,4 +218,19 @@ class UpdateServicePolicyView(forms.ModalFormView):
 
 class ServicePolicyDetailsView(tabs.TabView):
     tab_group_class = (np_tabs.ServicePolicyDetailsTabs)
+    template_name = 'project/network_policy/details_tabs.html'
+
+
+class CreateExternalConnectivityView(forms.ModalFormView):
+    form_class = np_forms.CreateExternalConnectivityForm
+    template_name = "project/network_policy/create_external_connectivity.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            CreateExternalConnectivityView, self).get_context_data(**kwargs)
+        return context
+
+
+class ExternalConnectivityDetailsView(tabs.TabView):
+    tab_group_class = (np_tabs.ExternalConnectivityDetailsTabs)
     template_name = 'project/network_policy/details_tabs.html'

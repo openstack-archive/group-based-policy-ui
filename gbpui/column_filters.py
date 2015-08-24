@@ -82,12 +82,20 @@ def update_policy_target_attributes(request, pt):
     setattr(pt, 'provided_policy_rule_sets', mark_safe(p))
     setattr(pt, 'consumed_policy_rule_sets', mark_safe(c))
     l2url = "horizon:project:network_policy:l2policy_details"
-    if pt.l2_policy_id is not None:
+    if hasattr(pt, 'l2_policy_id') and pt.l2_policy_id is not None:
         policy = client.l2policy_get(request, pt.l2_policy_id)
         u = reverse(l2url, kwargs={'l2policy_id': policy.id})
         atag = mark_safe(
             "<a href='" + u + "'>" + policy.name + "</a>")
         setattr(pt, 'l2_policy_id', atag)
+    if hasattr(pt, 'external_segments'):
+        exturl = "horizon:project:network_policy:external_connectivity_details"
+        ext_policy = client.get_externalconnectivity(request,
+            pt.external_segments[0])
+        u = reverse(exturl, kwargs={'external_connectivity_id': ext_policy.id})
+        exttag = mark_safe(
+            "<a href='" + u + "'>" + ext_policy.name + "</a>")
+        setattr(pt, 'external_segments', exttag)
     return pt
 
 
@@ -234,3 +242,23 @@ def update_classifier_attributes(classifiers):
                 in port_protocol_map:
             classifiers.protocol = port_protocol_map[classifiers.port_range]
     return classifiers
+
+
+def update_l3_policy_attributes(request, l3_policy):
+    url = "horizon:project:network_policy:external_connectivity_details"
+    if bool(l3_policy.external_segments):
+        external_connectivity_id = l3_policy.external_segments.keys()[0]
+        try:
+            external_connectivity = client.get_externalconnectivity(request,
+                external_connectivity_id)
+            segment_name = external_connectivity.name
+        except Exception:
+            segment_name = external_connectivity_id
+        u = reverse(url,
+            kwargs={'external_connectivity_id': external_connectivity_id})
+        tag = mark_safe("<a href='" + u + "'>" + segment_name + "</a>"
+            + " : " + l3_policy.external_segments.values()[0][0])
+    else:
+        tag = '-'
+    setattr(l3_policy, 'external_segments', tag)
+    return l3_policy
