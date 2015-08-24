@@ -21,6 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
+from openstack_dashboard import api
 
 from gbpui import client
 from gbpui import fields
@@ -28,6 +29,7 @@ from gbpui import fields
 LOG = logging.getLogger(__name__)
 
 NETWORK_PARAM_URL = "horizon:project:network_policy:add_network_service_param"
+ROUTE_URL = "horizon:project:network_policy:add_external_route_param"
 
 
 class BaseUpdateForm(forms.SelfHandlingForm):
@@ -60,11 +62,21 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2 - 30 for IP4"
                                                        "and 2-127 for IP6."),)
+    external_segments = forms.ChoiceField(label=_("External Segment"),
+                                          required=False)
+    segment_ip = forms.IPField(label=_("External Segment IP"), initial="",
+                               required=False)
     shared = forms.BooleanField(label=_("Shared"),
-                                initial=False, required=False)
+                                initial=False,
+                                required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL3PolicyForm, self).__init__(request, *args, **kwargs)
+        ec_list = client.externalconnectivity_list(request,
+            tenant_id=request.user.tenant_id)
+        external_segments_options = [(ec.id, ec.name) for ec in ec_list]
+        external_segments_options.insert(0, (None, "Select"))
+        self.fields['external_segments'].choices = external_segments_options
 
     def clean(self):
         cleaned_data = super(AddL3PolicyForm, self).clean()
@@ -76,11 +88,23 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                 raise forms.ValidationError(msg)
             if ipversion == 6 and subnet_prefix_length not in range(2, 128):
                 raise forms.ValidationError(msg)
+            if cleaned_data['external_segments'] != '':
+                if cleaned_data['segment_ip'] == '':
+                    self.add_error('segment_ip', 'This field is required')
         return cleaned_data
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
+        external_segment_dic = {}
+        l = []
         try:
+            if context['external_segments'] != '':
+                l.append(context['segment_ip'])
+                external_segment_dic[context['external_segments']] = l
+                context['external_segments'] = external_segment_dic
+            else:
+                del context['external_segments']
+            del context['segment_ip']
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
             if context.get('description'):
@@ -97,18 +121,34 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
         try:
+            ec_list = client.externalconnectivity_list(request,
+                tenant_id=request.user.tenant_id)
+            external_segments_options = [(ec.id, ec.name) for ec in ec_list]
+            external_segments_options.insert(0, (None, "Select"))
+            self.fields['external_segments'].choices = \
+                external_segments_options
             l3policy_id = self.initial['l3policy_id']
             l3 = client.l3policy_get(request, l3policy_id)
             for item in ['name', 'description', 'ip_version',
                          'ip_pool', 'subnet_prefix_length']:
                 self.fields[item].initial = str(l3[item])
             self.fields['shared'].initial = l3['shared']
+            if bool(l3['external_segments']):
+                self.fields['external_segments'].initial = \
+                    l3['external_segments'].keys()[0]
+                self.fields['segment_ip'].initial = \
+                    l3['external_segments'].values()[0][0]
+            else:
+                self.fields['external_segments'].initial = None
+                self.fields['segment_ip'].initial = ''
         except Exception:
             msg = _("Failed to get L3 policy")
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
     def clean(self):
+        external_segment_dict = {}
+        l = []
         cleaned_data = super(UpdateL3PolicyForm, self).clean()
         if self.is_valid():
             ipversion = int(cleaned_data['ip_version'])
@@ -118,6 +158,20 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
                 raise forms.ValidationError(msg)
             if ipversion == 6 and subnet_prefix_length not in range(2, 128):
                 raise forms.ValidationError(msg)
+            if cleaned_data['external_segments'] != '':
+                if cleaned_data['segment_ip'] == '':
+                    self.add_error('segment_ip', 'This field is required')
+            if 'external_segments' in self.changed_data or \
+                    'segment_ip' in self.changed_data:
+                if cleaned_data['external_segments'] != '':
+                    l.append(cleaned_data['segment_ip'])
+                    external_segment_dict[cleaned_data['external_segments']] = \
+                      l
+                    cleaned_data['external_segments'] = external_segment_dict
+                else:
+                    cleaned_data['external_segments'] = {}
+                del cleaned_data['segment_ip']
+                self.changed_data.append('external_segments')
             updated_data = {d: cleaned_data[d] for d in cleaned_data
                 if d in self.changed_data}
             cleaned_data = updated_data
@@ -324,3 +378,129 @@ class UpdateServicePolicyForm(BaseUpdateForm):
             msg = _("Failed to update service policy")
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
+class UpdateExternalConnectivityForm(forms.SelfHandlingForm):
+    name = forms.CharField(max_length=80, label=_("Name"))
+    description = forms.CharField(
+        max_length=80, label=_("Description"), required=False)
+    shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(UpdateExternalConnectivityForm, self).__init__(request,
+            *args, **kwargs)
+        try:
+            external_connectivity_id = \
+                self.initial['external_connectivity_id']
+            external_connectivity = client.get_externalconnectivity(request,
+                external_connectivity_id)
+            self.fields['name'].initial = external_connectivity.name
+            self.fields['description'].initial = \
+                external_connectivity.description
+            self.fields['shared'].initial = external_connectivity.shared
+        except Exception as e:
+            msg = _("Failed to retrive external connectivity details. %s") % \
+                (str(e))
+            LOG.debug(msg)
+
+    def handle(self, request, context):
+        url = reverse("horizon:project:network_policy:index")
+        try:
+            external_connectivity_id = self.initial['external_connectivity_id']
+            client.update_externalconnectivity(
+                request, external_connectivity_id, **context)
+            msg = _("External Connectivity updated successfully!")
+            LOG.debug(msg)
+            return http.HttpResponseRedirect(url)
+        except Exception:
+            msg = _("Failed to update External Connectivity")
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
+class CreateExternalConnectivityForm(forms.SelfHandlingForm):
+    name = forms.CharField(max_length=80, label=_("Name"))
+    description = forms.CharField(
+        max_length=80, label=_("Description"), required=False)
+    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
+                                   widget=forms.Select(attrs={
+                                       'class': 'switchable',
+                                       'data-slug': 'ipversion',
+                                   }),
+                                   label=_("IP Version"))
+    cidr = forms.IPField(label=_("CIDR"),
+                            initial="",
+                            help_text=_("Network address in CIDR format "
+                                        "(e.g. 192.168.0.0/24,"
+                                        "2001:DB8::/48)"),
+                            version=forms.IPv4 | forms.IPv6, mask=True)
+    external_routes = fields.CustomMultiChoiceField(
+        label=_("External Routes"), add_item_link=ROUTE_URL,
+        required=False)
+    subnet_id = forms.ChoiceField(label=_("Subnet ID"), required=False)
+    port_address_translation = forms.BooleanField(
+        label=_("Port Address Translation"),
+        initial=False, required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(CreateExternalConnectivityForm, self).__init__(request,
+            *args, **kwargs)
+        net_id_list = []
+        dic = {"router:external": True}
+        try:
+            net_list = api.neutron.network_list(request, **dic)
+            subnet_list = api.neutron.subnet_list(request)
+            net_id_list = [net.id for net in net_list]
+            self.fields['subnet_id'].choices = [(subnet.id, subnet.name)
+                for subnet in subnet_list if subnet.network_id in net_id_list]
+        except Exception:
+            msg = _("Failed to get Subnet ID list.")
+            exceptions.handle(request, msg)
+
+    def handle(self, request, context):
+        url = reverse("horizon:project:network_policy:index")
+        try:
+            routes = context['external_routes']
+            p = []
+            if len(routes) > 0:
+                for item in routes:
+                    values = [i.split(":")[1] for i in item.split(",")]
+                    values = {'destination': values[0],
+                              'nexthop': values[1]}
+                    p.append(values)
+            context['external_routes'] = p
+            client.create_externalconnectivity(
+                request, **context)
+            msg = _("External Connectivity updatedsuccessfully!")
+            LOG.debug(msg)
+            return http.HttpResponseRedirect(url)
+        except Exception as e:
+            msg = str(e)
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
+class ExternalRouteParam(object):
+
+    def __init__(self, context):
+        self.destination = context['destination']
+        self.next_hop = context['next_hop']
+        self.name = 'destination:%s,next_hop:%s' % (
+            self.destination, self.next_hop)
+        self.id = self.name
+
+
+class CreateExternalRouteParamForm(forms.SelfHandlingForm):
+    destination = forms.IPField(label=_("Destination"),
+                            initial="",
+                            help_text=_(
+                                "(e.g. 192.168.0.0/24,"
+                                "2001:DB8::/48)"),
+                            version=forms.IPv4 | forms.IPv6,
+                            mask=True)
+    next_hop = forms.IPField(label=_("Next hop"))
+
+    def handle(self, request, context):
+        return ExternalRouteParam(context)

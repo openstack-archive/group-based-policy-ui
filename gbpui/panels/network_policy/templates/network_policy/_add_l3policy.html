@@ -19,6 +19,26 @@
 </div>
 {% endblock %}
 
+
+{% block modal-js %}
+<script>
+ $(function(){
+   if($('#id_external_segments>option:selected').val() == ''){
+       $('#id_segment_ip').parent().parent().hide();
+   }
+   $('#id_external_segments').on('change',function(){
+   if($('#id_external_segments>option:selected').val() == ''){
+       $('#id_segment_ip').parent().parent().hide();
+   }else{
+       $('#id_segment_ip').parent().parent().show();
+   }
+  });
+});
+</script>
+{% endblock %}
+
+
+
 {% block modal-footer %}
   <input class="btn btn-primary pull-right" type="submit" value="{% trans "Save Changes" %}" />
   <a href="{% url 'horizon:project:network_policy:index' %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
