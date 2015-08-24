@@ -25,11 +25,12 @@ from gbpui import column_filters as gfilters
 import tables
 
 PTGsTable = tables.PTGsTable
+External_PTGsTable = tables.ExternalPTGsTable
 
 
 class PTGsTab(tabs.TableTab):
     table_classes = (PTGsTable,)
-    name = _("Groups")
+    name = _("Internal")
     slug = "policytargets"
     template_name = "horizon/common/_detail_table.html"
 
@@ -48,9 +49,32 @@ class PTGsTab(tabs.TableTab):
         return policy_targets
 
 
+class ExternalPTGsTab(tabs.TableTab):
+    table_classes = (External_PTGsTable,)
+    name = _("External")
+    slug = "externalpolicytargets"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_external_policy_targetstable_data(self):
+        external_policy_targets = []
+        try:
+            external_policy_targets = client.ext_policy_target_list(
+                self.tab_group.request,
+                tenant_id=self.tab_group.request.user.tenant_id)
+            a = lambda x, y: gfilters.update_policy_target_attributes(x, y)
+            external_policy_targets = [a(self.request, item)
+                for item in external_policy_targets]
+        except Exception as e:
+            msg = _('Unable to retrieve policy_target list. %s') % (str(e))
+            exceptions.handle(self.tab_group.request, msg)
+            for policy_target in external_policy_targets:
+                policy_target.set_id_as_name_if_empty()
+        return external_policy_targets
+
+
 class PTGTabs(tabs.TabGroup):
     slug = "policy_targettabs"
-    tabs = (PTGsTab,)
+    tabs = (PTGsTab, ExternalPTGsTab)
     sticky = True
 
 
@@ -186,3 +210,55 @@ class PTGMemberTabs(tabs.TabGroup):
     slug = 'member_tabs'
     tabs = (InstancesTab, ProvidedTab, ConsumedTab, PTGDetailsTab,)
     stiky = True
+
+
+class ExtProvidedTab(ProvidedTab):
+    table_classes = (tables.ExtProvidedContractsTable,)
+
+    def get_provided_policy_rule_sets_data(self):
+        try:
+            ext_policy_targetid = self.tab_group.kwargs['ext_policy_target_id']
+            ext_policy_target = client.ext_policy_target_get(
+                self.request, ext_policy_targetid)
+            provided_policy_rule_set_ids = ext_policy_target.get(
+                'provided_policy_rule_sets')
+            provided_policy_rule_sets = []
+            for _id in provided_policy_rule_set_ids:
+                provided_policy_rule_sets.append(
+                    client.policy_rule_set_get(self.request, _id))
+            provided_policy_rule_sets = [gfilters.update_pruleset_attributes(
+                self.request, item) for item in provided_policy_rule_sets]
+            return provided_policy_rule_sets
+        except Exception:
+            error_message = _('Unable to get provided rule sets')
+            exceptions.handle(self.request, error_message)
+            return []
+
+
+class ExtConsumedTab(ConsumedTab):
+    table_classes = (tables.ExtConsumedContractsTable,)
+
+    def get_consumed_policy_rule_sets_data(self):
+        try:
+            ext_policy_targetid = self.tab_group.kwargs['ext_policy_target_id']
+            ext_policy_target = client.ext_policy_target_get(
+                self.request, ext_policy_targetid)
+            consumed_policy_rule_set_ids = ext_policy_target.get(
+                'consumed_policy_rule_sets')
+            consumed_policy_rule_sets = []
+            for _id in consumed_policy_rule_set_ids:
+                consumed_policy_rule_sets.append(
+                    client.policy_rule_set_get(self.request, _id))
+            consumed_policy_rule_sets = [gfilters.update_pruleset_attributes(
+                self.request, item) for item in consumed_policy_rule_sets]
+            return consumed_policy_rule_sets
+        except Exception:
+            error_message = _('Unable to get consumed rule sets')
+            exceptions.handle(self.request, error_message)
+            return []
+
+
+class ExternalPTGMemberTabs(tabs.TabGroup):
+    slug = 'members'
+    tabs = (ExtProvidedTab, ExtConsumedTab)
+    sticky = True

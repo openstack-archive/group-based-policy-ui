@@ -187,8 +187,8 @@ class AddPTGAction(workflows.Action):
         super(AddPTGAction, self).__init__(request, *args, **kwargs)
 
     class Meta(object):
-        name = _("Create Group")
-        help_text = _("Create a new Group")
+        name = _("Group")
+        help_text = _("Create Internal Group")
 
 
 class AddPTGStep(workflows.Step):
@@ -202,7 +202,7 @@ class AddPTGStep(workflows.Step):
 
 class AddPTG(workflows.Workflow):
     slug = "addpolicy_target"
-    name = _("Create Group")
+    name = _("Create Internal Group")
     finalize_button_name = _("Create")
     success_message = _('Create Group "%s".')
     failure_message = _('Unable to create Group "%s".')
@@ -222,6 +222,101 @@ class AddPTG(workflows.Workflow):
             if context.get('description'):
                 context['description'] = html.escape(context['description'])
             group = client.policy_target_create(request, **context)
+            return group
+        except Exception as e:
+            msg = self.format_status_message(self.failure_message) + str(e)
+            exceptions.handle(request, msg)
+            return False
+
+
+class ExternalConnectivityAction(workflows.Action):
+    external_segments = forms.ChoiceField(
+        label=_("External Connectivity"),
+        help_text=_("Select external segment for Group."))
+
+    class Meta(object):
+        name = _("External Connectivity")
+        help_text = _(
+            "Select External Connectivity for Group.")
+
+    def populate_external_segments_choices(self, request, context):
+        external_connectivities = []
+        try:
+            external_connectivities = client.externalconnectivity_list(
+                request, tenant_id=request.user.tenant_id)
+            for p in external_connectivities:
+                p.set_id_as_name_if_empty()
+            ext_conn_list = sorted(external_connectivities,
+                key=lambda segment: segment.name)
+            ext_conn_list = \
+                [(p.id, p.name + ":" + p.id) for p in ext_conn_list]
+        except Exception as e:
+            exceptions.handle(request,
+                              _("Unable to retrieve policies (%(error)s).")
+                              % {'error': str(e)})
+        return ext_conn_list
+
+
+class ExternalConnectivityStep(workflows.Step):
+    action_class = ExternalConnectivityAction
+    name = _("External Connectivity")
+    contributes = ("external_segments",)
+
+    def contribute(self, data, context):
+        ext_seg_list = []
+        ext_seg_list.append(data['external_segments'])
+        context['external_segments'] = ext_seg_list
+        return context
+
+
+class ExtAddPTGAction(workflows.Action):
+    name = forms.CharField(max_length=80,
+                           label=_("Name"))
+    description = forms.CharField(max_length=80,
+                                  label=_("Description"),
+                                  required=False)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(ExtAddPTGAction, self).__init__(request, *args, **kwargs)
+
+    class Meta(object):
+        name = _("Group")
+        help_text = _("Create External Group")
+
+
+class ExtAddPTGStep(workflows.Step):
+    action_class = ExtAddPTGAction
+    contributes = ("name", "description", "shared")
+
+    def contribute(self, data, context):
+        context = super(ExtAddPTGStep, self).contribute(data, context)
+        return context
+
+
+class AddExternalPTG(workflows.Workflow):
+    slug = "addexternal_policy_target"
+    name = _("Create External Group")
+    finalize_button_name = _("Create")
+    success_message = _('Create External Group "%s".')
+    failure_message = _('Unable to create External Group "%s".')
+    success_url = "horizon:project:policytargets:index"
+    default_steps = (ExtAddPTGStep,
+                     SelectPolicyRuleSetStep,
+                     ExternalConnectivityStep,)
+    wizard = True
+
+    def format_status_message(self, message):
+        return message % self.context.get('name')
+
+    def handle(self, request, context):
+        try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
+            group = client.ext_policy_target_create(request, **context)
             return group
         except Exception as e:
             msg = self.format_status_message(self.failure_message) + str(e)
