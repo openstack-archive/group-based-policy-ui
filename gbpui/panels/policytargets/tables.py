@@ -40,7 +40,7 @@ class UpdatePTGLink(tables.LinkAction):
 
 
 class DeletePTGLink(tables.DeleteAction):
-    name = "deletepolicy_target"
+    name = "deletepolicytarget"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Group")
@@ -49,7 +49,7 @@ class DeletePTGLink(tables.DeleteAction):
 
 class AddPTGLink(tables.LinkAction):
     name = "addpolicy_target"
-    verbose_name = _("Create Group")
+    verbose_name = _("Create Internal Group")
     url = "horizon:project:policytargets:addpolicy_target"
     classes = ("ajax-modal", "btn-addpolicy_target",)
 
@@ -70,9 +70,57 @@ class PTGsTable(tables.DataTable):
 
     class Meta:
         name = "policy_targetstable"
-        verbose_name = _("Groups")
+        verbose_name = _("Internal Groups")
         table_actions = (AddPTGLink, DeletePTGLink)
         row_actions = (UpdatePTGLink, DeletePTGLink)
+
+
+class UpdateExternalPTGLink(tables.LinkAction):
+    name = "updateexternal_policy_target"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, ext_policy_target):
+        u = "horizon:project:policytargets:update_ext_policy_target"
+        base_url = reverse(u, kwargs={'ext_policy_target_id':
+            ext_policy_target.id})
+        return base_url
+
+
+class AddExternalPTGLink(tables.LinkAction):
+    name = "addexternal_policy_target"
+    verbose_name = _("Create External Group")
+    url = "horizon:project:policytargets:addexternal_policy_target"
+    classes = ("ajax-modal", "btn-addexternal_policy_target",)
+
+
+class DeleteExternalPTGLink(tables.DeleteAction):
+    name = "deleteexternalpolicytarget"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of %(data_type)s")
+    data_type_singular = _("Group")
+    data_type_plural = _("Groups")
+
+
+class ExternalPTGsTable(tables.DataTable):
+    name = tables.Column("name",
+                verbose_name=_("Name"),
+                link="horizon:project:policytargets:ext_policy_targetdetails")
+    description = tables.Column("description", verbose_name=_("Description"))
+    provided_policy_rule_sets = tables.Column("provided_policy_rule_sets",
+                                         sortable=False,
+                                         verbose_name=_("Provided Rule Sets"))
+    consumed_policy_rule_sets = tables.Column("consumed_policy_rule_sets",
+                                         sortable=False,
+                                         verbose_name=_("Consumed Rule Sets"))
+    external_segments = tables.Column("external_segments",
+                                 verbose_name=_("External Connectivity"))
+
+    class Meta(object):
+        name = "external_policy_targetstable"
+        verbose_name = _("External Group")
+        table_actions = (AddExternalPTGLink, DeleteExternalPTGLink)
+        row_actions = (UpdateExternalPTGLink, DeleteExternalPTGLink,)
 
 
 class LaunchVMLink(tables.LinkAction):
@@ -166,8 +214,8 @@ class AddProvidedLink(tables.LinkAction):
 
     def get_link_url(self):
         return reverse("horizon:project:policytargets:add_provided_prs",
-                       kwargs={'policy_target_id':
-                           self.table.kwargs['policy_target_id']})
+            kwargs={'policy_target_id':
+                self.table.kwargs['policy_target_id']})
 
 
 class RemoveProvidedLink(tables.LinkAction):
@@ -194,6 +242,28 @@ class ProvidedContractsTable(tables.DataTable):
         name = 'provided_policy_rule_sets'
         verbose_name = _("Provided Policy Rule Set")
         table_actions = (AddProvidedLink, RemoveProvidedLink,)
+
+
+class ExtAddProvidedLink(AddProvidedLink):
+
+    def get_link_url(self):
+        return reverse("horizon:project:policytargets:ext_add_provided_prs",
+                       kwargs={'ext_policy_target_id':
+                           self.table.kwargs['ext_policy_target_id']})
+
+
+class ExtRemoveProvidedLink(RemoveProvidedLink):
+
+    def get_link_url(self):
+        return reverse("horizon:project:policytargets:ext_remove_provided_prs",
+                       kwargs={'ext_policy_target_id':
+                           self.table.kwargs['ext_policy_target_id']})
+
+
+class ExtProvidedContractsTable(ProvidedContractsTable):
+
+    class Meta(ProvidedContractsTable.Meta):
+        table_actions = (ExtAddProvidedLink, ExtRemoveProvidedLink,)
 
 
 class AddConsumedLink(tables.LinkAction):
@@ -232,3 +302,25 @@ class ConsumedContractsTable(tables.DataTable):
         name = 'consumed_policy_rule_sets'
         verbose_name = _("Consumed Policy Rule Set")
         table_actions = (AddConsumedLink, RemoveConsumedLink,)
+
+
+class ExtAddConsumedLink(AddConsumedLink):
+
+    def get_link_url(self):
+        return reverse("horizon:project:policytargets:ext_add_consumed_prs",
+                       kwargs={'ext_policy_target_id':
+                           self.table.kwargs['ext_policy_target_id']})
+
+
+class ExtRemoveConsumedLink(RemoveConsumedLink):
+
+    def get_link_url(self):
+        return reverse("horizon:project:policytargets:ext_remove_consumed_prs",
+                       kwargs={'ext_policy_target_id':
+                           self.table.kwargs['ext_policy_target_id']})
+
+
+class ExtConsumedContractsTable(ConsumedContractsTable):
+
+    class Meta(ConsumedContractsTable.Meta):
+        table_actions = (ExtAddConsumedLink, ExtRemoveConsumedLink,)
