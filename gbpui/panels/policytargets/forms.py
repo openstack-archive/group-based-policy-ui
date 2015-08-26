@@ -102,18 +102,20 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
         policy_target_id = self.initial['policy_target_id']
         name_or_id = context.get('name') or policy_target_id
         try:
-            if context.get('provided_policy_rule_sets'):
-                context['provided_policy_rule_sets'] = dict(
-                    [(i, 'string')
+            if 'provided_policy_rule_sets' in context:
+                if context.get('provided_policy_rule_sets'):
+                    context['provided_policy_rule_sets'] = dict(
+                        [(i, 'string')
                         for i in context['provided_policy_rule_sets']])
-            else:
-                context['provided_policy_rule_sets'] = None
-            if context.get('consumed_policy_rule_sets'):
-                context['consumed_policy_rule_sets'] = dict(
-                    [(i, 'string')
+                else:
+                    context['provided_policy_rule_sets'] = None
+            if 'consumed_policy_rule_sets' in context:
+                if context.get('consumed_policy_rule_sets'):
+                    context['consumed_policy_rule_sets'] = dict(
+                        [(i, 'string')
                         for i in context['consumed_policy_rule_sets']])
-            else:
-                context['consumed_policy_rule_sets'] = None
+                else:
+                    context['consumed_policy_rule_sets'] = None
             if context['network_service_policy_id'] == 'None':
                 context['network_service_policy_id'] = None
             if context.get('name'):
@@ -202,14 +204,20 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
         name_or_id = context.get('name') or ext_policy_target_id
         external_segment_list = []
         try:
-            if context.get('provided_policy_rule_sets'):
-                context['provided_policy_rule_sets'] = dict(
-                    [(i, 'string')
+            if 'provided_policy_rule_sets' in context:
+                if context.get('provided_policy_rule_sets'):
+                    context['provided_policy_rule_sets'] = dict(
+                        [(i, 'string')
                         for i in context['provided_policy_rule_sets']])
-            if context.get('consumed_policy_rule_sets'):
-                context['consumed_policy_rule_sets'] = dict(
-                    [(i, 'string')
+                else:
+                    context['provided_policy_rule_sets'] = None
+            if 'consumed_policy_rule_sets' in context:
+                if context.get('consumed_policy_rule_sets'):
+                    context['consumed_policy_rule_sets'] = dict(
+                        [(i, 'string')
                         for i in context['consumed_policy_rule_sets']])
+                else:
+                    context['consumed_policy_rule_sets'] = None
             if 'external_segments' in context:
                 external_segment_list.append(context['external_segments'])
                 context['external_segments'] = external_segment_list

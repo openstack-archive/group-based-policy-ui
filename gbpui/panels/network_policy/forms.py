@@ -429,7 +429,7 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
                                    }),
                                    label=_("IP Version"))
     cidr = forms.IPField(label=_("CIDR"),
-                            initial="",
+                            initial="", required=False,
                             help_text=_("Network address in CIDR format "
                                         "(e.g. 192.168.0.0/24,"
                                         "2001:DB8::/48)"),
@@ -462,6 +462,8 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
         try:
+            if context['cidr'] == '':
+                del context['cidr']
             routes = context['external_routes']
             p = []
             if len(routes) > 0:
