@@ -50,6 +50,9 @@ class L3PolicyTab(tabs.TableTab):
         try:
             policies = client.l3policy_list(self.request,
                 tenant_id=self.request.user.tenant_id)
+            update = lambda x: gfilters.update_l3_policy_attributes(
+                self.request, x)
+            policies = [update(item) for item in policies]
         except Exception:
             policies = []
             exceptions.handle(self.tab_group.request,
@@ -111,15 +114,59 @@ class ServicePolicyDetailsTab(tabs.Tab):
         return {'policy': policy}
 
 
+class ExternalConnectivityTab(tabs.TableTab):
+    table_classes = (tables.ExternalConnectivityTable,)
+    name = _("External Connectivity")
+    slug = "external_connectivity"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_external_connectivity_table_data(self):
+        external_segment_list = []
+        try:
+            external_segment_list = \
+                client.externalconnectivity_list(self.request,
+                    self.request.user.tenant_id)
+        except Exception:
+            exceptions.handle(self.tab_group.request,
+                    _('Unable to retrieve network service policy list.'))
+        return external_segment_list
+
+
+class ExternalConnectivityDetailsTab(tabs.Tab):
+    name = _("External Connectivity Details")
+    slug = "external_connectivity_details"
+    template_name = \
+        "project/network_policy/_external_connectivity_details.html"
+    failure_url = reverse_lazy('horizon:project:network_policy:index')
+
+    def get_context_data(self, request):
+        external_connectivity_id = \
+            self.tab_group.kwargs['external_connectivity_id']
+        try:
+            external_connectivity = client.get_externalconnectivity(request,
+                external_connectivity_id)
+        except Exception:
+            exceptions.handle(
+                request, _('Unable to retrieve service policy details.'),
+                redirect=self.failure_url)
+        return {'external_connectivity': external_connectivity}
+
+
 class ServicePolicyDetailsTabs(tabs.TabGroup):
     slug = "service_policy_details_tab"
     tabs = (ServicePolicyDetailsTab,)
     sticky = True
 
 
+class ExternalConnectivityDetailsTabs(tabs.TabGroup):
+    slug = "external_connectivity_details_tab"
+    tabs = (ExternalConnectivityDetailsTab,)
+    sticky = True
+
+
 class L3PolicyTabs(tabs.TabGroup):
     slug = "l3policy_tab"
-    tabs = (L3PolicyTab, ServicePolicyTab,)
+    tabs = (L3PolicyTab, ServicePolicyTab, ExternalConnectivityTab,)
     sticky = True
 
 

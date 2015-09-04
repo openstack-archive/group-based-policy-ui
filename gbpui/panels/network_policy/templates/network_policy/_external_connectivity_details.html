@@ -1,0 +1,32 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+        <hr class="header_rule">
+        <dl>
+                <dt>{% trans "Name" %}</dt>
+                <dd>{{ external_connectivity.name|default:_("-") }}</dd>
+
+                <dt>{% trans "Description" %}</dt>
+                <dd>{{ external_connectivity.description|default:_("-") }}</dd>
+
+                <dt>{% trans "ID" %}</dt>
+                <dd>{{ external_connectivity.id }} </dd>
+
+                <dt>{% trans "Ip Version" %}</dt>
+                <dd>{{ external_connectivity.ip_version }} </dd>
+
+                <dt>{% trans "CIDR" %}</dt>
+                <dd>{{ external_connectivity.cidr }} </dd>
+
+                <dt>{% trans "External Routes" %}</dt>
+                <dd>{{ external_connectivity.external_routes|default:_("-") }} </dd>
+
+
+                <dt>{% trans "Port Address Translation" %}</dt>
+                <dd>{{ external_connectivity.port_address_translation }} </dd>
+
+                <dt>{% trans "Shared" %}</dt>
+                <dd>{{ external_connectivity.shared }} </dd>
+        </dl>
+</div>
