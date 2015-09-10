@@ -114,15 +114,15 @@ class L3PolicyDetailsView(tables.MultiTableView):
         return self.get(request, *args, **kwargs)
 
     def get_l2policy_table_data(self):
-        policies = []
+        l2_policies = []
         try:
-            policies = client.l2policy_list(self.request,
-                tenant_id=self.request.user.tenant_id)
+            condition = {'l3_policy_id': self.kwargs['l3policy_id']}
+            l2_policies = client.l2policy_list(self.request,
+                    tenant_id=self.request.user.tenant_id, **condition)
         except Exception:
-            policies = []
-            exceptions.handle(self.tab_group.request,
+            exceptions.handle(self.request,
                               _('Unable to retrieve l2 policy list.'))
-        return policies
+        return l2_policies
 
     def get_context_data(self, **kwargs):
         context = super(L3PolicyDetailsView, self).get_context_data(**kwargs)
