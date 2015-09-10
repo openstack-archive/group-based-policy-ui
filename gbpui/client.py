@@ -439,7 +439,7 @@ def update_externalconnectivity(request, external_connectivity_id, **kwargs):
     body = {'external_segment': kwargs}
     ec = gbpclient(request).update_external_segment(
         external_connectivity_id, body).get('external_segment')
-    return NetworkServicePolicy(ec)
+    return ExternalConnectivity(ec)
 
 
 def create_networkservice_policy(request, **kwargs):
