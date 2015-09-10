@@ -86,22 +86,24 @@ class PTGDetailsTab(tabs.Tab):
 
     def get_context_data(self, request):
         policy_targetid = self.tab_group.kwargs['policy_target_id']
+        nsp = ''
         try:
             policy_target = client.policy_target_get(request, policy_targetid)
-            l3list = client.l3policy_list(request,
-                tenant_id=request.user.tenant_id)
-            l2list = client.l2policy_list(request,
-                tenant_id=request.user.tenant_id)
-            l2list = [
-                item for item in l2list
-                if item.id == policy_target.l2_policy_id]
+            l2_policy = client.l2policy_get(request,
+                            policy_target["l2_policy_id"])
+            l3_policy = client.l3policy_get(request,
+                            l2_policy["l3_policy_id"])
+            if policy_target['network_service_policy_id']:
+                nsp_id = policy_target['network_service_policy_id']
+                nsp = client.get_networkservice_policy(request, nsp_id)
         except Exception:
             exceptions.handle(
                 request, _('Unable to retrieve group details.'),
                 redirect=self.failure_url)
         return {'policy_target': policy_target,
-                'l3list': l3list,
-                'l2list': l2list}
+                'l3_policy': l3_policy,
+                'l2_policy': l2_policy,
+                'nsp': nsp}
 
 
 class PTGDetailsTabs(tabs.TabGroup):
