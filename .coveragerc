@@ -4,4 +4,4 @@ source = gbpui
 omit = gbpui/tests/*,gbpui/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
