@@ -24,6 +24,8 @@ from gbpui import column_filters as gfilters
 
 import tables
 
+import time
+
 PTGsTable = tables.PTGsTable
 External_PTGsTable = tables.ExternalPTGsTable
 
@@ -142,6 +144,11 @@ class InstancesTab(tabs.TableTab):
             self._has_more = False
             instances = [item for item in instances
                     if not itables.is_deleting(item)]
+            # port_list for a given instance is not available
+            # when it query immediately after member create,
+            # So adding half sec sleep before port list query
+            if policy_target_ports:
+                time.sleep(0.5)
             for item in instances:
                 for port in api.neutron.port_list(self.request,
                                                   device_id=item.id):
