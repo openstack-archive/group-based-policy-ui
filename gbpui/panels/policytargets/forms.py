@@ -116,7 +116,7 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
                         for i in context['consumed_policy_rule_sets']])
                 else:
                     context['consumed_policy_rule_sets'] = None
-            if context['network_service_policy_id'] == 'None':
+            if context.get('network_service_policy_id') == 'None':
                 context['network_service_policy_id'] = None
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
