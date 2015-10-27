@@ -412,8 +412,9 @@ class UpdateExternalConnectivityForm(forms.SelfHandlingForm):
             msg = _("External Connectivity updated successfully!")
             LOG.debug(msg)
             return http.HttpResponseRedirect(url)
-        except Exception:
-            msg = _("Failed to update External Connectivity")
+        except Exception as e:
+            msg = _("Failed to update External Connectivity.%s") % \
+                (str(e))
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
@@ -453,15 +454,17 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
             net_list = api.neutron.network_list(request, **dic)
             subnet_list = api.neutron.subnet_list(request)
             net_id_list = [net.id for net in net_list]
-            self.fields['subnet_id'].choices = [(subnet.id, subnet.name)
-                for subnet in subnet_list if subnet.network_id in net_id_list]
+            self.fields['subnet_id'].choices = [('', 'Select')] + \
+                [(subnet.id, subnet.name) for subnet in subnet_list
+                if subnet.network_id in net_id_list]
         except Exception:
             msg = _("Failed to get Subnet ID list.")
             exceptions.handle(request, msg)
 
     def handle(self, request, context):
-        url = reverse("horizon:project:network_policy:index")
         try:
+            if context['subnet_id'] == '':
+                del context['subnet_id']
             if context['cidr'] == '':
                 del context['cidr']
             routes = context['external_routes']
@@ -473,11 +476,12 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
                               'nexthop': values[1]}
                     p.append(values)
             context['external_routes'] = p
-            client.create_externalconnectivity(
+            external_segment = client.create_externalconnectivity(
                 request, **context)
-            msg = _("External Connectivity updatedsuccessfully!")
+            msg = _('External Connectivity successfully created.')
             LOG.debug(msg)
-            return http.HttpResponseRedirect(url)
+            messages.success(request, msg)
+            return external_segment
         except Exception as e:
             msg = str(e)
             LOG.error(msg)

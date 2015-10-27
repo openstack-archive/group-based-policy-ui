@@ -90,12 +90,17 @@ def update_policy_target_attributes(request, pt):
         setattr(pt, 'l2_policy_id', atag)
     if hasattr(pt, 'external_segments'):
         exturl = "horizon:project:network_policy:external_connectivity_details"
-        ext_policy = client.get_externalconnectivity(request,
-            pt.external_segments[0])
-        u = reverse(exturl, kwargs={'external_connectivity_id': ext_policy.id})
-        exttag = mark_safe(
-            "<a href='" + u + "'>" + ext_policy.name + "</a>")
-        setattr(pt, 'external_segments', exttag)
+        value = ["<ul>"]
+        li = lambda x: "<li><a href='" + \
+            reverse(exturl, kwargs={'external_connectivity_id': x.id}) + \
+            "'>" + x.name + "</a></li>"
+        for external_segment in pt.external_segments:
+            ext_policy = client.get_externalconnectivity(request,
+                external_segment)
+            value.append(li(ext_policy))
+        value.append("</ul>")
+        value = "".join(value)
+        setattr(pt, 'external_segments', mark_safe(value))
     return pt
 
 
