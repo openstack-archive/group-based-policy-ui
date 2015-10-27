@@ -36,6 +36,8 @@ from gbpui import fields
 LOG = logging.getLogger(__name__)
 
 POLICY_RULE_SET_URL = "horizon:project:application_policy:addpolicy_rule_set"
+ADD_EXTERNAL_CONNECTIVITY = \
+    "horizon:project:network_policy:create_external_connectivity"
 
 
 class SelectPolicyRuleSetAction(workflows.Action):
@@ -230,9 +232,11 @@ class AddPTG(workflows.Workflow):
 
 
 class ExternalConnectivityAction(workflows.Action):
-    external_segments = forms.ChoiceField(
+    external_segments = fields.DynamicMultiChoiceField(
         label=_("External Connectivity"),
-        help_text=_("Select external segment for Group."))
+        required=True,
+        add_item_link=ADD_EXTERNAL_CONNECTIVITY,
+        help_text=_("Select external segment(s) for Group."))
 
     class Meta(object):
         name = _("External Connectivity")
@@ -263,9 +267,7 @@ class ExternalConnectivityStep(workflows.Step):
     contributes = ("external_segments",)
 
     def contribute(self, data, context):
-        ext_seg_list = []
-        ext_seg_list.append(data['external_segments'])
-        context['external_segments'] = ext_seg_list
+        context['external_segments'] = data.get('external_segments', [])
         return context
 
 

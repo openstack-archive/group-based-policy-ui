@@ -145,9 +145,9 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
         label=_("Provided Policy Rule Set"), required=False)
     consumed_policy_rule_sets = forms.MultipleChoiceField(
         label=_("Consumed Policy Rule Set"), required=False)
-    external_segments = forms.ChoiceField(
-        label=_("External Connectivity"),
-        help_text=_("Select external segment for Group."))
+    external_segments = forms.MultipleChoiceField(
+        label=_("External Connectivity"),required=True,
+        help_text=_("Select external segment(s) for Group."))
     shared = forms.BooleanField(label=_("Shared"), required=False)
     failure_url = 'horizon:project:policytargets:index'
 
@@ -183,10 +183,8 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
                     consumed_init.append(item[0])
             self.fields['provided_policy_rule_sets'].initial = provided_init
             self.fields['consumed_policy_rule_sets'].initial = consumed_init
-            for attr in ['name', 'description', 'shared']:
+            for attr in ['name', 'description', 'shared', 'external_segments']:
                 self.fields[attr].initial = getattr(ext_policy_target, attr)
-            self.fields['external_segments'].initial = \
-                ext_policy_target.external_segments[0]
         except Exception as e:
             msg = _('Unable to retrieve policy_rule_set details. %s') % (
                 str(e))
@@ -202,7 +200,6 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         ext_policy_target_id = self.initial['ext_policy_target_id']
         name_or_id = context.get('name') or ext_policy_target_id
-        external_segment_list = []
         try:
             if 'provided_policy_rule_sets' in context:
                 if context.get('provided_policy_rule_sets'):
@@ -218,9 +215,6 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
                         for i in context['consumed_policy_rule_sets']])
                 else:
                     context['consumed_policy_rule_sets'] = None
-            if 'external_segments' in context:
-                external_segment_list.append(context['external_segments'])
-                context['external_segments'] = external_segment_list
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
             if context.get('description'):
