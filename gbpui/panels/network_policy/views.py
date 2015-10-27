@@ -12,6 +12,7 @@
 
 import re
 
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -229,6 +230,12 @@ class CreateExternalConnectivityView(forms.ModalFormView):
         context = super(
             CreateExternalConnectivityView, self).get_context_data(**kwargs)
         return context
+
+    def get_success_url(self):
+        return reverse('horizon:project:network_policy:index')
+
+    def get_object_id(self, external_segment):
+        return [external_segment.id]
 
 
 class ExternalConnectivityDetailsView(tabs.TabView):
