@@ -247,17 +247,18 @@ def update_classifier_attributes(classifiers):
 def update_l3_policy_attributes(request, l3_policy):
     url = "horizon:project:network_policy:external_connectivity_details"
     if bool(l3_policy.external_segments):
-        external_connectivity_id = l3_policy.external_segments.keys()[0]
-        try:
+        value = ["<ul>"]
+        li = \
+            lambda x: "<li><a href='" + \
+            reverse(url, kwargs={'external_connectivity_id': x.id}) + \
+             "'>" + x.name + "</a>" + " : " + \
+            l3_policy.external_segments[x.id][0] + "</li>"
+        for ec in l3_policy.external_segments.keys():
             external_connectivity = client.get_externalconnectivity(request,
-                external_connectivity_id)
-            segment_name = external_connectivity.name
-        except Exception:
-            segment_name = external_connectivity_id
-        u = reverse(url,
-            kwargs={'external_connectivity_id': external_connectivity_id})
-        tag = mark_safe("<a href='" + u + "'>" + segment_name + "</a>"
-            + " : " + l3_policy.external_segments.values()[0][0])
+                                                                    ec)
+            value.append(li(external_connectivity))
+        value.append("</ul>")
+        tag = mark_safe("".join(value))
     else:
         tag = '-'
     setattr(l3_policy, 'external_segments', tag)
