@@ -172,6 +172,14 @@ class CreateServicePolicyView(forms.ModalFormView):
         return context
 
 
+class AddExternalSegmentParamView(forms.ModalFormView):
+    form_class = np_forms.CreateExternalSegmentParamForm
+    template_name = "project/network_policy/create_external_segment_param.html"
+
+    def get_object_id(self, params):
+        return params.name
+
+
 class AddNetworkServiceParamView(forms.ModalFormView):
     form_class = np_forms.CreateNetworkServiceParamForm
     template_name = "project/network_policy/create_network_service_param.html"

@@ -28,6 +28,7 @@ from gbpui import fields
 
 LOG = logging.getLogger(__name__)
 
+EXT_SEG_PARAM_URL = "horizon:project:network_policy:add_external_segment_param"
 NETWORK_PARAM_URL = "horizon:project:network_policy:add_network_service_param"
 ROUTE_URL = "horizon:project:network_policy:add_external_route_param"
 
@@ -62,21 +63,16 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2 - 30 for IP4"
                                                        "and 2-127 for IP6."),)
-    external_segments = forms.ChoiceField(label=_("External Segment"),
-                                          required=False)
-    segment_ip = forms.IPField(label=_("External Segment IP"), initial="",
-                               required=False)
+    external_segments = \
+        fields.CustomMultiChoiceField(label=_("External Segments"),
+                                      add_item_link=EXT_SEG_PARAM_URL,
+                                      required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False,
                                 required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL3PolicyForm, self).__init__(request, *args, **kwargs)
-        ec_list = client.externalconnectivity_list(request,
-            tenant_id=request.user.tenant_id)
-        external_segments_options = [(ec.id, ec.name) for ec in ec_list]
-        external_segments_options.insert(0, (None, "Select"))
-        self.fields['external_segments'].choices = external_segments_options
 
     def clean(self):
         cleaned_data = super(AddL3PolicyForm, self).clean()
@@ -88,23 +84,22 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                 raise forms.ValidationError(msg)
             if ipversion == 6 and subnet_prefix_length not in range(2, 128):
                 raise forms.ValidationError(msg)
-            if cleaned_data['external_segments'] != '':
-                if cleaned_data['segment_ip'] == '':
-                    self.add_error('segment_ip', 'This field is required')
         return cleaned_data
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
         external_segment_dic = {}
-        l = []
         try:
-            if context['external_segments'] != '':
-                l.append(context['segment_ip'])
-                external_segment_dic[context['external_segments']] = l
+            if context['external_segments']:
+                dic = {}
+                for external_segment in context['external_segments']:
+                    values = [i.split(":")[1]
+                        for i in external_segment.split(",")]
+                    dic[values[0]] = [values[1]]
+                    external_segment_dic.update(dic)
                 context['external_segments'] = external_segment_dic
             else:
-                del context['external_segments']
-            del context['segment_ip']
+                context['external_segments'] = {}
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
             if context.get('description'):
@@ -117,16 +112,39 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
             exceptions.handle(request, str(e), redirect=url)
 
 
+class ExternalSegmentParam(object):
+
+    def __init__(self, context):
+        self.external_segment = context['external_segment']
+        self.segment_ip = context['segment_ip']
+        self.name = "ES:%s,IP:%s" % (
+            self.external_segment, self.segment_ip)
+        self.id = self.name
+
+
+class CreateExternalSegmentParamForm(forms.SelfHandlingForm):
+    external_segment = forms.ChoiceField(label=_("External Segment"),
+                                          required=False)
+    segment_ip = forms.IPField(label=_("External Segment IP"), initial="",
+                               required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(CreateExternalSegmentParamForm, self).__init__(request,
+                                                             *args,
+                                                             **kwargs)
+        ec_list = client.externalconnectivity_list(request,
+            tenant_id=request.user.tenant_id)
+        external_segments_options = [(ec.id, ec.name) for ec in ec_list]
+        self.fields['external_segment'].choices = external_segments_options
+
+    def handle(self, request, context):
+        return ExternalSegmentParam(context)
+
+
 class UpdateL3PolicyForm(AddL3PolicyForm):
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
         try:
-            ec_list = client.externalconnectivity_list(request,
-                tenant_id=request.user.tenant_id)
-            external_segments_options = [(ec.id, ec.name) for ec in ec_list]
-            external_segments_options.insert(0, (None, "Select"))
-            self.fields['external_segments'].choices = \
-                external_segments_options
             l3policy_id = self.initial['l3policy_id']
             l3 = client.l3policy_get(request, l3policy_id)
             for item in ['name', 'description', 'ip_version',
@@ -134,13 +152,14 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
                 self.fields[item].initial = str(l3[item])
             self.fields['shared'].initial = l3['shared']
             if bool(l3['external_segments']):
-                self.fields['external_segments'].initial = \
-                    l3['external_segments'].keys()[0]
-                self.fields['segment_ip'].initial = \
-                    l3['external_segments'].values()[0][0]
-            else:
-                self.fields['external_segments'].initial = None
-                self.fields['segment_ip'].initial = ''
+                es_choices = []
+                es_initial = []
+                for key, value in l3['external_segments'].items():
+                    val = 'ES:' + key + ',IP:' + value[0]
+                    es_choices.append((val, val))
+                    es_initial.append(val)
+                self.fields['external_segments'].choices = es_choices
+                self.fields['external_segments'].initial = es_initial
         except Exception:
             msg = _("Failed to get L3 policy")
             LOG.error(msg)
@@ -148,7 +167,6 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
 
     def clean(self):
         external_segment_dict = {}
-        l = []
         cleaned_data = super(UpdateL3PolicyForm, self).clean()
         if self.is_valid():
             ipversion = int(cleaned_data['ip_version'])
@@ -158,20 +176,16 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
                 raise forms.ValidationError(msg)
             if ipversion == 6 and subnet_prefix_length not in range(2, 128):
                 raise forms.ValidationError(msg)
-            if cleaned_data['external_segments'] != '':
-                if cleaned_data['segment_ip'] == '':
-                    self.add_error('segment_ip', 'This field is required')
-            if 'external_segments' in self.changed_data or \
-                    'segment_ip' in self.changed_data:
-                if cleaned_data['external_segments'] != '':
-                    l.append(cleaned_data['segment_ip'])
-                    external_segment_dict[cleaned_data['external_segments']] = \
-                      l
-                    cleaned_data['external_segments'] = external_segment_dict
-                else:
-                    cleaned_data['external_segments'] = {}
-                del cleaned_data['segment_ip']
-                self.changed_data.append('external_segments')
+            if cleaned_data['external_segments']:
+                dic = {}
+                for external_segment in cleaned_data['external_segments']:
+                    values = [i.split(":")[1]
+                        for i in external_segment.split(",")]
+                    dic[values[0]] = [values[1]]
+                    external_segment_dict.update(dic)
+                cleaned_data['external_segments'] = external_segment_dict
+            else:
+                cleaned_data['external_segments'] = {}
             updated_data = {d: cleaned_data[d] for d in cleaned_data
                 if d in self.changed_data}
             cleaned_data = updated_data

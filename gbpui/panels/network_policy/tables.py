@@ -25,7 +25,7 @@ class CreateL2PolicyLink(tables.LinkAction):
 
 class EditL2PolicyLink(tables.LinkAction):
     name = "update_l2policy"
-    verbose_name = _("Edit L2Policy")
+    verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
 
     def get_link_url(self, l2policy):
@@ -67,7 +67,7 @@ class CreateL3PolicyLink(tables.LinkAction):
 
 class EditL3PolicyLink(tables.LinkAction):
     name = "update_l3policy"
-    verbose_name = _("Edit L3Policy")
+    verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
 
     def get_link_url(self, l3policy):
