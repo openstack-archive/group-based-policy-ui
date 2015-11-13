@@ -65,6 +65,15 @@ class IndexView(tabs.TabView):
                 except Exception as e:
                     msg = _('Unable to delete action. %s') % (str(e))
                     exceptions.handle(request, msg)
+        if obj_type == 'natpool':
+            for obj_id in obj_ids:
+                try:
+                    client.delete_natpool(request, obj_id)
+                    messages.success(request,
+                            _('Deleted NAT Pool %s') % obj_id)
+                except Exception as e:
+                    msg = _('Unable to delete action. %s') % (str(e))
+                    exceptions.handle(request, msg)
         return self.get(request, *args, **kwargs)
 
 
@@ -196,6 +205,20 @@ class AddExternalRouteParamView(forms.ModalFormView):
         return params.name
 
 
+class UpdateNATPoolView(forms.ModalFormView):
+    form_class = np_forms.UpdateNATPoolForm
+    template_name = "project/network_policy/update_nat_pool.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            UpdateNATPoolView, self).get_context_data(**kwargs)
+        context['nat_pool_id'] = self.kwargs['nat_pool_id']
+        return context
+
+    def get_initial(self):
+        return self.kwargs
+
+
 class UpdateExternalConnectivityView(forms.ModalFormView):
     form_class = np_forms.UpdateExternalConnectivityForm
     template_name = "project/network_policy/update_external_connectivity.html"
@@ -248,4 +271,19 @@ class CreateExternalConnectivityView(forms.ModalFormView):
 
 class ExternalConnectivityDetailsView(tabs.TabView):
     tab_group_class = (np_tabs.ExternalConnectivityDetailsTabs)
+    template_name = 'project/network_policy/details_tabs.html'
+
+
+class CreateNATPoolView(forms.ModalFormView):
+    form_class = np_forms.CreateNATPoolForm
+    template_name = "project/network_policy/create_nat_pool.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(
+            CreateNATPoolView, self).get_context_data(**kwargs)
+        return context
+
+
+class NATPoolDetailsView(tabs.TabView):
+    tab_group_class = (np_tabs.NATPoolDetailsTabs)
     template_name = 'project/network_policy/details_tabs.html'

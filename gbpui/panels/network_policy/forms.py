@@ -394,6 +394,110 @@ class UpdateServicePolicyForm(BaseUpdateForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
+class CreateNATPoolForm(forms.SelfHandlingForm):
+    name = forms.CharField(max_length=80, label=_("Name"))
+    description = forms.CharField(
+        max_length=80, label=_("Description"), required=False)
+    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
+                                   widget=forms.Select(attrs={
+                                       'class': 'switchable',
+                                       'data-slug': 'ipversion',
+                                   }),
+                                   label=_("IP Version"))
+    ip_pool = forms.IPField(label=_("CIDR"),
+                            initial="", required=True,
+                            help_text=_("Network address in CIDR format "
+                                        "(e.g. 192.168.0.0/24,"
+                                        "2001:DB8::/48)"),
+                            version=forms.IPv4 | forms.IPv6, mask=True)
+    external_segment_id = forms.ChoiceField(label=_("External Segment"),
+                                          required=True)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(CreateNATPoolForm, self).__init__(request,
+                                                *args,
+                                                **kwargs)
+        ec_list = client.externalconnectivity_list(request,
+            tenant_id=request.user.tenant_id)
+        external_segments_options = [(ec.id, ec.name) for ec in ec_list]
+        self.fields['external_segment_id'].choices = external_segments_options
+
+    def handle(self, request, context):
+        url = reverse("horizon:project:network_policy:index")
+        try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
+            client.create_natpool(request, **context)
+            msg = _("NAT Pool created successfully!")
+            LOG.debug(msg)
+            return http.HttpResponseRedirect(url)
+        except Exception as e:
+            msg = _("Failed to NAT Pool. %s") % (str(e))
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=url)
+
+
+class UpdateNATPoolForm(BaseUpdateForm):
+    name = forms.CharField(max_length=80, label=_("Name"))
+    description = forms.CharField(
+        max_length=80, label=_("Description"), required=False)
+    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
+                                   widget=forms.Select(attrs={
+                                       'class': 'switchable',
+                                       'data-slug': 'ipversion',
+                                   }),
+                                   label=_("IP Version"))
+    ip_pool = forms.IPField(label=_("CIDR"),
+                            initial="", required=True,
+                            help_text=_("Network address in CIDR format "
+                                        "(e.g. 192.168.0.0/24,"
+                                        "2001:DB8::/48)"),
+                            version=forms.IPv4 | forms.IPv6, mask=True)
+    external_segment_id = forms.ChoiceField(label=_("External Segment"),
+                                          required=True)
+    shared = forms.BooleanField(label=_("Shared"),
+                                initial=False, required=False)
+
+    def __init__(self, request, *args, **kwargs):
+        super(UpdateNATPoolForm, self).__init__(request,
+                                                *args,
+                                                **kwargs)
+        nat_pool_id = self.initial['nat_pool_id']
+        ec_list = client.externalconnectivity_list(request,
+            tenant_id=request.user.tenant_id)
+        external_segments_options = [(ec.id, ec.name) for ec in ec_list]
+        self.fields['external_segment_id'].choices = external_segments_options
+        nat_pool = client.get_natpool(request, nat_pool_id)
+        attributes = ['name', 'description',
+                        'ip_version', 'ip_pool', 'external_segment_id']
+        for attr in attributes:
+            self.fields[attr].initial = str(nat_pool[attr])
+        self.fields['shared'].initial = nat_pool['shared']
+
+    def handle(self, request, context):
+        url = reverse("horizon:project:network_policy:index")
+        try:
+            if context.get('name'):
+                context['name'] = html.escape(context['name'])
+            if context.get('description'):
+                context['description'] = html.escape(context['description'])
+            nat_pool_id = self.initial['nat_pool_id']
+            client.update_natpool(
+                request, nat_pool_id, **context)
+            msg = _("NAT Pool updated successfully!")
+            LOG.debug(msg)
+            return http.HttpResponseRedirect(url)
+        except Exception as e:
+            msg = _("Failed to update NAT Pool.%s") % \
+                (str(e))
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=url)
+
+
 class UpdateExternalConnectivityForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(

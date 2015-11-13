@@ -268,3 +268,20 @@ def update_l3_policy_attributes(request, l3_policy):
         tag = '-'
     setattr(l3_policy, 'external_segments', tag)
     return l3_policy
+
+
+def update_nat_pool_attributes(request, nat_pool):
+    url = "horizon:project:network_policy:external_connectivity_details"
+    id = nat_pool.external_segment_id
+    value = ["<ul>"]
+    li = \
+        lambda x: "<li><a href='" + \
+        reverse(url, kwargs={'external_connectivity_id': x.id}) + \
+        "'>" + x.name + "</a>" + "</li>"
+    external_connectivity = client.get_externalconnectivity(request,
+                                                                id)
+    value.append(li(external_connectivity))
+    value.append("</ul>")
+    tag = mark_safe("".join(value))
+    setattr(nat_pool, 'external_segment_id', tag)
+    return nat_pool
