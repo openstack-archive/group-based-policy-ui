@@ -1,0 +1,28 @@
+{% load i18n sizeformat parse_date %}
+{% load url from future %}
+
+<div class="info row detail">
+        <hr class="header_rule">
+        <dl>
+                <dt>{% trans "Name" %}</dt>
+                <dd>{{ nat_pool.name|default:_("-") }}</dd>
+
+                <dt>{% trans "Description" %}</dt>
+                <dd>{{ nat_pool.description|default:_("-") }}</dd>
+
+                <dt>{% trans "ID" %}</dt>
+                <dd>{{ nat_pool.id }} </dd>
+
+                <dt>{% trans "IP Version" %}</dt>
+                <dd>{{ nat_pool.ip_version }} </dd>
+
+                <dt>{% trans "IP Pool" %}</dt>
+                <dd>{{ nat_pool.ip_pool }} </dd>
+
+                <dt>{% trans "External Segment ID" %}</dt>
+                <dd>{{ nat_pool.external_segment_id }} </dd>
+
+                <dt>{% trans "Shared" %}</dt>
+                <dd>{{ nat_pool.shared }} </dd>
+        </dl>
+</div>

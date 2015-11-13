@@ -186,3 +186,47 @@ class ExternalConnectivityTable(tables.DataTable):
             DeleteExternalConnectivityLink,)
         row_actions = (EditExternalConnectivityLink,
             DeleteExternalConnectivityLink,)
+
+
+class CreateNATPoolLink(tables.LinkAction):
+    name = "create_nat_pool"
+    verbose_name = _("Create NAT Pool")
+    url = "horizon:project:network_policy:create_nat_pool"
+    classes = ("ajax-modal", "btn-addnatpool")
+
+
+class DeleteNATPoolLink(tables.DeleteAction):
+    name = "deletenatpool"
+    action_present = _("Delete")
+    action_past = _("Scheduled deletion of %(data_type)s")
+    data_type_singular = _("NAT Pool")
+    data_type_plural = _("NAT Pools")
+
+
+class EditNATPoolLink(tables.LinkAction):
+    name = "update_nat_pool"
+    verbose_name = _("Edit")
+    classes = ("ajax-modal", "btn-update",)
+
+    def get_link_url(self, nat_pool):
+        urlstring = \
+            "horizon:project:network_policy:update_natpool"
+        base_url = reverse(urlstring,
+            kwargs={'nat_pool_id': nat_pool.id})
+        return base_url
+
+
+class NATPoolTable(tables.DataTable):
+    name = tables.Column("name", verbose_name=_("Name"),
+        link="horizon:project:network_policy:nat_pool_details")
+    description = tables.Column("description", verbose_name=_("Description"))
+    ip_version = tables.Column("ip_version", verbose_name=_("IP Version"))
+    cidr = tables.Column("ip_pool", verbose_name=_("IP Pool"))
+    external_segment = tables.Column("external_segment_id",
+                                     verbose_name=_("External Segment"))
+
+    class Meta(object):
+        name = "nat_pool_table"
+        verbose_name = _("NAT Pool")
+        table_actions = (CreateNATPoolLink, DeleteNATPoolLink,)
+        row_actions = (EditNATPoolLink, DeleteNATPoolLink,)
