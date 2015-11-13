@@ -152,6 +152,47 @@ class ExternalConnectivityDetailsTab(tabs.Tab):
         return {'external_connectivity': external_connectivity}
 
 
+class NATPoolTab(tabs.TableTab):
+    table_classes = (tables.NATPoolTable,)
+    name = _("NAT Pool")
+    slug = "nat_pool"
+    template_name = "horizon/common/_detail_table.html"
+
+    def get_nat_pool_table_data(self):
+        nat_pool_list = []
+        try:
+            nat_pools = \
+                client.natpool_list(self.request,
+                    self.request.user.tenant_id)
+            update = lambda x: gfilters.update_nat_pool_attributes(
+                self.request, x)
+            nat_pool_list = [update(nat_pool) for nat_pool in nat_pools]
+        except Exception:
+            exceptions.handle(self.tab_group.request,
+                    _('Unable to retrieve nat pool list.'))
+        return nat_pool_list
+
+
+class NATPoolDetailsTab(tabs.Tab):
+    name = _("NAT Pool Details")
+    slug = "nat_pool_details"
+    template_name = \
+        "project/network_policy/_nat_pool_details.html"
+    failure_url = reverse_lazy('horizon:project:network_policy:index')
+
+    def get_context_data(self, request):
+        nat_pool_id = \
+            self.tab_group.kwargs['nat_pool_id']
+        try:
+            nat_pool = client.get_natpool(request,
+                nat_pool_id)
+        except Exception:
+            exceptions.handle(
+                request, _('Unable to retrieve nat pool details.'),
+                redirect=self.failure_url)
+        return {'nat_pool': nat_pool}
+
+
 class ServicePolicyDetailsTabs(tabs.TabGroup):
     slug = "service_policy_details_tab"
     tabs = (ServicePolicyDetailsTab,)
@@ -164,9 +205,15 @@ class ExternalConnectivityDetailsTabs(tabs.TabGroup):
     sticky = True
 
 
+class NATPoolDetailsTabs(tabs.TabGroup):
+    slug = "nat_pool_details_tab"
+    tabs = (NATPoolDetailsTab,)
+    sticky = True
+
+
 class L3PolicyTabs(tabs.TabGroup):
     slug = "l3policy_tab"
-    tabs = (L3PolicyTab, ServicePolicyTab, ExternalConnectivityTab,)
+    tabs = (L3PolicyTab, ServicePolicyTab, ExternalConnectivityTab, NATPoolTab)
     sticky = True
 
 

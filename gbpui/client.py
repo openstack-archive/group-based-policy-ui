@@ -78,6 +78,16 @@ class ExternalConnectivity(neutron.NeutronAPIDictWrapper):
         return ec_dict
 
 
+class NATPool(neutron.NeutronAPIDictWrapper):
+
+    """Wrapper for neutron nat pool."""
+
+    def get_dict(self):
+        natpool_dict = self._apidict
+        natpool_dict['natpool_id'] = natpool_dict['id']
+        return natpool_dict
+
+
 class Contract(neutron.NeutronAPIDictWrapper):
 
     """Wrapper for neutron policy_rule_set."""
@@ -416,6 +426,38 @@ def externalconnectivity_list(request, tenant_id, **kwargs):
         shared=True, **kwargs).get('external_segments'))
     return [ExternalConnectivity(external_connectivity)
         for external_connectivity in external_connectivities]
+
+
+def natpool_list(request, tenant_id, **kwargs):
+    nat_pools = gbpclient(request).list_nat_pools(
+        tenant_id=tenant_id, shared=False, **kwargs).get('nat_pools')
+    nat_pools.extend(gbpclient(request).list_nat_pools(
+        shared=True, **kwargs).get('nat_pools'))
+    return [NATPool(nat_pool) for nat_pool in nat_pools]
+
+
+def create_natpool(request, **kwargs):
+    body = {'nat_pool': kwargs}
+    np = gbpclient(request).create_nat_pool(
+        body).get('nat_pool')
+    return NATPool(np)
+
+
+def get_natpool(request, nat_pool_id):
+    np = gbpclient(request).show_nat_pool(
+        nat_pool_id).get('nat_pool')
+    return NATPool(np)
+
+
+def delete_natpool(request, nat_pool_id, **kwargs):
+    gbpclient(request).delete_nat_pool(nat_pool_id)
+
+
+def update_natpool(request, nat_pool_id, **kwargs):
+    body = {'nat_pool': kwargs}
+    np = gbpclient(request).update_nat_pool(
+        nat_pool_id, body).get('nat_pool')
+    return NATPool(np)
 
 
 def create_externalconnectivity(request, **kwargs):
