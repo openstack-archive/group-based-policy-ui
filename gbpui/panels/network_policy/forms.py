@@ -213,8 +213,6 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
-    allow_broadcast = forms.BooleanField(
-        label=_("Allow Broadcast"), initial=True, required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -232,7 +230,6 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
         try:
-            del context['allow_broadcast']
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
             if context.get('description'):
@@ -252,8 +249,6 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
-    allow_broadcast = forms.BooleanField(
-        label=_("Allow Broadcast"), required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -277,7 +272,6 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
                       kwargs={'l3policy_id': context['l3_policy_id']})
         l2policy_id = self.initial['l2policy_id']
         try:
-            del context['allow_broadcast']
             if context.get('name'):
                 context['name'] = html.escape(context['name'])
             if context.get('description'):
