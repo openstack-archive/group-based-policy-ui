@@ -225,6 +225,8 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
         try:
             if context.get('protocol') in PROTOCOL_MAP:
                 context['protocol'] = PROTOCOL_MAP[context['protocol']]
+            elif context.get('protocol') == "any":
+                del context['protocol']
             if not context.get('port_range'):
                 context['port_range'] = None
             if context.get('name'):
@@ -257,8 +259,13 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
                 request, policyclassifier_id)
             classifier = gfilters.update_classifier_attributes(classifier)
             for item in ['name', 'description',
-                         'protocol', 'port_range', 'direction', 'shared']:
+                         'port_range', 'direction', 'shared']:
                 self.fields[item].initial = getattr(classifier, item)
+            protocol = getattr(classifier, "protocol")
+            if protocol != None:
+                self.fields['protocol'].initial = protocol
+            else:
+                self.fields['protocol'].initial = "any"
         except Exception:
             exceptions.handle(
                 request, _("Unable to retrive policy classifier details."))
@@ -269,6 +276,8 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
             policyclassifier_id = self.initial['policyclassifier_id']
             if context.get('protocol') in PROTOCOL_MAP:
                 context['protocol'] = PROTOCOL_MAP[context['protocol']]
+            elif context.get('protocol') == "any":
+                context['protocol'] = None
             if 'port_range' in context and context['port_range'] == '':
                 context['port_range'] = None
             if context.get('name'):
