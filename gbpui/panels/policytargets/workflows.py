@@ -13,6 +13,7 @@
 import logging
 
 from django.core.urlresolvers import reverse
+from django import shortcuts
 from django.utils import html
 from django.utils.text import normalize_newlines  # noqa
 from django.utils.translation import ugettext_lazy as _
@@ -389,6 +390,60 @@ class SetAccessControls(workflows.Step):
         return context
 
 
+class SetGroupAction(workflows.Action):
+    # To reuse horizon instance launch code related to Networking,
+    # form filed must be 'network' only
+    network = forms.MultipleChoiceField(label=_("Groups"),
+                                        widget=forms.CheckboxSelectMultiple(),
+                                        error_messages={
+                                            'required': _(
+                                                "At least one group must"
+                                                " be specified.")},
+                                        help_text=_("Launch member instance in"
+                                                    " these groups"))
+
+    widget = forms.HiddenInput()
+
+    def __init__(self, request, *args, **kwargs):
+        super(SetGroupAction, self).__init__(request, *args, **kwargs)
+        policy_targetid = self.request.path.split("/")[-2]
+        self.fields['network'].initial = [policy_targetid]
+
+    class Meta(object):
+        name = _("Groups")
+        help_text = _("Select groups for launching the member instance in.")
+
+    def populate_network_choices(self, request, context):
+        try:
+            pt_list = []
+            pts = client.policy_target_list(request,
+                tenant_id=request.user.tenant_id)
+            for pt in pts:
+                pt.set_id_as_name_if_empty()
+                pt_list.append((pt.id, pt.name))
+            return sorted(pt_list, key=lambda obj: obj[1])
+        except Exception:
+            msg = _("Failed to retrieve groups")
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
+class SetGroup(workflows.Step):
+    action_class = SetGroupAction
+
+    template_name = "project/policytargets/_update_groups.html"
+    contributes = ("group_id",)
+
+    def contribute(self, data, context):
+        if data:
+            groups = self.workflow.request.POST.getlist("network")
+            groups = [n for n in groups if n != '']
+            if groups:
+                context['group_id'] = groups
+
+        return context
+
+
 class LaunchInstance(workflows.Workflow):
     slug = "create_member"
     name = _("Create Member")
@@ -398,6 +453,7 @@ class LaunchInstance(workflows.Workflow):
     default_steps = (workflows_create_instance.SelectProjectUser,
                      workflows_create_instance.SetInstanceDetails,
                      SetAccessControls,
+                     SetGroup,
                      workflows_create_instance.PostCreationStep,
                      workflows_create_instance.SetAdvanced)
 
@@ -417,7 +473,6 @@ class LaunchInstance(workflows.Workflow):
     @sensitive_variables('context')
     def handle(self, request, context):
         custom_script = context.get('script_data', '')
-
         dev_mapping_1 = None
         dev_mapping_2 = None
 
@@ -474,7 +529,6 @@ class LaunchInstance(workflows.Workflow):
             ]
         avail_zone = context.get('availability_zone', None)
         try:
-            policy_target_id = self.request.path.split("/")[-2]
             instance_count = int(context['count'])
             count = 1
             while count <= instance_count:
@@ -482,9 +536,12 @@ class LaunchInstance(workflows.Workflow):
                     instance_name = context['name']
                 else:
                     instance_name = context['name'] + str(count)
-                ep = client.pt_create(
-                    request, policy_target_group_id=policy_target_id,
-                    name=instance_name[:41] + "_gbpui")
+                nics = []
+                for ptg_id in context['group_id']:
+                    ep = client.pt_create(
+                        request, policy_target_group_id=ptg_id,
+                        name=instance_name[:41] + "_gbpui")
+                    nics.append({'port-id': ep.port_id})
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
@@ -494,7 +551,7 @@ class LaunchInstance(workflows.Workflow):
                                    security_groups=None,
                                    block_device_mapping=dev_mapping_1,
                                    block_device_mapping_v2=dev_mapping_2,
-                                   nics=[{'port-id': ep.port_id}],
+                                   nics=nics,
                                    availability_zone=avail_zone,
                                    instance_count=1,
                                    admin_pass=context['admin_pass'],
@@ -507,6 +564,7 @@ class LaunchInstance(workflows.Workflow):
             msg = error % {'count': count, 'name': instance_name}
             LOG.error(msg)
             u = "horizon:project:policytargets:policy_targetdetails"
+            policy_target_id = self.request.path.split("/")[-2]
             redirect = reverse(u, kwargs={'policy_target_id':
                 policy_target_id})
             exceptions.handle(request, msg, redirect=redirect)
