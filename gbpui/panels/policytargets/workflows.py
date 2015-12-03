@@ -13,6 +13,7 @@
 import logging
 
 from django.core.urlresolvers import reverse
+from django import shortcuts
 from django.utils import html
 from django.utils.text import normalize_newlines  # noqa
 from django.utils.translation import ugettext_lazy as _
@@ -389,6 +390,62 @@ class SetAccessControls(workflows.Step):
         return context
 
 
+class SetNetworkAction(workflows.Action):
+    # To reuse horizon instance launch code related to Networking,
+    # form filed must be 'network' only
+    network = forms.MultipleChoiceField(label=_("Networks"),
+                                        widget=forms.CheckboxSelectMultiple(),
+                                        error_messages={
+                                            'required': _(
+                                                "At least one network must"
+                                                " be specified.")},
+                                        help_text=_("Launch instance with"
+                                                    " these networks"))
+
+    widget = forms.HiddenInput()
+
+    def __init__(self, request, *args, **kwargs):
+        super(SetNetworkAction, self).__init__(request, *args, **kwargs)
+        policy_targetid = self.request.path.split("/")[-2]
+        self.fields['network'].initial = [policy_targetid]
+
+    class Meta(object):
+        name = _("Networking")
+        help_text = _("Select networks for your instance.")
+
+    def populate_network_choices(self, request, context):
+        try:
+            pt_list = []
+            pts = client.policy_target_list(request,
+                tenant_id=request.user.tenant_id)
+            for pt in pts:
+                pt.set_id_as_name_if_empty()
+                pt_list.append((pt.id, pt.name))
+            return sorted(pt_list, key=lambda obj: obj[1])
+        except Exception:
+            msg = _("Failed to retrieve policy targets")
+            LOG.error(msg)
+            exceptions.handle(request, msg, redirect=shortcuts.redirect)
+
+
+class SetNetwork(workflows.Step):
+    action_class = SetNetworkAction
+
+    template_name = "project/instances/_update_networks.html"
+    contributes = ("network_id",)
+
+    def contribute(self, data, context):
+        if data:
+            networks = self.workflow.request.POST.getlist("network")
+            # If no networks are explicitly specified, network list
+            # contains an empty string, so remove it.
+            networks = [n for n in networks if n != '']
+            if networks:
+                context['network_id'] = networks
+
+        return context
+
+
 class LaunchInstance(workflows.Workflow):
     slug = "create_member"
     name = _("Create Member")
@@ -398,6 +455,7 @@ class LaunchInstance(workflows.Workflow):
     default_steps = (workflows_create_instance.SelectProjectUser,
                      workflows_create_instance.SetInstanceDetails,
                      SetAccessControls,
+                     SetNetwork,
                      workflows_create_instance.PostCreationStep,
                      workflows_create_instance.SetAdvanced)
 
@@ -417,7 +475,6 @@ class LaunchInstance(workflows.Workflow):
     @sensitive_variables('context')
     def handle(self, request, context):
         custom_script = context.get('script_data', '')
-
         dev_mapping_1 = None
         dev_mapping_2 = None
 
@@ -474,7 +531,6 @@ class LaunchInstance(workflows.Workflow):
             ]
         avail_zone = context.get('availability_zone', None)
         try:
-            policy_target_id = self.request.path.split("/")[-2]
             instance_count = int(context['count'])
             count = 1
             while count <= instance_count:
@@ -482,9 +538,12 @@ class LaunchInstance(workflows.Workflow):
                     instance_name = context['name']
                 else:
                     instance_name = context['name'] + str(count)
-                ep = client.pt_create(
-                    request, policy_target_group_id=policy_target_id,
-                    name=instance_name[:41] + "_gbpui")
+                nics = []
+                for ptg_id in context['network_id']:
+                    ep = client.pt_create(
+                        request, policy_target_group_id=ptg_id,
+                        name=instance_name[:41] + "_gbpui")
+                    nics.append({'port-id': ep.port_id})
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
@@ -494,7 +553,7 @@ class LaunchInstance(workflows.Workflow):
                                    security_groups=None,
                                    block_device_mapping=dev_mapping_1,
                                    block_device_mapping_v2=dev_mapping_2,
-                                   nics=[{'port-id': ep.port_id}],
+                                   nics=nics,
                                    availability_zone=avail_zone,
                                    instance_count=1,
                                    admin_pass=context['admin_pass'],
@@ -507,6 +566,7 @@ class LaunchInstance(workflows.Workflow):
             msg = error % {'count': count, 'name': instance_name}
             LOG.error(msg)
             u = "horizon:project:policytargets:policy_targetdetails"
+            policy_target_id = self.request.path.split("/")[-2]
             redirect = reverse(u, kwargs={'policy_target_id':
                 policy_target_id})
             exceptions.handle(request, msg, redirect=redirect)
