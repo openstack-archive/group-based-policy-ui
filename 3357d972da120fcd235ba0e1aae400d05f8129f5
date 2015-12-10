@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Robert Kukura <kukura@noironetworks.com>
+Code-Review+2: Magesh GV <mageshgv@gmail.com>
+Workflow+1: Magesh GV <mageshgv@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 10 Dec 2015 05:28:27 +0000
+Reviewed-on: https://review.openstack.org/255622
+Project: openstack/group-based-policy-ui
+Branch: refs/heads/stable/juno
