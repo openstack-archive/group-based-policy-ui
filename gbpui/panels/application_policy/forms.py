@@ -23,17 +23,10 @@ from horizon import messages
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui import fields
 
-PROTOCOLS = [('tcp', _('TCP')),
-             ('udp', _('UDP')),
-             ('icmp', _('ICMP')),
-             ('http', _('HTTP')),
-             ('https', _('HTTPS')),
-             ('smtp', _('SMTP')),
-             ('dns', _('DNS')),
-             ('ftp', _('FTP')),
-             ('any', _('ANY'))
-             ]
+PROTOCOLS = ('TCP', 'UDP', 'ICMP', 'HTTP',
+    'HTTPS', 'SMTP', 'DNS', 'FTP', 'ANY')
 DIRECTIONS = [('in', _('IN')),
               ('out', _('OUT')),
               ('bi', _('BI'))]
@@ -195,9 +188,7 @@ class UpdatePolicyActionForm(BaseUpdateForm):
 
 class AddPolicyClassifierForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
-    protocol = forms.ChoiceField(label=_("Protocol"), choices=PROTOCOLS,
-                widget=forms.Select(attrs={'class': 'switchable',
-                                           'data-slug': 'source'}))
+    protocol = forms.CharField(required=True)
     port_range = forms.CharField(max_length=80, label=_("Port/Range(min:max)"),
                     required=False,
                     widget=forms.TextInput(attrs={'class': 'switched',
@@ -219,13 +210,16 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyClassifierForm, self).__init__(request, *args, **kwargs)
+        self.fields['protocol'].widget = fields.DropdownEditWidget(
+            data_list=PROTOCOLS, name='list')
 
     def handle(self, request, context):
         url = reverse('horizon:project:application_policy:index')
         try:
-            if context.get('protocol') in PROTOCOL_MAP:
-                context['protocol'] = PROTOCOL_MAP[context['protocol']]
-            elif context.get('protocol') == "any":
+            protocol = context.get('protocol').lower()
+            if protocol in PROTOCOL_MAP:
+                context['protocol'] = PROTOCOL_MAP[protocol]
+            elif protocol == "any":
                 del context['protocol']
             if not context.get('port_range'):
                 context['port_range'] = None
@@ -244,7 +238,7 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
 class UpdatePolicyClassifierForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
-    protocol = forms.ChoiceField(label=_("Protocol"), choices=PROTOCOLS)
+    protocol = forms.CharField(required=True)
     port_range = forms.CharField(max_length=80, label=_("Port/Range(min:max)"),
             required=False)
     direction = forms.ChoiceField(label=_("Direction"), choices=DIRECTIONS)
@@ -253,6 +247,8 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyClassifierForm, self).__init__(
             request, *args, **kwargs)
+        self.fields['protocol'].widget = fields.DropdownEditWidget(
+            data_list=PROTOCOLS, name='list')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
             classifier = client.policyclassifier_get(
@@ -274,9 +270,10 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
-            if context.get('protocol') in PROTOCOL_MAP:
-                context['protocol'] = PROTOCOL_MAP[context['protocol']]
-            elif context.get('protocol') == "any":
+            protocol = context.get('protocol').lower()
+            if protocol in PROTOCOL_MAP:
+                context['protocol'] = PROTOCOL_MAP[protocol]
+            elif protocol == "any":
                 context['protocol'] = None
             if 'port_range' in context and context['port_range'] == '':
                 context['port_range'] = None
