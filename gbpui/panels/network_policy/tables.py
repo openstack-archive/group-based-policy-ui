@@ -50,6 +50,8 @@ class L2PolicyTable(tables.DataTable):
     id = tables.Column("id", verbose_name=_("ID"))
     l3_policy_id = tables.Column(
         "l3_policy_id", verbose_name=_("L3 Policy ID"))
+    inject_default_route = tables.Column(
+        "inject_default_route", verbose_name=_("Inject Default Route"))
 
     class Meta:
         name = "l2policy_table"
