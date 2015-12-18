@@ -213,6 +213,9 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
+    inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
+                                initial=True,
+                                required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -249,6 +252,8 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
+    inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
+                                required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -260,7 +265,8 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
             policies = [(item['id'], item['name'] + ":" + item['id'])
                         for item in policies]
             self.fields['l3_policy_id'].choices = policies
-            for item in ['name', 'description', 'l3_policy_id']:
+            for item in ['name', 'description', 'l3_policy_id',
+                        'inject_default_route']:
                 self.fields[item].initial = getattr(l2, item)
         except Exception:
             msg = _("Failed to get L3 policy list")
