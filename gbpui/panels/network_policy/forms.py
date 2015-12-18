@@ -213,6 +213,10 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
+    inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
+                                initial=True,
+                                required=False)
+
 
     def __init__(self, request, *args, **kwargs):
         super(AddL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -249,6 +253,9 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
+    inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
+                                initial=True,
+                                required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL2PolicyForm, self).__init__(request, *args, **kwargs)
