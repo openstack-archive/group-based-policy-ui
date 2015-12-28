@@ -1,0 +1,9 @@
+Code-Review+2: Sumit Naiksatam <sumitnaiksatam@gmail.com>
+Code-Review+2: Subrahmanyam Ongole <songole@oneconvergence.com>
+Workflow+1: Subrahmanyam Ongole <songole@oneconvergence.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 28 Dec 2015 20:35:43 +0000
+Reviewed-on: https://review.openstack.org/261143
+Project: openstack/group-based-policy-ui
+Branch: refs/heads/stable/juno
