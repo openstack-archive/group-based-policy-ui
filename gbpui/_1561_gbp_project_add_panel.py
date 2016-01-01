@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-ADD_INSTALLED_APPS = ['gbpui', ]
-PANEL_GROUP = 'panel_group.GroupPolicyPanels'
-PANEL_GROUP_NAME = 'Policy'
-PANEL_GROUP_DASHBOARD = 'project'
+PANEL = 'application_policy_panel'
+PANEL_DASHBOARD = 'project'
+PANEL_GROUP = 'GroupPolicyPanels'
+ADD_PANEL = 'gbpui.panels.application_policy.panel.ApplicationPolicy'

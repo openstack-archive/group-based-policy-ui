@@ -12,5 +12,5 @@
 
 PANEL = 'policytargets_panel'
 PANEL_DASHBOARD = 'project'
-PANEL_GROUP = 'panel_group.GroupPolicyPanels'
+PANEL_GROUP = 'GroupPolicyPanels'
 ADD_PANEL = 'gbpui.panels.policytargets.panel.PolicyTargetGroup'

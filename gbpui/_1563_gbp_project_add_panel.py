@@ -12,5 +12,5 @@
 
 PANEL = 'network_services_panel'
 PANEL_DASHBOARD = 'project'
-PANEL_GROUP = 'panel_group.GroupPolicyPanels'
+PANEL_GROUP = 'GroupPolicyPanels'
 ADD_PANEL = 'gbpui.panels.network_services.panel.NetworkServices'

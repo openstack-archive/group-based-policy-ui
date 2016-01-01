@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-PANEL = 'application_policy_panel'
+PANEL = 'network_policy_panel'
 PANEL_DASHBOARD = 'project'
-PANEL_GROUP = 'panel_group.GroupPolicyPanels'
-ADD_PANEL = 'gbpui.panels.application_policy.panel.ApplicationPolicy'
+PANEL_GROUP = 'GroupPolicyPanels'
+ADD_PANEL = 'gbpui.panels.network_policy.panel.NetworkPolicy'
