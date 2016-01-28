@@ -13,6 +13,7 @@
 import logging
 import os
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
@@ -143,7 +144,8 @@ def update_policyaction_attributes(request, paction):
 
 
 def update_sc_spec_attributes(request, scspec):
-    img_path = "/static/dashboard/img/"
+    static_url = getattr(settings, 'STATIC_URL', "/static/")
+    img_path = static_url + "dashboard/img/"
     provider = "default"
     nodes = scspec.nodes
     nodes = [client.get_servicechain_node(request, item) for item in nodes]
@@ -154,8 +156,8 @@ def update_sc_spec_attributes(request, scspec):
     if os.path.exists(ds_path):
         local_img_path = ds_path
     else:
-        local_img_path = "/usr/share/openstack-dashboard/openstack_dashboard/" \
-            + "static/dashboard/img/"
+        local_img_path = "/usr/share/openstack-dashboard/" \
+            + "openstack_dashboard/static/dashboard/img/"
     if os.path.exists(local_img_path):
         providers = os.listdir(local_img_path)
         for p in providers:
@@ -239,7 +241,7 @@ def update_classifier_attributes(classifiers):
     if type(classifiers) == list:
         for classifier in classifiers:
             classifier.set_id_as_name_if_empty()
-            if classifier.protocol in ['tcp', 'udp'] and classifier.port_range \
+            if classifier.protocol in ['tcp', 'udp'] and classifier.port_range\
                     in port_protocol_map:
                 classifier.protocol = port_protocol_map[classifier.port_range]
     else:
