@@ -13,6 +13,7 @@
 import logging
 import os
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
@@ -143,7 +144,8 @@ def update_policyaction_attributes(request, paction):
 
 
 def update_sc_spec_attributes(request, scspec):
-    img_path = "/static/dashboard/img/"
+    static_url = getattr(settings, 'STATIC_URL', "/static/")
+    img_path = static_url + "dashboard/img/"
     provider = "default"
     nodes = scspec.nodes
     nodes = [client.get_servicechain_node(request, item) for item in nodes]

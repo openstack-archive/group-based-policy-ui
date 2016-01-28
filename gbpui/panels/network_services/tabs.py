@@ -13,6 +13,7 @@
 import json
 import yaml
 
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,7 +25,6 @@ from gbpui import client
 from gbpui import column_filters as gfilters
 
 import tables as ns_tables
-
 
 class ServiceChainSpecTab(tabs.TableTab):
     name = _("Service Chain Specs")
@@ -164,7 +164,7 @@ class ServiceChainNodeDetailsTab(tabs.Tab):
                 node["text"] = key
             else:
                 node["text"] = key + " : " + str(value)
-                node["icon"] = "/static/dashboard/img/text.png"
+                node["icon"] = static("dashboard/img/text.png")
 
             tree.append(node)
         return json.dumps(tree)
@@ -206,7 +206,7 @@ class ServiceChainNodeDetailsTab(tabs.Tab):
                 node["text"] = key
             else:
                 node["text"] = key + " : " + str(value)
-                node["icon"] = "/static/dashboard/img/text.png"
+                node["icon"] = static("dashboard/img/text.png")
             arr.append(node)
         return arr
 
