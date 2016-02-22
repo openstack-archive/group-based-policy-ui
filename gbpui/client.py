@@ -186,7 +186,7 @@ class ServiceProfile(neutron.NeutronAPIDictWrapper):
 def policy_target_create(request, **kwargs):
     body = {'policy_target_group': kwargs}
     policy_target = gbpclient(request).create_policy_target_group(
-        body).get('endpoint_group')
+        body).get('policy_target_group')
     return PTG(policy_target)
 
 
@@ -237,7 +237,7 @@ def policy_target_update(request, policy_target_id, **kwargs):
 def ext_policy_target_create(request, **kwargs):
     body = {'external_policy': kwargs}
     policy_target = gbpclient(request).create_external_policy(
-        body).get('endpoint_group')
+        body).get('external_policy')
     return ExternalPTG(policy_target)
 
 
