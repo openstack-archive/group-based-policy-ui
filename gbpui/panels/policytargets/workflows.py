@@ -354,15 +354,11 @@ class SetAccessControlsAction(workflows.Action):
 
     def __init__(self, request, *args, **kwargs):
         super(SetAccessControlsAction, self).__init__(request, *args, **kwargs)
+        self.fields['keypair'].choices = instance_utils.keypair_field_data(
+            request, True)
         if not api.nova.can_set_server_password():
             del self.fields['admin_pass']
             del self.fields['confirm_admin_pass']
-
-    def populate_keypair_choices(self, request, context):
-        keypairs = instance_utils.keypair_field_data(request, True)
-        if len(keypairs) == 2:
-            self.fields['keypair'].initial = keypairs[1][0]
-        return keypairs
 
     def clean(self):
         '''Check to make sure password fields match.'''
