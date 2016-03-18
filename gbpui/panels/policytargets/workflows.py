@@ -359,10 +359,7 @@ class SetAccessControlsAction(workflows.Action):
             del self.fields['confirm_admin_pass']
 
     def populate_keypair_choices(self, request, context):
-        keypairs = instance_utils.keypair_field_data(request, True)
-        if len(keypairs) == 2:
-            self.fields['keypair'].initial = keypairs[1][0]
-        return keypairs
+        return instance_utils.keypair_field_data(request, True)
 
     def clean(self):
         '''Check to make sure password fields match.'''
