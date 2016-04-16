@@ -1,9 +1,9 @@
 {% load i18n sizeformat parse_date %}
 {% load url from future %}
 
-<div class="info row detail">
+<div class="info detail">
 	<hr class="header_rule">
-	<dl>
+	<dl class="dl-horizontal">
 		<dt>{% trans "Name" %}</dt>
 		<dd>{{ scinstance.name|default:_("-") }}</dd>
 
@@ -14,17 +14,25 @@
 		<dd>{{ scinstance.id }} </dd>
 		
 		<dt>{% trans "Provider PTG" %}</dt>
-		<dd>{{ scinstance.provider_ptg }} </dd>
+		<dd>{{ scinstance.provider_ptg_id }} </dd>
 
-		<dt>{% trans "Consumer PTG" %}</dt>
-		<dd>{{ scinstance.consumer_ptg }} </dd>
+		<!--<dt>{% trans "Consumer PTG" %}</dt>
+		<dd>{{ scinstance.consumer_ptg_id }} </dd>-->
+
+		<dt>{% trans "Management PTG" %}</dt>
+		<dd>{{ scinstance.management_ptg_id }} </dd>
 
 		<dt>{% trans "Service Chain Spec" %}</dt>
-		<dd>{{ scinstance.servicechain_spec}} </dd>
+		<dd>{{ scinstance.servicechain_specs}} </dd>
 
 		<dt>{% trans "Classifier" %}</dt>
-		<dd>{{ scinstance.classifier}} </dd>
-	
+		<dd>{{ scinstance.classifier_id}} </dd>
+
+		<dt>{% trans "Config parameter values" %}</dt>
+		<dd>{{ scinstance.config_param_values}} </dd>		
+
+		<dt>{% trans "Project ID" %}</dt>
+		<dd>{{ scinstance.tenant_id}} </dd>	
 	</dl>
 </div>
      
