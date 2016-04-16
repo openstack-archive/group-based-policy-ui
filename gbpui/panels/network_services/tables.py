@@ -136,9 +136,11 @@ class ServiceChainInstanceTable(tables.DataTable):
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     provider_ptg = tables.Column(
-        "provider_ptg", verbose_name=_("Provider PTG"))
-    consumer_ptg = tables.Column(
-        "consumer_ptg", verbose_name=_("Consumer PTG"))
+        "provider_ptg", verbose_name=_("Provider"))
+    servicechain = tables.Column(
+        "servicechain", verbose_name=_("Service Chain"))
+    # consumer_ptg = tables.Column(
+    #    "consumer_ptg", verbose_name=_("Consumer"))
     servicechain_spec = tables.Column(
         "servicechain_spec", verbose_name=_("Service Chain Spec"))
     classifier = tables.Column("classifier", verbose_name=_("Classifier"))
@@ -146,9 +148,6 @@ class ServiceChainInstanceTable(tables.DataTable):
     class Meta:
         name = "service_chain_instance_table"
         verbose_name = _("Service Chain Instance")
-        table_actions = (CreateServiceChainInstanceLink,)
-        row_actions = (
-            EditServiceChainInstanceLink, DeleteServiceChainInstanceLink,)
 
 
 class CreateServiceProfileLink(tables.LinkAction):
