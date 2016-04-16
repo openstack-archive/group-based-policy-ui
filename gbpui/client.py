@@ -566,8 +566,6 @@ def servicechaininstance_list(request, tenant_id, **kwargs):
     sc_instances = gbpclient(request).list_servicechain_instances(
         tenant_id=tenant_id, shared=False, **kwargs).get(
         'servicechain_instances')
-    sc_instances.extend(gbpclient(request).list_servicechain_instances(
-        shared=True, **kwargs).get('servicechain_instances'))
     return [ServiceChainInstance(item) for item in sc_instances]
 
 
