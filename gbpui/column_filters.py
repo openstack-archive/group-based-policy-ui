@@ -202,21 +202,60 @@ def update_sc_node_attributes(request, scnode):
     return scnode
 
 
+def update_scn_instance_attributes(request, scspec):
+    static_url = getattr(settings, 'STATIC_URL', "/static/")
+    img_path = static_url + "dashboard/img/"
+    provider = "default"
+    nodes = scspec.nodes
+    nodes = [client.get_servicechain_node(request, item) for item in nodes]
+    sc = ["<div>"]
+    ds_path = "/opt/stack/horizon/static/dashboard/img/"
+    if os.path.exists(ds_path):
+        local_img_path = ds_path
+    else:
+        local_img_path = "/usr/share/openstack-dashboard/" \
+            + "openstack_dashboard/static/dashboard/img/"
+    if os.path.exists(local_img_path):
+        providers = os.listdir(local_img_path)
+        for p in providers:
+            if p in scspec.description:
+                provider = p
+                break
+
+    img_src = img_path + provider + "/"
+    for n in nodes:
+        service_profile_id = n.service_profile_id
+        try:
+            service_profile = client.get_service_profile(request,
+                service_profile_id)
+            service_type = service_profile.service_type
+        except Exception:
+            pass
+        sc.append(
+            "<span class='glyphicon glyphicon-arrow-right' "
+            "style='margin: auto 10px'></span>")
+        scnode = "<img src='" + img_src + service_type + ".png'>"
+        sc.append(scnode)
+    sc.append("</div>")
+    setattr(scspec, 'chain', mark_safe("".join(sc)))
+    return scspec
+
+
 def update_sc_instance_attributes(request, scinstance):
     ptg_url = "horizon:project:policytargets:policy_targetdetails"
     clsurl = "horizon:project:application_policy:policyclassifierdetails"
     scspec_url = "horizon:project:network_services:sc_spec_details"
-    consumer_ptg = scinstance.consumer_ptg
-    provider_ptg = scinstance.provider_ptg
-    scspec = scinstance.servicechain_spec
-    classifier = scinstance.classifier
-    if consumer_ptg is not None:
+    consumer_ptg = scinstance.consumer_ptg_id
+    provider_ptg = scinstance.provider_ptg_id
+    scspec = scinstance.servicechain_specs
+    classifier = scinstance.classifier_id
+    if consumer_ptg is not None and consumer_ptg != "N/A":
         ptg = client.policy_target_get(request, consumer_ptg)
         u = reverse(ptg_url, kwargs={'policy_target_id': ptg.id})
         atag = "<a href='%s'>%s</a>" % (u, ptg.name)
         setattr(scinstance, 'consumer_ptg', mark_safe(atag))
     if provider_ptg is not None:
-        ptg = client.policy_target_get(request, consumer_ptg)
+        ptg = client.policy_target_get(request, provider_ptg)
         u = reverse(ptg_url, kwargs={'policy_target_id': ptg.id})
         atag = "<a href='%s'>%s</a>" % (u, ptg.name)
         setattr(scinstance, 'provider_ptg', mark_safe(atag))
@@ -226,10 +265,12 @@ def update_sc_instance_attributes(request, scinstance):
         atag = "<a href='%s'>%s</a>" % (u, cls.name)
         setattr(scinstance, 'classifier', mark_safe(atag))
     if scspec is not None:
-        sc = client.get_servicechain_spec(request, scspec)
-        u = reverse(scspec_url, kwargs={'scspec_id': sc.id})
-        atag = "<a href='%s'>%s</a>" % (u, sc.name)
+        scs = client.get_servicechain_spec(request, scspec[0])
+        url = reverse(scspec_url, kwargs={'scspec_id': scs.id})
+        atag = "<a href='%s'>%s</a>" % (url, scs.name)
         setattr(scinstance, 'servicechain_spec', mark_safe(atag))
+        scni = update_scn_instance_attributes(request, scs)
+        setattr(scinstance, 'servicechain', scni.chain)
     return scinstance
 
 
