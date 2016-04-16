@@ -98,7 +98,8 @@ class ServiceProfileTab(tabs.TableTab):
 
 class ServiceChainTabs(tabs.TabGroup):
     slug = "service_chain_spec_tabs"
-    tabs = (ServiceChainSpecTab, ServiceChainNodeTab, ServiceProfileTab,)
+    tabs = (ServiceChainSpecTab, ServiceChainNodeTab, ServiceProfileTab,
+            ServiceChainInstanceTab)
     sticky = True
 
 
