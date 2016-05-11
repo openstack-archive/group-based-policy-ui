@@ -12,6 +12,8 @@
 
 import logging
 
+import netaddr
+
 from django.core.urlresolvers import reverse
 from django import shortcuts
 from django.utils import html
@@ -31,6 +33,7 @@ from openstack_dashboard.dashboards.project.instances.workflows \
 
 from gbpui import client
 from gbpui import fields
+
 
 LOG = logging.getLogger(__name__)
 
@@ -401,7 +404,7 @@ class SetAccessControls(workflows.Step):
 class SetGroupAction(workflows.Action):
     # To reuse horizon instance launch code related to Networking,
     # form filed must be 'network' only
-    network = forms.MultipleChoiceField(label=_("Groups"),
+    network = fields.CustomMultiChoiceField(label=_("Groups"),
                                         widget=forms.CheckboxSelectMultiple(),
                                         error_messages={
                                             'required': _(
@@ -415,7 +418,26 @@ class SetGroupAction(workflows.Action):
     def __init__(self, request, *args, **kwargs):
         super(SetGroupAction, self).__init__(request, *args, **kwargs)
         policy_targetid = self.request.path.split("/")[-2]
-        self.fields['network'].initial = [policy_targetid]
+        ptg = client.policy_target_get(request, policy_targetid)
+        subnet_dedails = None
+        for subnet_id in ptg.subnets:
+            try:
+                subnet = api.neutron.subnet_get(request, subnet_id)
+                if subnet_dedails is None:
+                    subnet_dedails = subnet['cidr']
+                else:
+                    subnet_dedails = ";" + subnet['cidr']
+                allocation_pools = subnet['allocation_pools']
+                if allocation_pools:
+                    start = allocation_pools[0]['start']
+                    end = allocation_pools[0]['end']
+                    subnet_dedails = subnet_dedails + "," + start
+                    subnet_dedails = subnet_dedails + "," + end
+            except Exception as e:
+                LOG.error(str(e))
+                pass
+        initial_value = policy_targetid + ":" + subnet_dedails
+        self.fields['network'].initial = [initial_value]
 
     class Meta(object):
         name = _("Groups")
@@ -428,6 +450,24 @@ class SetGroupAction(workflows.Action):
                 tenant_id=request.user.tenant_id)
             for pt in pts:
                 pt.set_id_as_name_if_empty()
+                subnet_dedails = None
+                for subnet_id in pt.subnets:
+                    try:
+                        subnet = api.neutron.subnet_get(request, subnet_id)
+                        if subnet_dedails is None:
+                            subnet_dedails = subnet['cidr']
+                        else:
+                            subnet_dedails = ";" + subnet['cidr']
+                        allocation_pools = subnet['allocation_pools']
+                        if allocation_pools:
+                            start = allocation_pools[0]['start']
+                            end = allocation_pools[0]['end']
+                            subnet_dedails = subnet_dedails + "," + start
+                            subnet_dedails = subnet_dedails + "," + end
+                    except Exception as e:
+                        LOG.error(str(e))
+                        pass
+                pt.id = pt.id + ":" + subnet_dedails
                 pt_list.append((pt.id, pt.name))
             return sorted(pt_list, key=lambda obj: obj[1])
         except Exception:
@@ -542,9 +582,22 @@ class LaunchInstance(workflows.Workflow):
                     instance_name = context['name'] + str(count)
                 nics = []
                 for ptg_id in context['group_id']:
-                    ep = client.pt_create(
-                        request, policy_target_group_id=ptg_id,
-                        name=instance_name[:41] + "_gbpui")
+                    values = ptg_id.split(":")
+                    ptg_id = values[0]
+                    args = {'policy_target_group_id': ptg_id,
+                            'name': instance_name[:41] + "_gbpui"}
+                    if len(values) == 3:
+                        ptg = client.policy_target_get(request, ptg_id)
+                        fixed_ip = values[2]
+                        for subnet_id in ptg.subnets:
+                            subnet = api.neutron.subnet_get(request, subnet_id)
+                            if netaddr.IPAddress(fixed_ip) in \
+                                    netaddr.IPNetwork(subnet['cidr']):
+                                args['fixed_ips'] = [
+                                    {'subnet_id': subnet['id'],
+                                     'ip_address': fixed_ip}]
+                                break
+                    ep = client.pt_create(request, **args)
                     nics.append({'port-id': ep.port_id})
                 api.nova.server_create(request,
                                    instance_name,
@@ -563,10 +616,10 @@ class LaunchInstance(workflows.Workflow):
                                    config_drive=context.get('config_drive'))
                 count += 1
             return True
-        except Exception:
+        except Exception as e:
             error = _("Unable to launch member %(count)s with name %(name)s")
             msg = error % {'count': count, 'name': instance_name}
-            LOG.error(msg)
+            LOG.error(str(e))
             u = "horizon:project:policytargets:policy_targetdetails"
             policy_target_id = self.request.path.split("/")[-2]
             redirect = reverse(u, kwargs={'policy_target_id':

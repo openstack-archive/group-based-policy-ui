@@ -10,9 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import re
 
+import netaddr
+
 from django.core.urlresolvers import reverse_lazy
+from django.http import HttpResponse  # noqa
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
@@ -27,6 +31,8 @@ from gbpui import client
 import forms as policy_target_forms
 import tabs as policy_target_tabs
 import workflows as policy_target_workflows
+
+from openstack_dashboard import api
 
 PTGTabs = policy_target_tabs.PTGTabs
 PTGDetailsTabs = policy_target_tabs.PTGDetailsTabs
@@ -285,3 +291,31 @@ class RemoveConsumedPRSView(forms.ModalFormView):
 
     def get_initial(self):
         return self.kwargs
+
+
+def check_ip_availability(request):
+    fixed_ip = request.GET.get('fixed_ip')
+    response = {'error': 'IP address is not within the allocated pool range'}
+    subnets = request.GET.get('subnets')
+    subnets = subnets.split(";")
+    for subnet in subnets:
+        subnet_details = subnet.split(",")
+        try:
+            if netaddr.IPAddress(fixed_ip) in \
+                    netaddr.IPNetwork(subnet_details[0]):
+                if netaddr.IPAddress(fixed_ip) >= netaddr.IPAddress(
+                        subnet_details[1]) and \
+                        netaddr.IPAddress(fixed_ip) <= netaddr.IPAddress(
+                            subnet_details[2]):
+                    fixed_ips = "ip_address=" + fixed_ip
+                    ports = api.neutron.port_list(request, fixed_ips=fixed_ips)
+                    if ports:
+                        response = {"inuse": False,
+                                    "error": "IP address already in use"}
+                    else:
+                        response = {"inuse": True}
+                    break
+        except Exception:
+            response = {'error': 'Unable to check IP availability'}
+    json_string = json.dumps(response, ensure_ascii=False)
+    return HttpResponse(json_string, content_type='text/json')
