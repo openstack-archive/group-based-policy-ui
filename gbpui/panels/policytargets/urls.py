@@ -73,4 +73,7 @@ urlpatterns = patterns('',
                            '(?P<ext_policy_target_id>[^/]+)/$',
                            views.ExtRemoveConsumedPRSView.as_view(),
                            name='ext_remove_consumed_prs'),
+                       url(r'/check_ip_availability',
+                           views.check_ip_availability,
+                           name='check_ip_availability'),
                        )
