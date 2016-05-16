@@ -22,7 +22,7 @@ member = {
     $(this.get_group_element("")).each(function () {
       var $this = $(this);
       var $input = $this.children("input");
-      var name = horizon.string.escapeHtml($this.text().replace(/^\s+/, ""));
+      var name = horizon.escape_html($this.text().replace(/^\s+/, ""));
       var group_property = {
         "name": name,
         "id": $input.attr("id"),
