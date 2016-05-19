@@ -298,7 +298,7 @@ def check_ip_availability(request):
     fixed_ip = request.GET.get('fixed_ip')
     response = {'error': 'IP address is not within the allocated pool range'}
     subnets = request.GET.get('subnets')
-    subnets = subnets.split(";")
+    subnets = subnets.split(":")
     for subnet in subnets:
         subnet_details = subnet.split(",")
         try:
@@ -306,7 +306,8 @@ def check_ip_availability(request):
                 if IPAddress(fixed_ip) >= IPAddress(subnet_details[1]) and \
                         IPAddress(fixed_ip) <= IPAddress(subnet_details[2]):
                     fixed_ips = "ip_address=" + fixed_ip
-                    ports = api.neutron.port_list(request, fixed_ips=fixed_ips)
+                    ports = api.neutron.port_list(request,
+                        tenant_id=request.user.tenant_id, fixed_ips=fixed_ips)
                     if ports:
                         response = {"inuse": False,
                                     "error": "IP address already in use"}
