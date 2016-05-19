@@ -126,6 +126,8 @@ member = {
   },
 
   allow_fixed_ip: function(selected_group){
+      if (member.allowed() == false)
+        return
       fixed_ip = ""
       $("#fixed_ip").val("")
       $("#errors").text("")
@@ -152,7 +154,17 @@ member = {
       if (values.length == 3)
         $("#fixed_ip").val(values[2]);
   },
+  allowed: function(){
+      if($("#id_count").val() > 1){
+        horizon.alert('warning', "You cannot assign fixed IPs " +
+          "if more than one instance is requested.")
+        return false
+      }
+      return true
+  },
   associate_fixed_ip: function(){
+      if (member.allowed() == false)
+        return
       ptg = $("#fixed_ip").attr("data-ptg")
       subnet = $("#fixed_ip").attr("data-subnet")
       fixed_ip = $("#fixed_ip").val()
@@ -201,10 +213,10 @@ member = {
   groups_init: function() {
     // Initialise the drag and drop group list
     member.generate_grouplist_html();
-
     // allocate fixed ip
-    $(document).on('click', "ul#selected_network li", function(){
+    $(document).on('click', "ul#selected_network li", function(e){
       member.allow_fixed_ip(this);
+      e.preventDefault();
     });
 
     $("#set_ip_button").click(function(){
