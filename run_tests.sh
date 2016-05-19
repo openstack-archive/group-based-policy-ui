@@ -330,10 +330,6 @@ function run_tests {
     export SKIP_UNITTESTS=1
   fi
 
-  if [ $with_selenium -eq 0 -a $integration -eq 0 ]; then
-      testopts="$testopts --exclude-dir=gbpui/openstack_dashboard/test/integration_tests"
-  fi
-
   if [ $selenium_headless -eq 1 ]; then
     export SELENIUM_HEADLESS=1
   fi
