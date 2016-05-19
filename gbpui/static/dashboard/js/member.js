@@ -59,9 +59,10 @@ member = {
          $("ul#available_group li[name^='"+ ptg +"']").css("background-color", "");
          $("#fixed_ip_div").hide()
        }
+       member.control_max_instances()
     };
     var updateForm = function() {
-      var groupListId = $("#groupListId");
+      var groupListId = $("#groupListId .multiple-checkbox");
       var lists = groupListId.find("li").attr('data-index',100);
       var active_groups = $("#selected_network > li").map(function(){
         return $(this).attr("name");
@@ -83,7 +84,7 @@ member = {
     };
 
     $("#groupListSortContainer").show();
-    $("#groupListIdContainer").hide();
+    $("#groupListId .form-group").hide()
     self.init_group_list();
     // Make sure we don't duplicate the groups in the list
     available_group.empty();
@@ -124,11 +125,25 @@ member = {
       }
     }).disableSelection();
   },
-
+  control_max_instances: function(){
+      $("#id_count").attr('readonly', false)
+      $("#id_network").each(function() {
+         $input = $(this).find('li input');
+         value = $input.val();
+         fields = value.split(":")
+         if ($input.is(":checked") && fields.length == 3){
+          // fixed ip is associated, dont allow Instance Count > 1
+          $("#id_count").attr('readonly', true)
+          return
+         }
+      });
+  },
   allow_fixed_ip: function(selected_group){
+      if (member.allowed() == false)
+        return
       fixed_ip = ""
       $("#fixed_ip").val("")
-      $("#errors").text("")
+      $("#errors").hide().text("")
       $("#fixed_ip_div").show()
       ptg = $(selected_group).attr('name')
       $(selected_group).siblings().css( "background-color", "");
@@ -152,12 +167,23 @@ member = {
       if (values.length == 3)
         $("#fixed_ip").val(values[2]);
   },
+  allowed: function(){
+      if($("#id_count").val() > 1){
+        $("#errors").show().text("You cannot assign fixed IPs " +
+          "if more than one instance is requested.")
+        return false
+      }
+      return true
+  },
   associate_fixed_ip: function(){
+      if (member.allowed() == false)
+        return
       ptg = $("#fixed_ip").attr("data-ptg")
       subnet = $("#fixed_ip").attr("data-subnet")
+      subnet = subnet.replace(";", ":")
       fixed_ip = $("#fixed_ip").val()
       if (!fixed_ip || 0 === fixed_ip.length ){
-        $("#errors").text("Enter valid IP address")
+        $("#errors").show().text("Enter valid IP address")
         return
       }
       $.ajax({
@@ -167,6 +193,7 @@ member = {
         success: function(response) {
           if(response.inuse){
             horizon.alert('success', "IP address '" + fixed_ip +"' is available.")
+            subnet = subnet.replace(":", ";")
             value = ptg + ":" + subnet + ":" + fixed_ip
             selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
             selected_element.val(value)
@@ -178,18 +205,21 @@ member = {
             }
             $("ul#selected_network li[name^='"+ ptg +"']").css("background-color", "");
             $("#fixed_ip_div").hide()
+            $("#errors").hide().text("")
+            member.control_max_instances()
           }
           else{
-            $("#errors").text(response.error)
+            $("#errors").show().text(response.error)
           }
         },
         error: function(response) {
-          $("#errors").text(response)
+          $("#errors").show().text(response)
         }
       });
   },
   disassociate_fixed_ip: function(){
     ptg = $("#fixed_ip").attr("data-ptg")
+    $("#errors").hide().text("")
     subnet = $("#fixed_ip").attr("data-subnet")
     value = ptg + ":" + subnet
     selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
@@ -197,14 +227,16 @@ member = {
     $("#selected_network li[name^='"+ ptg +"'] strong").text("")
     $("#fixed_ip_div").hide()
     $("ul#selected_network li").css("background-color", "");
+    member.control_max_instances()
   },
   groups_init: function() {
     // Initialise the drag and drop group list
     member.generate_grouplist_html();
-
     // allocate fixed ip
-    $(document).on('click', "ul#selected_network li", function(){
+    $(document).on('click', "ul#selected_network li", function(e){
       member.allow_fixed_ip(this);
+      e.preventDefault();
+      e.stopPropagation();
     });
 
     $("#set_ip_button").click(function(){
@@ -214,5 +246,9 @@ member = {
     $("#remove").click(function(){
       member.disassociate_fixed_ip()
     });
+    help = $("label[for=id_count]").parent().find('span.help-icon')
+    title = help.attr("title")
+    title = title + " Fixed IP can be assigned only when Instance Count is 1"
+    help.attr("title", title)
   }
 };
