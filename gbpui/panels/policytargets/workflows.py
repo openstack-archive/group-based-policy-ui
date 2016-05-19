@@ -415,7 +415,7 @@ class SetGroupAction(workflows.Action):
                 if subnet_dedails is None:
                     subnet_dedails = subnet['cidr']
                 else:
-                    subnet_dedails = ";" + subnet['cidr']
+                    subnet_dedails = subnet_dedails + ";" + subnet['cidr']
                 allocation_pools = subnet['allocation_pools']
                 if allocation_pools:
                     start = allocation_pools[0]['start']
@@ -430,7 +430,13 @@ class SetGroupAction(workflows.Action):
 
     class Meta(object):
         name = _("Groups")
-        help_text = _("Select groups for launching the member instance in.")
+
+    def clean(self):
+        cleaned_data = super(SetGroupAction, self).clean()
+        if not cleaned_data.get("network", None):
+            raise forms.ValidationError(_(
+                'At least one group must be selected.'))
+        return cleaned_data
 
     def populate_network_choices(self, request, context):
         try:
@@ -446,7 +452,7 @@ class SetGroupAction(workflows.Action):
                         if subnet_dedails is None:
                             subnet_dedails = subnet['cidr']
                         else:
-                            subnet_dedails = ";" + subnet['cidr']
+                            subnet_dedails = subnet_dedails + ";" + subnet['cidr']
                         allocation_pools = subnet['allocation_pools']
                         if allocation_pools:
                             start = allocation_pools[0]['start']
