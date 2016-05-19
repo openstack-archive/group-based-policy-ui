@@ -430,7 +430,13 @@ class SetGroupAction(workflows.Action):
 
     class Meta(object):
         name = _("Groups")
-        help_text = _("Select groups for launching the member instance in.")
+
+    def clean(self):
+        cleaned_data = super(SetGroupAction, self).clean()
+        if not cleaned_data.get("network", None):
+            raise forms.ValidationError(_(
+                'At least one group must be selected.'))
+        return cleaned_data
 
     def populate_network_choices(self, request, context):
         try:
