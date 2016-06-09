@@ -270,11 +270,12 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
         url = reverse('horizon:project:application_policy:index')
         try:
             policyclassifier_id = self.initial['policyclassifier_id']
-            protocol = context.get('protocol').lower()
-            if protocol in PROTOCOL_MAP:
-                context['protocol'] = PROTOCOL_MAP[protocol]
-            elif protocol == "any":
-                context['protocol'] = None
+            if 'protocol' in context:
+                protocol = context.get('protocol').lower()
+                if protocol in PROTOCOL_MAP:
+                    context['protocol'] = PROTOCOL_MAP[protocol]
+                elif protocol == "any":
+                    context['protocol'] = None
             if 'port_range' in context and context['port_range'] == '':
                 context['port_range'] = None
             if context.get('name'):
