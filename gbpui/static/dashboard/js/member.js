@@ -40,9 +40,13 @@ member = {
    * Generates the HTML structure for a group that will be displayed
    * as a list item in the group list.
    **/
-  generate_group_element: function(name, id, value) {
+  generate_group_element: function(name, id, value, selected) {
     var $li = $('<li>');
-    $li.attr('name', value).html(name + '<strong></strong><a href="#" class="btn btn-primary"></a>');
+    ip_lable = '<strong></strong>'
+    if (selected){
+      ip_lable = '<strong> <a>Set IP Address</a></strong>'
+    }
+    $li.attr('name', value).html(name + ip_lable + '<a href="#" class="btn btn-primary"></a>');
     return $li;
   },
 
@@ -69,6 +73,10 @@ member = {
       });
       groupListId.find("input:checkbox").removeAttr('checked');
       active_groups.each(function(index, value){
+        ip_ele = $("#selected_network li[name^='"+ value +"'] strong")
+        if(ip_ele.text() == "" && $("#id_count").val() == 1){
+          ip_ele.html(" <a>Set IP Address</a>")
+        }
         groupListId.find("input:checkbox[value^='" + value + "']")
           .prop('checked', true)
           .parents("li").attr('data-index',index);
@@ -89,12 +97,12 @@ member = {
     // Make sure we don't duplicate the groups in the list
     available_group.empty();
     $.each(self.groups_available, function(index, value){
-      available_group.append(self.generate_group_element(value.name, value.id, value.value));
+      available_group.append(self.generate_group_element(value.name, value.id, value.value, false));
     });
     // Make sure we don't duplicate the groups in the list
     selected_group.empty();
     $.each(self.groups_selected, function(index, value){
-      selected_group.append(self.generate_group_element(value.name, value.id, value.value));
+      selected_group.append(self.generate_group_element(value.name, value.id, value.value, true));
     });
 
     $(".networklist > li > a.btn").click(function(e){
@@ -105,6 +113,7 @@ member = {
         $this.parent().appendTo(selected_group);
       } else if ($this.parents("ul#selected_network").length > 0) {
         $this.parent().appendTo(available_group);
+        $this.parent().find("strong").html("");
       }
       updateForm();
     });
@@ -127,8 +136,8 @@ member = {
   },
   control_max_instances: function(){
       $("#id_count").attr('readonly', false)
-      $("#id_network").each(function() {
-         $input = $(this).find('li input');
+      $("#id_network li").each(function() {
+         $input = $(this).find('input');
          value = $input.val();
          fields = value.split(":")
          if ($input.is(":checked") && fields.length == 3){
@@ -151,9 +160,8 @@ member = {
       selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
       value = selected_element.val();
       values = value.split(':');
-      group = $(selected_group).text()
-      group = group.split("(")
-      $("#group").text(group[0])
+      group = $(selected_group).clone().find('strong').remove().end().text();
+      $("#group").text(group);
       subnets = values[1].split(";")
       $('#subnets_table tbody').empty();
       for (index=0; index < subnets.length; index++){
@@ -198,10 +206,7 @@ member = {
             selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
             selected_element.val(value)
             if(fixed_ip){
-              $("#selected_network li[name^='"+ ptg +"'] strong").text(" ( "+fixed_ip + " )")
-            }
-            else{
-              $("#selected_network li[name^='"+ ptg +"'] strong").text("")
+              $("#selected_network li[name^='"+ ptg +"'] strong").html(" ( "+fixed_ip +") <a>Edit IP</a>")
             }
             $("ul#selected_network li[name^='"+ ptg +"']").css("background-color", "");
             $("#fixed_ip_div").hide()
@@ -224,7 +229,7 @@ member = {
     value = ptg + ":" + subnet
     selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
     selected_element.val(value)
-    $("#selected_network li[name^='"+ ptg +"'] strong").text("")
+    $("#selected_network li[name^='"+ ptg +"'] strong").html(" <a>Set IP Address</a>")
     $("#fixed_ip_div").hide()
     $("ul#selected_network li").css("background-color", "");
     member.control_max_instances()
@@ -250,5 +255,15 @@ member = {
     title = help.attr("title")
     title = title + " Fixed IP can be assigned only when Instance Count is 1"
     help.attr("title", title)
+    $(document).on('input', '#id_count',function(){
+      if($("#id_count").val() > 1){
+        $("#selected_network li").find("strong").html("");
+      }
+      else{
+        $("#selected_network li").find("strong").html(" <a>Set IP Address</a>")
+        $("#errors").hide().text("")
+      }
+      $("#fixed_ip_div").hide()
+    })
   }
 };
