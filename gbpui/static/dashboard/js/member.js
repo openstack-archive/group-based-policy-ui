@@ -42,9 +42,9 @@ member = {
    **/
   generate_group_element: function(name, id, value, selected) {
     var $li = $('<li>');
-    ip_lable = '<strong></strong>'
+    ip_lable = '<span></span>'
     if (selected){
-      ip_lable = '<strong> <a>Set IP Address</a></strong>'
+      ip_lable = "<span> [<a style='font-size:80%;'>Click to Set IP</a>]</span>"
     }
     $li.attr('name', value).html(name + ip_lable + '<a href="#" class="btn btn-primary"></a>');
     return $li;
@@ -73,9 +73,9 @@ member = {
       });
       groupListId.find("input:checkbox").removeAttr('checked');
       active_groups.each(function(index, value){
-        ip_ele = $("#selected_network li[name^='"+ value +"'] strong")
+        ip_ele = $("#selected_network li[name^='"+ value +"'] span")
         if(ip_ele.text() == "" && $("#id_count").val() == 1){
-          ip_ele.html(" <a>Set IP Address</a>")
+          ip_ele.html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
         }
         groupListId.find("input:checkbox[value^='" + value + "']")
           .prop('checked', true)
@@ -113,7 +113,7 @@ member = {
         $this.parent().appendTo(selected_group);
       } else if ($this.parents("ul#selected_network").length > 0) {
         $this.parent().appendTo(available_group);
-        $this.parent().find("strong").html("");
+        $this.parent().find("span").html("");
       }
       updateForm();
     });
@@ -160,7 +160,7 @@ member = {
       selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
       value = selected_element.val();
       values = value.split(':');
-      group = $(selected_group).clone().find('strong').remove().end().text();
+      group = $(selected_group).clone().find('span').remove().end().text();
       $("#group").text(group);
       subnets = values[1].split(";")
       $('#subnets_table tbody').empty();
@@ -206,7 +206,8 @@ member = {
             selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
             selected_element.val(value)
             if(fixed_ip){
-              $("#selected_network li[name^='"+ ptg +"'] strong").html(" ( "+fixed_ip +") <a>Edit IP</a>")
+              $("#selected_network li[name^='"+ ptg +"'] span").html(
+                " ["+fixed_ip + ", <a style='font-size:80%;'>Click to Edit IP</a>]")
             }
             $("ul#selected_network li[name^='"+ ptg +"']").css("background-color", "");
             $("#fixed_ip_div").hide()
@@ -229,7 +230,7 @@ member = {
     value = ptg + ":" + subnet
     selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
     selected_element.val(value)
-    $("#selected_network li[name^='"+ ptg +"'] strong").html(" <a>Set IP Address</a>")
+    $("#selected_network li[name^='"+ ptg +"'] span").html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
     $("#fixed_ip_div").hide()
     $("ul#selected_network li").css("background-color", "");
     member.control_max_instances()
@@ -257,10 +258,10 @@ member = {
     help.attr("title", title)
     $(document).on('input', '#id_count',function(){
       if($("#id_count").val() > 1){
-        $("#selected_network li").find("strong").html("");
+        $("#selected_network li").find("span").html("");
       }
       else{
-        $("#selected_network li").find("strong").html(" <a>Set IP Address</a>")
+        $("#selected_network li").find("span").html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
         $("#errors").hide().text("")
       }
       $("#fixed_ip_div").hide()
