@@ -408,24 +408,10 @@ class SetGroupAction(workflows.Action):
         super(SetGroupAction, self).__init__(request, *args, **kwargs)
         policy_targetid = self.request.path.split("/")[-2]
         ptg = client.policy_target_get(request, policy_targetid)
-        subnet_dedails = None
-        for subnet_id in ptg.subnets:
-            try:
-                subnet = api.neutron.subnet_get(request, subnet_id)
-                if subnet_dedails is None:
-                    subnet_dedails = subnet['cidr']
-                else:
-                    subnet_dedails = subnet_dedails + ";" + subnet['cidr']
-                allocation_pools = subnet['allocation_pools']
-                if allocation_pools:
-                    start = allocation_pools[0]['start']
-                    end = allocation_pools[0]['end']
-                    subnet_dedails = subnet_dedails + "," + start
-                    subnet_dedails = subnet_dedails + "," + end
-            except Exception as e:
-                LOG.error(str(e))
-                pass
-        initial_value = policy_targetid + ":" + subnet_dedails
+        for choice in self.fields['network'].choices:
+            if choice[0].startswith(ptg.id):
+                initial_value = choice[0]
+                break
         self.fields['network'].initial = [initial_value]
 
     class Meta(object):
@@ -443,12 +429,19 @@ class SetGroupAction(workflows.Action):
             pt_list = []
             pts = client.policy_target_list(request,
                 tenant_id=request.user.tenant_id)
+            proxy_groups = [pt.proxy_group_id for pt in pts
+                            if pt.proxy_group_id]
             for pt in pts:
+                if pt.id in proxy_groups or pt.proxied_group_id:
+                    continue
                 pt.set_id_as_name_if_empty()
                 subnet_dedails = None
                 for subnet_id in pt.subnets:
                     try:
                         subnet = api.neutron.subnet_get(request, subnet_id)
+                        subnet_name = subnet.name.split("_")
+                        if subnet_name[-1] in proxy_groups:
+                            continue
                         if subnet_dedails is None:
                             subnet_dedails = subnet['cidr']
                         else:
