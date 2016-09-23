@@ -44,7 +44,7 @@ member = {
     var $li = $('<li>');
     ip_lable = '<span></span>'
     if (selected){
-      ip_lable = "<span> [<a style='font-size:80%;'>Click to Set IP</a>]</span>"
+      ip_lable = "<span> (<a style='font-size:80%;'>Click to Set IP</a>)</span>"
     }
     $li.attr('name', value).html(name + ip_lable + '<a href="#" class="btn btn-primary"></a>');
     return $li;
@@ -75,7 +75,7 @@ member = {
       active_groups.each(function(index, value){
         ip_ele = $("#selected_network li[name^='"+ value +"'] span")
         if(ip_ele.text() == "" && $("#id_count").val() == 1){
-          ip_ele.html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
+          ip_ele.html(" (<a style='font-size:80%;'>Click to Set IP</a>)")
         }
         groupListId.find("input:checkbox[value^='" + value + "']")
           .prop('checked', true)
@@ -186,6 +186,7 @@ member = {
   associate_fixed_ip: function(){
       if (member.allowed() == false)
         return
+      $("#errors").hide().text("")
       ptg = $("#fixed_ip").attr("data-ptg")
       subnet = $("#fixed_ip").attr("data-subnet")
       subnet = subnet.replace(";", ":")
@@ -207,7 +208,7 @@ member = {
             selected_element.val(value)
             if(fixed_ip){
               $("#selected_network li[name^='"+ ptg +"'] span").html(
-                " ["+fixed_ip + ", <a style='font-size:80%;'>Click to Edit IP</a>]")
+                ", "+fixed_ip + " (<a style='font-size:80%;'>Click to Edit IP</a>)")
             }
             $("ul#selected_network li[name^='"+ ptg +"']").css("background-color", "");
             $("#fixed_ip_div").hide()
@@ -230,7 +231,7 @@ member = {
     value = ptg + ":" + subnet
     selected_element = $(".multiple-checkbox #id_network li input[value^='"+ ptg +"']");
     selected_element.val(value)
-    $("#selected_network li[name^='"+ ptg +"'] span").html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
+    $("#selected_network li[name^='"+ ptg +"'] span").html(" (<a style='font-size:80%;'>Click to Set IP</a>)")
     $("#fixed_ip_div").hide()
     $("ul#selected_network li").css("background-color", "");
     member.control_max_instances()
@@ -261,7 +262,7 @@ member = {
         $("#selected_network li").find("span").html("");
       }
       else{
-        $("#selected_network li").find("span").html(" [<a style='font-size:80%;'>Click to Set IP</a>]")
+        $("#selected_network li").find("span").html(" (<a style='font-size:80%;'>Click to Set IP</a>)")
         $("#errors").hide().text("")
       }
       $("#fixed_ip_div").hide()
