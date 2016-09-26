@@ -429,10 +429,10 @@ class SetGroupAction(workflows.Action):
             pt_list = []
             pts = client.policy_target_list(request,
                 tenant_id=request.user.tenant_id)
-            proxy_groups = [pt.proxy_group_id for pt in pts
-                            if pt.proxy_group_id]
+            proxy_groups = [pt.get('proxy_group_id') for pt in pts
+                            if pt.get('proxy_group_id')]
             for pt in pts:
-                if pt.id in proxy_groups or pt.proxied_group_id:
+                if pt.id in proxy_groups or pt.get('proxied_group_id'):
                     continue
                 pt.set_id_as_name_if_empty()
                 subnet_dedails = None
