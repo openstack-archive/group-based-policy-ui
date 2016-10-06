@@ -582,7 +582,11 @@ class LaunchInstance(workflows.Workflow):
                         ptg = client.policy_target_get(request, ptg_id)
                         fixed_ip = values[2]
                         for subnet_id in ptg.subnets:
-                            subnet = api.neutron.subnet_get(request, subnet_id)
+                            try:
+                                subnet = api.neutron.subnet_get(
+                                    request, subnet_id)
+                            except Exception:
+                                continue
                             if IPAddress(fixed_ip) in \
                                     IPNetwork(subnet['cidr']):
                                 args['fixed_ips'] = [
