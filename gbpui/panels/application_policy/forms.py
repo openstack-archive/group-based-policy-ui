@@ -188,6 +188,7 @@ class UpdatePolicyActionForm(BaseUpdateForm):
 
 class AddPolicyClassifierForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
+    description = forms.CharField(label=_("Description"), required=False)
     protocol = forms.CharField(required=True)
     port_range = forms.CharField(max_length=80, label=_("Port/Range(min:max)"),
                     required=False,
