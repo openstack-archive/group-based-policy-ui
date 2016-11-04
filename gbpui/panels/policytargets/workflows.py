@@ -11,7 +11,9 @@
 #    under the License.
 
 import logging
+import re
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django import shortcuts
 from django.utils import html
@@ -432,6 +434,11 @@ class SetGroupAction(workflows.Action):
             proxy_groups = [pt.get('proxy_group_id') for pt in pts
                             if pt.get('proxy_group_id')]
             for pt in pts:
+                if hasattr(settings, 'GBPUI_HIDE_PTG_NAMES_FROM_MEMBER_CREATE'):
+                    regexs = "(" + ")|(".join(
+                            settings.GBPUI_HIDE_PTG_NAMES_FROM_MEMBER_CREATE) + ")"
+                    if re.match(regexs, pt.get('name')):
+                        continue
                 if pt.id in proxy_groups or pt.get('proxied_group_id'):
                     continue
                 pt.set_id_as_name_if_empty()
