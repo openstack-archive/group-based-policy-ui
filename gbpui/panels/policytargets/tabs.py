@@ -128,6 +128,7 @@ class InstancesTab(tabs.TableTab):
             tenant_id=self.request.user.tenant_id,
             policy_target_group_id=policy_targetid)
             policy_target_ports = [x.port_id for x in policytargets]
+            policy_target_ids = [p.id for p in policytargets]
             marker = self.request.GET.get(
                 tables.InstancesTable._meta.pagination_param, None)
             # TODO(Sumit): Setting paginate to False is a temporary
@@ -150,11 +151,13 @@ class InstancesTab(tabs.TableTab):
             if policy_target_ports:
                 time.sleep(0.5)
             for item in instances:
-                for port in api.neutron.port_list(self.request,
-                                                  device_id=item.id):
-                    if port.id in policy_target_ports:
-                        filtered_instances.append(item)
-                        break
+                metadata_pts = item.metadata.get('pts', None)
+                if metadata_pts:
+                    pts = metadata_pts.split(",")
+                    for pt in pts:
+                        if pt in policy_target_ids:
+                            filtered_instances.append(item)
+                            break
         except Exception:
             self._has_more = False
             error_message = _('Unable to get instances')

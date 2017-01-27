@@ -582,6 +582,7 @@ class LaunchInstance(workflows.Workflow):
                 else:
                     instance_name = context['name'] + str(count)
                 nics = []
+                pts = []
                 for ptg_id in context['group_id']:
                     values = ptg_id.split(":")
                     ptg_id = values[0]
@@ -604,6 +605,8 @@ class LaunchInstance(workflows.Workflow):
                                 break
                     ep = client.pt_create(request, **args)
                     nics.append({'port-id': ep.port_id})
+                    pts.append(ep.id)
+                meta_data = {'pts': ','.join(pts)}
                 api.nova.server_create(request,
                                    instance_name,
                                    image_id,
@@ -618,7 +621,8 @@ class LaunchInstance(workflows.Workflow):
                                    instance_count=1,
                                    admin_pass=context['admin_pass'],
                                    disk_config=context.get('disk_config'),
-                                   config_drive=context.get('config_drive'))
+                                   config_drive=context.get('config_drive'),
+                                   meta=meta_data)
                 count += 1
             return True
         except Exception as e:
