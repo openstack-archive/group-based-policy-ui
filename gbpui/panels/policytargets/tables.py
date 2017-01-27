@@ -144,13 +144,12 @@ class RemoveVMLink(tables.DeleteAction):
                           self.table.kwargs['policy_target_id']})
         try:
             pts = []
-            for port in api.neutron.port_list(request, device_id=instance_id):
-                policytarget = client.pt_list(request,
-                tenant_id=request.user.tenant_id, port_id=port.id)
-                if policytarget:
-                    pts.append(policytarget[0])
-            for pt in pts:
-                client.pt_delete(request, pt.id)
+            instance = api.nova.server_get(request, instance_id)
+            metadata_pts = instance.metadata.get('pts', None)
+            if metadata_pts:
+                pts = metadata_pts.split(",")
+                for pt in pts:
+                    client.pt_delete(request, pt)
             api.nova.server_delete(request, instance_id)
             LOG.debug('Deleted instance %s successfully' % instance_id)
             return http.HttpResponseRedirect(url)
