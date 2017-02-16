@@ -10,7 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 import os
 
 from django.conf import settings
@@ -18,8 +17,6 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from gbpui import client
-
-LOG = logging.getLogger(__name__)
 
 
 def list_column_filter(items):
