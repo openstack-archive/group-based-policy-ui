@@ -67,6 +67,7 @@ class PTGsTable(tables.DataTable):
                                          verbose_name=_("Consumed Rule Sets"))
     l2_policy_id = tables.Column("l2_policy_id",
                                  verbose_name=_("L2 Policy"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "policy_targetstable"
@@ -115,6 +116,7 @@ class ExternalPTGsTable(tables.DataTable):
                                          verbose_name=_("Consumed Rule Sets"))
     external_segments = tables.Column("external_segments",
                                  verbose_name=_("External Connectivity"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "external_policy_targetstable"
