@@ -49,6 +49,7 @@ class ServiceChainSpecTable(tables.DataTable):
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     nodes = tables.Column("nodes", verbose_name=_("Nodes"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_chain_spec_table"
@@ -93,6 +94,7 @@ class ServiceChainNodeTable(tables.DataTable):
                                 verbose_name=_("Description"))
     service_profile = tables.Column("service_profile",
                                  verbose_name=_("Service Profile"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_chain_node_table"
@@ -144,6 +146,7 @@ class ServiceChainInstanceTable(tables.DataTable):
     servicechain_spec = tables.Column(
         "servicechain_spec", verbose_name=_("Service Chain Spec"))
     classifier = tables.Column("classifier", verbose_name=_("Classifier"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_chain_instance_table"
@@ -175,6 +178,7 @@ class ServiceProfileTable(tables.DataTable):
     insertion_mode = tables.Column("insertion_mode",
         verbose_name=_("Insertion Mode"))
     vendor = tables.Column("vendor", verbose_name=_("Vendor"))
+    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_profile_table"
