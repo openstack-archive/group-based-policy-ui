@@ -158,6 +158,12 @@ class InstancesTab(tabs.TableTab):
                         if pt in policy_target_ids:
                             filtered_instances.append(item)
                             break
+                else:
+                    for port in api.neutron.port_list(self.request,
+                                                      device_id=item.id):
+                        if port.id in policy_target_ports:
+                            filtered_instances.append(item)
+                            break
         except Exception:
             self._has_more = False
             error_message = _('Unable to get instances')
