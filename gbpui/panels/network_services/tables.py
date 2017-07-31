@@ -14,7 +14,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
-
+from gbpui import client
 
 class CreateServiceChainSpecLink(tables.LinkAction):
     name = "create_scspec_link"
@@ -40,6 +40,9 @@ class DeleteServiceChainSpecLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Service Chain Spec")
     data_type_plural = _("Service Chain Specs")
+
+    def action(self, request, object_id):
+        client.delete_servicechain_spec(request, object_id)
 
 
 class ServiceChainSpecTable(tables.DataTable):
@@ -84,6 +87,9 @@ class DeleteServiceChainNodeLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Service Chain Node")
     data_type_plural = _("Service Chain Nodes")
+
+    def action(self, request, object_id):
+        client.delete_servicechain_node(request, object_id)
 
 
 class ServiceChainNodeTable(tables.DataTable):
@@ -130,6 +136,9 @@ class DeleteServiceChainInstanceLink(tables.DeleteAction):
     data_type_singular = _("ServiceChainInstance")
     data_type_plural = _("ServiceChainInstances")
 
+    def action(self, request, object_id):
+        client.delete_servicechain_instance(request, object_id)
+
 
 class ServiceChainInstanceTable(tables.DataTable):
     name = tables.Column("name",
@@ -166,6 +175,9 @@ class DeleteServiceProfileLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("ServiceProfile")
     data_type_plural = _("ServiceProfiles")
+
+    def action(self, request, object_id):
+        client.delete_service_profile(request, object_id)
 
 
 class ServiceProfileTable(tables.DataTable):

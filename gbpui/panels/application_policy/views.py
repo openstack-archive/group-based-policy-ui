@@ -37,53 +37,9 @@ AddPolicyRule = policy_rule_set_workflows.AddPolicyRule
 AddPolicyClassifier = policy_rule_set_workflows.AddPolicyClassifier
 
 
-class IndexView(tabs.TabView):
+class IndexView(tabs.TabbedTableView):
     tab_group_class = (PolicyRuleSetTabs)
     template_name = 'project/application_policy/details_tabs.html'
-
-    def post(self, request, *args, **kwargs):
-        obj_ids = request.POST.getlist('object_ids')
-        action = request.POST['action']
-        obj_type = re.search('delete([a-z]+)', action).group(1)
-        if not obj_ids:
-            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        if obj_type == 'policyaction':
-            for obj_id in obj_ids:
-                try:
-                    client.policyaction_delete(request, obj_id)
-                    messages.success(request, _('Deleted action %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'policyclassifier':
-            for obj_id in obj_ids:
-                try:
-                    client.policyclassifier_delete(request, obj_id)
-                    messages.success(
-                        request, _('Deleted classifer %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'policyrule':
-            for obj_id in obj_ids:
-                try:
-                    client.policyrule_delete(request, obj_id)
-                    messages.success(request,
-                                     _('Deleted rule %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'policyruleset':
-            for obj_id in obj_ids:
-                try:
-                    client.policy_rule_set_delete(request, obj_id)
-                    messages.success(request,
-                                     _('Deleted rule %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-
-        return self.get(request, *args, **kwargs)
 
 
 class AddPolicyRuleSetView(workflows.WorkflowView):

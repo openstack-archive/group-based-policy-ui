@@ -15,6 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
+from gbpui import client
 
 class CreateL2PolicyLink(tables.LinkAction):
     name = "create_l2policy"
@@ -40,6 +41,9 @@ class DeleteL2PolicyLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("L2Policy")
     data_type_plural = _("L2Policies")
+
+    def action(self, request, object_id):
+        client.l2policy_delete(request, object_id);
 
 
 class L2PolicyTable(tables.DataTable):
@@ -84,6 +88,9 @@ class DeleteL3PolicyLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("L3 Policy")
     data_type_plural = _("L3 Policies")
+
+    def action(self, request, object_id):
+        client.l3policy_delete(request, object_id)
 
 
 class L3PolicyTable(tables.DataTable):
@@ -131,6 +138,9 @@ class DeleteServicePolicyLink(tables.DeleteAction):
     data_type_singular = _("ServicePolicy")
     data_type_plural = _("ServicePolicies")
 
+    def action(self, request, object_id):
+        client.delete_networkservice_policy(request, object_id)
+
 
 class ServicePolicyTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
@@ -173,6 +183,10 @@ class DeleteExternalConnectivityLink(tables.DeleteAction):
     data_type_singular = _("ExternalConnectivity")
     data_type_plural = _("ExternalConnectivities")
 
+    def action(self, request, object_id):
+        client.delete_externalconnectivity(request, object_id)
+
+
 
 class ExternalConnectivityTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
@@ -203,6 +217,9 @@ class DeleteNATPoolLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("NAT Pool")
     data_type_plural = _("NAT Pools")
+
+    def action(self, request, object_id):
+        client.delete_natpool(request, object_id)
 
 
 class EditNATPoolLink(tables.LinkAction):

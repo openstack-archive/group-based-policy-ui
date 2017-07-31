@@ -46,6 +46,9 @@ class DeletePTGLink(tables.DeleteAction):
     data_type_singular = _("Group")
     data_type_plural = _("Groups")
 
+    def action(self, request, object_id):
+        client.policy_target_delete(request, object_id)
+
 
 class AddPTGLink(tables.LinkAction):
     name = "addpolicy_target"
@@ -101,6 +104,9 @@ class DeleteExternalPTGLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Group")
     data_type_plural = _("Groups")
+
+    def action(self, request, object_id):
+        client.ext_policy_target_delete(request, object_id)
 
 
 class ExternalPTGsTable(tables.DataTable):

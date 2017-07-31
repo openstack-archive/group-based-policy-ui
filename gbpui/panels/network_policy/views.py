@@ -28,53 +28,9 @@ import tables as np_tables
 import tabs as np_tabs
 
 
-class IndexView(tabs.TabView):
+class IndexView(tabs.TabbedTableView):
     tab_group_class = (np_tabs.L3PolicyTabs)
     template_name = 'project/network_policy/details_tabs.html'
-
-    def post(self, request, *args, **kwargs):
-        obj_ids = request.POST.getlist('object_ids')
-        action = request.POST['action']
-        obj_type = re.search('delete([0-9a-z]+)', action).group(1)
-        if not obj_ids:
-            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        if obj_type == 'spolicy':
-            for obj_id in obj_ids:
-                try:
-                    client.delete_networkservice_policy(request, obj_id)
-                    messages.success(request,
-                            _('Deleted service policy %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'l3policy':
-            for obj_id in obj_ids:
-                try:
-                    client.l3policy_delete(request, obj_id)
-                    messages.success(request,
-                            _('Deleted L3 policy %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'externalconnectivity':
-            for obj_id in obj_ids:
-                try:
-                    client.delete_externalconnectivity(request, obj_id)
-                    messages.success(request,
-                            _('Deleted External Connectivity %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        if obj_type == 'natpool':
-            for obj_id in obj_ids:
-                try:
-                    client.delete_natpool(request, obj_id)
-                    messages.success(request,
-                            _('Deleted NAT Pool %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        return self.get(request, *args, **kwargs)
 
 
 class AddL3policyView(forms.ModalFormView):
@@ -105,23 +61,6 @@ class L3PolicyUpdateView(forms.ModalFormView):
 class L3PolicyDetailsView(tables.MultiTableView):
     table_classes = (np_tables.L2PolicyTable,)
     template_name = 'project/network_policy/l3policy_details.html'
-
-    def post(self, request, *args, **kwargs):
-        obj_ids = request.POST.getlist('object_ids')
-        action = request.POST['action']
-        obj_type = re.search('delete([0-9a-z]+)', action).group(1)
-        if not obj_ids:
-            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        if obj_type == 'l2policy':
-            for obj_id in obj_ids:
-                try:
-                    client.l2policy_delete(request, obj_id)
-                    messages.success(request,
-                            _('Deleted L2 policy %s') % obj_id)
-                except Exception as e:
-                    msg = _('Unable to delete action. %s') % (str(e))
-                    exceptions.handle(request, msg)
-        return self.get(request, *args, **kwargs)
 
     def get_l2policy_table_data(self):
         l2_policies = []

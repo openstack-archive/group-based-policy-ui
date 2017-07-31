@@ -42,35 +42,9 @@ AddPTG = policy_target_workflows.AddPTG
 AddExternalPTG = policy_target_workflows.AddExternalPTG
 
 
-class IndexView(tabs.TabView):
+class IndexView(tabs.TabbedTableView):
     tab_group_class = (PTGTabs)
     template_name = 'project/policytargets/details_tabs.html'
-
-    def post(self, request, *args, **kwargs):
-        obj_ids = request.POST.getlist('object_ids')
-        action = request.POST['action']
-        obj_type = re.search('delete([a-z]+)', action).group(1)
-        if not obj_ids:
-            obj_ids.append(re.search('([0-9a-z-]+)$', action).group(1))
-        if obj_type == 'policytarget':
-            for obj_id in obj_ids:
-                try:
-                    client.policy_target_delete(request, obj_id)
-                    messages.success(request,
-                                 _('Deleted Group %s') % obj_id)
-                except Exception as e:
-                    exceptions.handle(request,
-                                  _('Unable to delete Group. %s') % e)
-        if obj_type == 'externalpolicytarget':
-            for obj_id in obj_ids:
-                try:
-                    client.ext_policy_target_delete(request, obj_id)
-                    messages.success(request,
-                                 _('Deleted External Group %s') % obj_id)
-                except Exception as e:
-                    exceptions.handle(request,
-                                  _('Unable to delete External Group. %s') % e)
-        return self.get(request, *args, **kwargs)
 
 
 class AddPTGView(workflows.WorkflowView):
