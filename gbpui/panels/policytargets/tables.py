@@ -46,6 +46,9 @@ class DeletePTGLink(tables.DeleteAction):
     data_type_singular = _("Group")
     data_type_plural = _("Groups")
 
+    def action(self, request, object_id):
+        client.policy_target_delete(request, object_id)
+
 
 class AddPTGLink(tables.LinkAction):
     name = "addpolicy_target"
@@ -55,12 +58,14 @@ class AddPTGLink(tables.LinkAction):
 
 
 class PTGsTable(tables.DataTable):
-    name = tables.Column("name",
-                    verbose_name=_("Name"),
-                    link="horizon:project:policytargets:policy_targetdetails")
+    name = tables.Column(
+        "name",
+        verbose_name=_("Name"),
+        link="horizon:project:policytargets:policy_targetdetails"
+    )
     description = tables.Column("description", verbose_name=_("Description"))
     provided_policy_rule_sets = tables.Column("provided_policy_rule_sets",
-                                         sortable=False,
+                                              sortable=False,
                                          verbose_name=_("Provided Rule Sets"))
     consumed_policy_rule_sets = tables.Column("consumed_policy_rule_sets",
                                          sortable=False,
@@ -102,14 +107,19 @@ class DeleteExternalPTGLink(tables.DeleteAction):
     data_type_singular = _("Group")
     data_type_plural = _("Groups")
 
+    def action(self, request, object_id):
+        client.ext_policy_target_delete(request, object_id)
+
 
 class ExternalPTGsTable(tables.DataTable):
-    name = tables.Column("name",
-                verbose_name=_("Name"),
-                link="horizon:project:policytargets:ext_policy_targetdetails")
+    name = tables.Column(
+        "name",
+        verbose_name=_("Name"),
+        link="horizon:project:policytargets:ext_policy_targetdetails"
+    )
     description = tables.Column("description", verbose_name=_("Description"))
     provided_policy_rule_sets = tables.Column("provided_policy_rule_sets",
-                                         sortable=False,
+                                              sortable=False,
                                          verbose_name=_("Provided Rule Sets"))
     consumed_policy_rule_sets = tables.Column("consumed_policy_rule_sets",
                                          sortable=False,
@@ -231,9 +241,11 @@ class RemoveProvidedLink(tables.LinkAction):
 
 
 class ProvidedContractsTable(tables.DataTable):
-    name = tables.Column("name",
-             link="horizon:project:application_policy:policy_rule_set_details",
-             verbose_name=_("Name"))
+    name = tables.Column(
+        "name",
+        link="horizon:project:application_policy:policy_rule_set_details",
+        verbose_name=_("Name")
+    )
     description = tables.Column("description", verbose_name=_("Description"))
     policy_rules = tables.Column("policy_rules",
                                  sortable=False,
@@ -290,9 +302,11 @@ class RemoveConsumedLink(tables.LinkAction):
 
 
 class ConsumedContractsTable(tables.DataTable):
-    name = tables.Column("name",
-             link="horizon:project:application_policy:policy_rule_set_details",
-             verbose_name=_("Name"))
+    name = tables.Column(
+        "name",
+        link="horizon:project:application_policy:policy_rule_set_details",
+        verbose_name=_("Name")
+    )
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     policy_rules = tables.Column("policy_rules",
