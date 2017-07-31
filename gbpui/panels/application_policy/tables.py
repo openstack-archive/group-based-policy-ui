@@ -15,6 +15,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
+from gbpui import client
+
 
 class AddAppPolicyLink(tables.LinkAction):
     name = "addpolicy_rule_set"
@@ -35,12 +37,15 @@ class UpdateAppPolicyLink(tables.LinkAction):
         return base_url
 
 
-class DeleteAppPolicyLink(tables.DeleteAction):
+class DeletePolicyRuleSetLink(tables.DeleteAction):
     name = "deletepolicyruleset"
     action_present = _("Delete")
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Policy Rule Set")
     data_type_plural = _("Policy Rule Sets")
+
+    def action(self, request, object_id):
+        client.policy_rule_set_delete(request, object_id)
 
 
 class AddPolicyRuleLink(tables.LinkAction):
@@ -69,6 +74,9 @@ class DeletePolicyRuleLink(tables.DeleteAction):
     data_type_singular = _("Policy Rule")
     data_type_plural = _("Policy Rules")
 
+    def action(self, request, object_id):
+        client.policyrule_delete(request, object_id)
+
 
 class AddPolicyClassifierLink(tables.LinkAction):
     name = "addpolicyclassifiers"
@@ -95,6 +103,9 @@ class DeletePolicyClassifierLink(tables.DeleteAction):
     action_past = _("Scheduled deletion of %(data_type)s")
     data_type_singular = _("Policy Classifier")
     data_type_plural = _("Policy Classifiers")
+
+    def action(self, request, object_id):
+        client.policyclassifier_delete(request, object_id)
 
 
 class AddPolicyActionLink(tables.LinkAction):
@@ -123,6 +134,9 @@ class DeletePolicyActionLink(tables.DeleteAction):
     data_type_singular = _("Policy Action")
     data_type_plural = _("Policy Actions")
 
+    def action(self, request, object_id):
+        client.policyaction_delete(request, object_id)
+
 
 class ApplicationPoliciesTable(tables.DataTable):
     name = tables.Column("name",
@@ -137,8 +151,8 @@ class ApplicationPoliciesTable(tables.DataTable):
     class Meta(object):
         name = "application_policies_table"
         verbose_name = _("Policy Rule Set")
-        table_actions = (AddAppPolicyLink, DeleteAppPolicyLink)
-        row_actions = (UpdateAppPolicyLink, DeleteAppPolicyLink)
+        table_actions = (AddAppPolicyLink, DeletePolicyRuleSetLink)
+        row_actions = (UpdateAppPolicyLink, DeletePolicyRuleSetLink)
 
 
 class PolicyRulesTable(tables.DataTable):
