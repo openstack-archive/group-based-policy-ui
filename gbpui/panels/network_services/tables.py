@@ -13,6 +13,7 @@
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from gbpui import client
 from horizon import tables
 
 
@@ -30,7 +31,7 @@ class EditServiceChainSpecLink(tables.LinkAction):
 
     def get_link_url(self, scspec):
         base_url = reverse("horizon:project:network_services:update_sc_spec",
-                kwargs={'scspec_id': scspec.id})
+                           kwargs={'scspec_id': scspec.id})
         return base_url
 
 
@@ -41,23 +42,25 @@ class DeleteServiceChainSpecLink(tables.DeleteAction):
     data_type_singular = _("Service Chain Spec")
     data_type_plural = _("Service Chain Specs")
 
+    def action(self, request, object_id):
+        client.delete_servicechain_spec(request, object_id)
+
 
 class ServiceChainSpecTable(tables.DataTable):
     name = tables.Column("name",
-                     verbose_name=_("Name"),
-                     link="horizon:project:network_services:sc_spec_details")
+                         verbose_name=_("Name"),
+                         link="horizon:project:network_services:sc_spec_details")
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     nodes = tables.Column("nodes", verbose_name=_("Nodes"))
-    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_chain_spec_table"
         verbose_name = _("Service Chain Specs")
         table_actions = (CreateServiceChainSpecLink,
-                            DeleteServiceChainSpecLink,)
+                         DeleteServiceChainSpecLink,)
         row_actions = (EditServiceChainSpecLink,
-                        DeleteServiceChainSpecLink,)
+                       DeleteServiceChainSpecLink,)
 
 
 class CreateServiceChainNodeLink(tables.LinkAction):
@@ -74,7 +77,7 @@ class EditServiceChainNodeLink(tables.LinkAction):
 
     def get_link_url(self, scnode):
         base_url = reverse("horizon:project:network_services:update_sc_node",
-                kwargs={'scnode_id': scnode.id})
+                           kwargs={'scnode_id': scnode.id})
         return base_url
 
 
@@ -85,24 +88,26 @@ class DeleteServiceChainNodeLink(tables.DeleteAction):
     data_type_singular = _("Service Chain Node")
     data_type_plural = _("Service Chain Nodes")
 
+    def action(self, request, object_id):
+        client.delete_servicechain_node(request, object_id)
+
 
 class ServiceChainNodeTable(tables.DataTable):
     name = tables.Column("name",
-                     verbose_name=_("Name"),
-                     link="horizon:project:network_services:sc_node_details")
+                         verbose_name=_("Name"),
+                         link="horizon:project:network_services:sc_node_details")
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     service_profile = tables.Column("service_profile",
-                                 verbose_name=_("Service Profile"))
-    status = tables.Column("status", verbose_name=_("Status"))
+                                    verbose_name=_("Service Profile"))
 
     class Meta(object):
         name = "service_chain_node_table"
         verbose_name = _("Service Chain Node")
         table_actions = (CreateServiceChainNodeLink,
-                DeleteServiceChainNodeLink,)
+                         DeleteServiceChainNodeLink,)
         row_actions = (EditServiceChainNodeLink,
-                DeleteServiceChainNodeLink,)
+                       DeleteServiceChainNodeLink,)
 
 
 class CreateServiceChainInstanceLink(tables.LinkAction):
@@ -130,11 +135,14 @@ class DeleteServiceChainInstanceLink(tables.DeleteAction):
     data_type_singular = _("ServiceChainInstance")
     data_type_plural = _("ServiceChainInstances")
 
+    def action(self, request, object_id):
+        client.delete_servicechain_instance(request, object_id)
+
 
 class ServiceChainInstanceTable(tables.DataTable):
     name = tables.Column("name",
-            verbose_name=_("Name"),
-            link="horizon:project:network_services:sc_instance_details")
+                         verbose_name=_("Name"),
+                         link="horizon:project:network_services:sc_instance_details")
     description = tables.Column("description",
                                 verbose_name=_("Description"))
     provider_ptg = tables.Column(
@@ -146,7 +154,6 @@ class ServiceChainInstanceTable(tables.DataTable):
     servicechain_spec = tables.Column(
         "servicechain_spec", verbose_name=_("Service Chain Spec"))
     classifier = tables.Column("classifier", verbose_name=_("Classifier"))
-    status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
         name = "service_chain_instance_table"
@@ -167,21 +174,24 @@ class DeleteServiceProfileLink(tables.DeleteAction):
     data_type_singular = _("ServiceProfile")
     data_type_plural = _("ServiceProfiles")
 
+    def action(self, request, object_id):
+        client.delete_service_profile(request, object_id)
+
 
 class ServiceProfileTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
-        link="horizon:project:network_services:service_profile_details")
+                         link="horizon:project:network_services:service_profile_details")
     description = tables.Column("description",
-        verbose_name=_("Description"))
+                                verbose_name=_("Description"))
     service_type = tables.Column("service_type",
-        verbose_name=_("Service Type"))
+                                 verbose_name=_("Service Type"))
     insertion_mode = tables.Column("insertion_mode",
-        verbose_name=_("Insertion Mode"))
+                                   verbose_name=_("Insertion Mode"))
     vendor = tables.Column("vendor", verbose_name=_("Vendor"))
 
     class Meta(object):
         name = "service_profile_table"
         verbose_name = _("Service Profile")
         table_actions = (CreateServiceProfileLink,
-                DeleteServiceProfileLink,)
+                         DeleteServiceProfileLink,)
         row_actions = (DeleteServiceProfileLink,)

@@ -15,6 +15,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from horizon import tables
 
+from gbpui import client
+
 
 class CreateL2PolicyLink(tables.LinkAction):
     name = "create_l2policy"
@@ -30,7 +32,7 @@ class EditL2PolicyLink(tables.LinkAction):
 
     def get_link_url(self, l2policy):
         base_url = reverse("horizon:project:network_policy:update_l2policy",
-                kwargs={'l2policy_id': l2policy.id})
+                           kwargs={'l2policy_id': l2policy.id})
         return base_url
 
 
@@ -41,11 +43,14 @@ class DeleteL2PolicyLink(tables.DeleteAction):
     data_type_singular = _("L2Policy")
     data_type_plural = _("L2Policies")
 
+    def action(self, request, object_id):
+        client.l2policy_delete(request, object_id)
+
 
 class L2PolicyTable(tables.DataTable):
     name = tables.Column("name",
-            verbose_name=_("Name"),
-            link="horizon:project:network_policy:l2policy_details")
+                         verbose_name=_("Name"),
+                         link="horizon:project:network_policy:l2policy_details")
     description = tables.Column("description", verbose_name=_("Description"))
     id = tables.Column("id", verbose_name=_("ID"))
     l3_policy_id = tables.Column(
@@ -74,7 +79,7 @@ class EditL3PolicyLink(tables.LinkAction):
 
     def get_link_url(self, l3policy):
         base_url = reverse("horizon:project:network_policy:update_l3policy",
-                kwargs={'l3policy_id': l3policy.id})
+                           kwargs={'l3policy_id': l3policy.id})
         return base_url
 
 
@@ -85,11 +90,14 @@ class DeleteL3PolicyLink(tables.DeleteAction):
     data_type_singular = _("L3 Policy")
     data_type_plural = _("L3 Policies")
 
+    def action(self, request, object_id):
+        client.l3policy_delete(request, object_id)
+
 
 class L3PolicyTable(tables.DataTable):
     name = tables.Column("name",
-            verbose_name=_("Name"),
-            link="horizon:project:network_policy:l3policy_details")
+                         verbose_name=_("Name"),
+                         link="horizon:project:network_policy:l3policy_details")
     description = tables.Column("description", verbose_name=_("Description"))
     id = tables.Column("id", verbose_name=_("ID"))
     ip_version = tables.Column("ip_version", verbose_name=_("IP Version"))
@@ -97,7 +105,7 @@ class L3PolicyTable(tables.DataTable):
     subnet_prefix_length = tables.Column(
         "subnet_prefix_length", verbose_name=_("Subnet Prefix Length"))
     external_segments = tables.Column("external_segments",
-        verbose_name=_("External Segment"))
+                                      verbose_name=_("External Segment"))
 
     class Meta(object):
         name = "l3policy_table"
@@ -131,13 +139,17 @@ class DeleteServicePolicyLink(tables.DeleteAction):
     data_type_singular = _("ServicePolicy")
     data_type_plural = _("ServicePolicies")
 
+    def action(self, request, object_id):
+        client.delete_networkservice_policy(request, object_id)
+
 
 class ServicePolicyTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
-            link="horizon:project:network_policy:service_policy_details")
+                         link="horizon:project:network_policy:service_policy_details")
     description = tables.Column("description", verbose_name=_("Description"))
     network_service_params = tables.Column('network_service_params',
-                                    verbose_name=_("Network Service Params"))
+                                           verbose_name=_(
+                                               "Network Service Params"))
 
     class Meta(object):
         name = "service_policy_table"
@@ -162,7 +174,8 @@ class EditExternalConnectivityLink(tables.LinkAction):
         urlstring = \
             "horizon:project:network_policy:update_externalconnectivity"
         base_url = reverse(urlstring,
-            kwargs={'external_connectivity_id': external_connectivity.id})
+                           kwargs={
+                               'external_connectivity_id': external_connectivity.id})
         return base_url
 
 
@@ -173,10 +186,13 @@ class DeleteExternalConnectivityLink(tables.DeleteAction):
     data_type_singular = _("ExternalConnectivity")
     data_type_plural = _("ExternalConnectivities")
 
+    def action(self, request, object_id):
+        client.delete_externalconnectivity(request, object_id)
+
 
 class ExternalConnectivityTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
-        link="horizon:project:network_policy:external_connectivity_details")
+                         link="horizon:project:network_policy:external_connectivity_details")
     description = tables.Column("description", verbose_name=_("Description"))
     ip_version = tables.Column("ip_version", verbose_name=_("IP Version"))
     cidr = tables.Column("cidr", verbose_name=_("CIDR"))
@@ -185,9 +201,9 @@ class ExternalConnectivityTable(tables.DataTable):
         name = "external_connectivity_table"
         verbose_name = _("External Connectivity")
         table_actions = (CreateExternalConnectivityLink,
-            DeleteExternalConnectivityLink,)
+                         DeleteExternalConnectivityLink,)
         row_actions = (EditExternalConnectivityLink,
-            DeleteExternalConnectivityLink,)
+                       DeleteExternalConnectivityLink,)
 
 
 class CreateNATPoolLink(tables.LinkAction):
@@ -204,6 +220,9 @@ class DeleteNATPoolLink(tables.DeleteAction):
     data_type_singular = _("NAT Pool")
     data_type_plural = _("NAT Pools")
 
+    def action(self, request, object_id):
+        client.delete_natpool(request, object_id)
+
 
 class EditNATPoolLink(tables.LinkAction):
     name = "update_nat_pool"
@@ -214,13 +233,13 @@ class EditNATPoolLink(tables.LinkAction):
         urlstring = \
             "horizon:project:network_policy:update_natpool"
         base_url = reverse(urlstring,
-            kwargs={'nat_pool_id': nat_pool.id})
+                           kwargs={'nat_pool_id': nat_pool.id})
         return base_url
 
 
 class NATPoolTable(tables.DataTable):
     name = tables.Column("name", verbose_name=_("Name"),
-        link="horizon:project:network_policy:nat_pool_details")
+                         link="horizon:project:network_policy:nat_pool_details")
     description = tables.Column("description", verbose_name=_("Description"))
     ip_version = tables.Column("ip_version", verbose_name=_("IP Version"))
     cidr = tables.Column("ip_pool", verbose_name=_("IP Pool"))
