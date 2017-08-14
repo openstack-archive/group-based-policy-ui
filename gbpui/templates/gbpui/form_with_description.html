@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% if base_form_title %}{{ base_form_title }}{% else %}{{ page_title }}{% endif %}{% endblock %}
+
+{% block main %}
+  {% include 'gbpui/_form_with_description.html' %}
+{% endblock %}
