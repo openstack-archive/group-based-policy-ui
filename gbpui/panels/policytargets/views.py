@@ -13,6 +13,7 @@
 import json
 import re
 
+from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse  # noqa
 from django.utils.translation import ugettext_lazy as _
@@ -25,6 +26,8 @@ from horizon.utils import memoized
 from horizon import workflows
 
 from gbpui import client
+from gbpui.common import forms as gbforms
+
 
 import forms as policy_target_forms
 import tabs as policy_target_tabs
@@ -45,6 +48,7 @@ AddExternalPTG = policy_target_workflows.AddExternalPTG
 class IndexView(tabs.TabView):
     tab_group_class = (PTGTabs)
     template_name = 'project/policytargets/details_tabs.html'
+    page_title = _("Groups")
 
     def post(self, request, *args, **kwargs):
         obj_ids = request.POST.getlist('object_ids')
@@ -75,7 +79,6 @@ class IndexView(tabs.TabView):
 
 class AddPTGView(workflows.WorkflowView):
     workflow_class = AddPTG
-    template_name = "project/policytargets/addpolicy_target.html"
 
 
 class AddExternalPTGView(workflows.WorkflowView):
@@ -85,6 +88,7 @@ class AddExternalPTGView(workflows.WorkflowView):
 class PTGDetailsView(tabs.TabbedTableView):
     tab_group_class = (policy_target_tabs.PTGMemberTabs)
     template_name = 'project/policytargets/group_details.html'
+    page_title = _("Group: {{ policy_target.name }}")
 
     def get_context_data(self, **kwargs):
         context = super(PTGDetailsView, self).get_context_data(**kwargs)
@@ -100,6 +104,7 @@ class PTGDetailsView(tabs.TabbedTableView):
 class ExternalPTGDetailsView(tabs.TabbedTableView):
     tab_group_class = (policy_target_tabs.ExternalPTGMemberTabs)
     template_name = 'project/policytargets/group_details.html'
+    page_title = _("Group: {{ policy_target.name }}")
 
     def get_context_data(self, **kwargs):
         context = super(ExternalPTGDetailsView, self).get_context_data(
@@ -126,16 +131,25 @@ class LaunchVMView(workflows.WorkflowView):
 
 class UpdatePTGView(forms.ModalFormView):
     form_class = policy_target_forms.UpdatePolicyTargetForm
-    template_name = "project/policytargets/update_policy_target.html"
+    form_id = "update_policy_target_form"
+    modal_header = _("Edit Group")
+    template_name = "gbpui/form_with_description.html"
     context_object_name = 'policy_target'
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:updatepolicy_target"
     success_url = reverse_lazy("horizon:project:policytargets:index")
+    page_title = _("Edit Group")
+    help_text = _("You may update policy details here.")
 
     def get_context_data(self, **kwargs):
         context = super(UpdatePTGView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
+        obj_id = self.kwargs['policy_target_id']
+        context["policy_target_id"] = obj_id
         obj = self._get_object()
         if obj:
             context['name'] = obj.name
+        context["submit_url"] = reverse(self.submit_url, args=(obj_id,))
+        context["help_text"] = self.help_text
         return context
 
     @memoized.memoized_method
@@ -157,16 +171,25 @@ class UpdatePTGView(forms.ModalFormView):
 
 class UpdateExternalPTGView(forms.ModalFormView):
     form_class = policy_target_forms.UpdateExternalPolicyTargetForm
-    template_name = "project/policytargets/update_external_policy_target.html"
+    form_id = "update_policy_target_form"
+    modal_header = _("Edit Group")
+    template_name = "gbpui/form_with_description.html"
     context_object_name = 'external_policy_target'
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:update_ext_policy_target"
     success_url = reverse_lazy("horizon:project:policytargets:index")
+    page_title = _("Edit Group")
+    help_text = _("You may update external policy details here.")
 
     def get_context_data(self, **kwargs):
         context = super(UpdateExternalPTGView, self).get_context_data(**kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
+        obj_id = self.kwargs['ext_policy_target_id']
+        context["ext_policy_target_id"] = obj_id
         obj = self._get_object()
         if obj:
             context['name'] = obj.name
+        context["submit_url"] = reverse(self.submit_url, args=(obj_id,))
+        context["help_text"] = self.help_text
         return context
 
     @memoized.memoized_method
@@ -186,109 +209,169 @@ class UpdateExternalPTGView(forms.ModalFormView):
         return self.kwargs
 
 
-class ExtAddProvidedPRSView(forms.ModalFormView):
+class ExtAddProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddProvidedPRSForm
-    template_name = "project/policytargets/ext_add_provided_prs.html"
+    form_id = "ext_add_provided_form"
+    modal_header = _("Add Provided PRS")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:ext_add_provided_prs"
+    page_title = _("Add Provided PRS")
+    help_text = _(
+        "Add provided policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtAddProvidedPRSView, self).get_context_data(**kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            'ext_policy_target_id': self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtRemoveProvidedPRSView(forms.ModalFormView):
+class ExtRemoveProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveProvidedPRSForm
-    template_name = \
-        "project/policytargets/ext_remove_provided_prs.html"
+    form_id = "ext_remove_provided_form"
+    modal_header = _("Remove Provided PRS")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:ext_remove_provided_prs"
+    page_title = _("Remove Provided PRS")
+    help_text = _(
+        "Remove provided policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtRemoveProvidedPRSView, self).get_context_data(
-            **kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class AddProvidedPRSView(forms.ModalFormView):
+class AddProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddProvidedPRSForm
-    template_name = "project/policytargets/add_provided_prs.html"
+    form_id = "add_provided_form"
+    modal_header = _("Add Provided PRS")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:add_provided_prs"
+    page_title = _("Add Provided PRS")
+    help_text = _(
+        "Add provided policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(AddProvidedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class RemoveProvidedPRSView(forms.ModalFormView):
+class RemoveProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveProvidedPRSForm
-    template_name = "project/policytargets/remove_provided_prs.html"
+    form_id = "remove_provided_form"
+    modal_header = _("Remove Provided PRS")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:remove_provided_prs"
+    page_title = _("Remove Provided PRS")
+    help_text = _(
+        "Remove provided policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(RemoveProvidedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtAddConsumedPRSView(forms.ModalFormView):
+class ExtAddConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddConsumedPRSForm
-    template_name = "project/policytargets/ext_add_consumed_prs.html"
+    form_id = "ext_add_consumed_form"
+    modal_header = _("Add Policy Rule Set")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:ext_add_consumed_prs"
+    page_title = _("Add Policy Rule Set")
+    help_text = _(
+        "Add consumed policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtAddConsumedPRSView, self).get_context_data(**kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtRemoveConsumedPRSView(forms.ModalFormView):
+class ExtRemoveConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveConsumedPRSForm
-    template_name = \
-        "project/policytargets/ext_remove_consumed_prs.html"
+    form_id = "remove_contract_form"
+    modal_header = _("Remove Policy Rule Set")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:ext_remove_consumed_prs"
+    page_title = _("Remove Policy Rule Set")
+    help_text = _(
+        "Remove consumed policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtRemoveConsumedPRSView, self).get_context_data(
-            **kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class AddConsumedPRSView(forms.ModalFormView):
+class AddConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddConsumedPRSForm
-    template_name = "project/policytargets/add_consumed_prs.html"
+    form_id = "add_consumed_form"
+    modal_header = _("Add ")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:add_consumed_prs"
+    page_title = _("Add ")
+    help_text = _(
+        "Add consumed policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(AddConsumedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class RemoveConsumedPRSView(forms.ModalFormView):
+class RemoveConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveConsumedPRSForm
-    template_name = "project/policytargets/remove_consumed_prs.html"
+    form_id = "remove_contract_form"
+    modal_header = _("Remove Policy Rule Set")
+    template_name = "gbpui/form_with_description.html"
+    submit_label = _("Save Changes")
+    submit_url = "horizon:project:policytargets:remove_consumed_prs"
+    page_title = _("Remove Policy Rule Set")
+    help_text = _(
+        "Remove consumed policy rule set. Press Ctrl to select multiple items."
+    )
 
-    def get_context_data(self, **kwargs):
-        context = super(RemoveConsumedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
