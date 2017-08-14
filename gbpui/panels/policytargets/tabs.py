@@ -84,7 +84,7 @@ class PTGDetailsTab(tabs.Tab):
     name = _("Group Details")
     slug = "policy_targetdetails"
     template_name = "project/policytargets/_policy_target_details.html"
-    failure_url = reverse_lazy('horizon:project:policy_target_group:index')
+    failure_url = reverse_lazy('horizon:project:policytargets:index')
 
     def get_context_data(self, request):
         policy_targetid = self.tab_group.kwargs['policy_target_id']
