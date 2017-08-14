@@ -24,6 +24,8 @@ from horizon.utils import memoized
 from horizon import workflows
 
 from gbpui import client
+from gbpui.common import forms as gbforms
+
 
 import forms as policy_target_forms
 import tabs as policy_target_tabs
@@ -179,7 +181,7 @@ class UpdateExternalPTGView(forms.ModalFormView):
         return self.kwargs
 
 
-class ExtAddProvidedPRSView(forms.ModalFormView):
+class ExtAddProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddProvidedPRSForm
     form_id = "ext_add_provided_form"
     modal_header = _("Add Provided PRS")
@@ -191,16 +193,16 @@ class ExtAddProvidedPRSView(forms.ModalFormView):
         "Add provided policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtAddProvidedPRSView, self).get_context_data(**kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            'ext_policy_target_id': self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtRemoveProvidedPRSView(forms.ModalFormView):
+class ExtRemoveProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveProvidedPRSForm
     form_id = "ext_remove_provided_form"
     modal_header = _("Remove Provided PRS")
@@ -212,17 +214,16 @@ class ExtRemoveProvidedPRSView(forms.ModalFormView):
         "Remove provided policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtRemoveProvidedPRSView, self).get_context_data(
-            **kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class AddProvidedPRSView(forms.ModalFormView):
+class AddProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddProvidedPRSForm
     form_id = "add_provided_form"
     modal_header = _("Add Provided PRS")
@@ -234,16 +235,16 @@ class AddProvidedPRSView(forms.ModalFormView):
         "Add provided policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(AddProvidedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class RemoveProvidedPRSView(forms.ModalFormView):
+class RemoveProvidedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveProvidedPRSForm
     form_id = "remove_provided_form"
     modal_header = _("Remove Provided PRS")
@@ -255,16 +256,16 @@ class RemoveProvidedPRSView(forms.ModalFormView):
         "Remove provided policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(RemoveProvidedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtAddConsumedPRSView(forms.ModalFormView):
+class ExtAddConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddConsumedPRSForm
     form_id = "ext_add_consumed_form"
     modal_header = _("Add Policy Rule Set")
@@ -276,16 +277,16 @@ class ExtAddConsumedPRSView(forms.ModalFormView):
         "Add consumed policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtAddConsumedPRSView, self).get_context_data(**kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class ExtRemoveConsumedPRSView(forms.ModalFormView):
+class ExtRemoveConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")
@@ -297,17 +298,16 @@ class ExtRemoveConsumedPRSView(forms.ModalFormView):
         "Remove consumed policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(ExtRemoveConsumedPRSView, self).get_context_data(
-            **kwargs)
-        context["ext_policy_target_id"] = self.kwargs['ext_policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs['ext_policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class AddConsumedPRSView(forms.ModalFormView):
+class AddConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddConsumedPRSForm
     form_id = "add_consumed_form"
     modal_header = _("Add ")
@@ -319,16 +319,16 @@ class AddConsumedPRSView(forms.ModalFormView):
         "Add consumed policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(AddConsumedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
 
 
-class RemoveConsumedPRSView(forms.ModalFormView):
+class RemoveConsumedPRSView(gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")
@@ -340,10 +340,10 @@ class RemoveConsumedPRSView(forms.ModalFormView):
         "Remove consumed policy rule set. Press Ctrl to select multiple items."
     )
 
-    def get_context_data(self, **kwargs):
-        context = super(RemoveConsumedPRSView, self).get_context_data(**kwargs)
-        context["policy_target_id"] = self.kwargs['policy_target_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs['policy_target_id']
+        }
 
     def get_initial(self):
         return self.kwargs
