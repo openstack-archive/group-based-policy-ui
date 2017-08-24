@@ -1,0 +1,187 @@
+<div ng-controller="GBPController as ctrl">
+    <p class="step-description" translate>Select one or more policy groups for the new instance.</p>
+
+    <transfer-table tr-model="ctrl.tableData" limits="ctrl.tableLimits"
+                    help-text="ctrl.tableHelp">
+        <allocated ng-model="ctrl.tableData.allocated.length"
+                   validate-number-min="{$ ctrl.tableData.minItems $}">
+            <table st-table="ctrl.tableData.allocated"
+                   hz-table
+                   class="table table-striped table-rsp table-detail">
+                <thead>
+                <tr>
+                    <th>Groups</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr ng-if="ctrl.tableData.allocated.length === 0">
+                    <td colspan="8">
+                        <div class="no-rows-help">
+                            {$ ::trCtrl.helpText.noneAllocText $}
+                        </div>
+                    </td>
+                </tr>
+
+
+                <tr ng-repeat-start="row in ctrl.tableData.allocated track by row.id">
+                    <td class="expander">
+                        <span class="fa fa-chevron-right" hz-expand-detail
+                              title="{$ 'Click to see more details'|translate $}"></span>
+                    </td>
+                    <td>{$ row.name_or_id $} <span ng-if="row.fixed_ip">({$ row.fixed_ip $})</span>
+                    </td>
+                    <td class="actions_column">
+                        <action-list>
+                            <action action-classes="'btn btn-default'"
+                                    callback="trCtrl.deallocate"
+                                    item="row">
+                                <span class="fa fa-arrow-down"></span>
+                            </action>
+                        </action-list>
+                    </td>
+                </tr>
+
+                <tr ng-repeat-end class="detail-row">
+                    <td colspan="9" class="detail">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <span class="ng-scope">Subnets</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-bordered text-center subnet-table">
+                                        <thead>
+                                        <tr>
+                                            <th rowspan="2">
+                                                CIDR
+                                            </th>
+                                            <th colspan="2">
+                                                Allocation pools
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>Start</th>
+                                            <th>End</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat-start="subnet in row.subnets">
+                                            <td>
+                                                {$ subnet.cidr $}
+                                            </td>
+                                            <td>
+                                                {$
+                                                subnet.allocation_pools.length
+                                                > 0 ?
+                                                subnet.allocation_pools[0].start
+                                                : '' $}
+                                            </td>
+                                            <td>
+                                                {$
+                                                subnet.allocation_pools.length
+                                                > 0 ?
+                                                subnet.allocation_pools[0].end
+                                                : '' $}
+                                            </td>
+                                        </tr>
+                                        <tr ng-repeat="allocation_pool in subnet.allocation_pools | limitTo: (1 - subnet.allocation_pools.length)">
+                                            <td></td>
+                                            <td>
+                                                {$ allocation_pool.start $}
+                                            </td>
+                                            <td>
+                                                {$ allocation_pool.end $}
+                                            </td>
+                                        </tr>
+
+                                        <tr ng-if="0" ng-repeat-end>
+
+                                        </tr>
+
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <span class="ng-scope">Fixed IP</span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <form class="form-inline">
+                                        <div class="form-group">
+                                            <input class="form-control"
+                                                   type="text"
+                                                   ng-model="ctrl.inputIPs[row.id]">
+                                            <input class="form-control"
+                                                   type="button" value="Set"
+                                                   ng-click="ctrl.addFixedIp(row)">
+                                            <input class="form-control"
+                                                   type="button" value="Unset"
+                                                   ng-click="ctrl.removeFixedIp(row)">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+        </allocated>
+        <available>
+            <table st-table="ctrl.tableData.available"
+                   hz-table
+                   class="table table-striped table-rsp table-detail">
+                <thead>
+                <tr>
+                    <th>Groups</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-if="trCtrl.numAvailable() === 0">
+                  <td colspan="8">
+                    <div class="no-rows-help">
+                      {$ ::trCtrl.helpText.noneAvailText $}
+                    </div>
+                  </td>
+                </tr>
+
+                <tr ng-repeat-start="row in ctrl.tableData.available track by row.id"
+                    ng-if="!trCtrl.allocatedIds[row.id]">
+                    <td>{$ row.name_or_id $}</td>
+                    <td class="actions_column">
+                        <action-list button-tooltip="row.warningMessage"
+                                     bt-model="ctrl.tooltipModel"
+                                     bt-disabled="!row.disabled"
+                                     warning-classes="'invalid'">
+                            <notifications>
+                                        <span class="fa fa-exclamation-circle invalid"
+                                              ng-show="row.disabled"></span>
+                            </notifications>
+                            <action action-classes="'btn btn-default'"
+                                    callback="trCtrl.allocate"
+                                    item="row"
+                                    disabled="row.disabled">
+                                <span class="fa fa-arrow-up"></span>
+                            </action>
+                        </action-list>
+                    </td>
+                </tr>
+                <tr ng-repeat-end class="detail-row">
+
+                </tr>
+                </tbody>
+            </table>
+
+
+        </available>
+    </transfer-table>
+</div>

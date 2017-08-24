@@ -1,0 +1,12 @@
+.subnet-table {
+  width: 100%;
+}
+
+.subnet-table td, .subnet-table th {
+  background-color: white;
+  text-align: center;
+}
+
+.subnet-table > thead > tr > th {
+  padding:2px;
+}

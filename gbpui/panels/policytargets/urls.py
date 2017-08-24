@@ -10,10 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from django.conf.urls import url  # noqa
 
 import views
+
+import restApi
 
 urlpatterns = [
     url(r'^$',
@@ -37,8 +38,6 @@ urlpatterns = [
     url(r'^ext_policy_target/(?P<ext_policy_target_id>[^/]+)/$',
         views.ExternalPTGDetailsView.as_view(),
         name='ext_policy_targetdetails'),
-    url(r'^addvm/(?P<policy_target_id>[^/]+)/$',
-        views.LaunchVMView.as_view(), name='addvm'),
     url(r'^ext_add_policy_rule_set/(?P<ext_policy_target_id>[^/]+)/$',
         views.ExtAddProvidedPRSView.as_view(),
         name='ext_add_provided_prs'),
@@ -66,4 +65,11 @@ urlpatterns = [
     url(r'/check_ip_availability',
         views.check_ip_availability,
         name='check_ip_availability'),
+    # Rest APIs for use with AJAX/ANGULARJS calls
+    url(r'policy_target_groups/$',
+        restApi.PolicyTargets.as_view(),
+        name='policy_target_groups'),
+    url(r'launch_instance/$',
+        restApi.Members.as_view(),
+        name='launch_instance'),
 ]
