@@ -55,7 +55,7 @@ class BaseUpdateForm(forms.SelfHandlingForm):
 class UpdatePolicyRuleSetForm(BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"), required=False)
-    policy_rules = forms.MultipleChoiceField(label=_("Policy Rules"),)
+    policy_rules = fields.TransferTableField(label=_("Policy Rules"), )
     shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
@@ -298,7 +298,11 @@ class UpdatePolicyRuleForm(BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     policy_classifier_id = forms.ChoiceField(label=_("Policy Classifier"))
-    policy_actions = forms.MultipleChoiceField(label=_("Policy Actions"))
+    policy_actions = fields.TransferTableField(
+        label=_("Policy Actions"),
+        required=False,
+    )
+
     shared = forms.BooleanField(label=_("Shared"), required=False)
 
     def __init__(self, request, *args, **kwargs):
@@ -306,17 +310,19 @@ class UpdatePolicyRuleForm(BaseUpdateForm):
         try:
             policyrule_id = self.initial['policyrule_id']
             rule = client.policyrule_get(request, policyrule_id)
+
             for item in ['name', 'description',
                          'policy_classifier_id', 'policy_actions', 'shared']:
                 self.fields[item].initial = getattr(rule, item)
+
             actions = client.policyaction_list(request,
                 tenant_id=request.user.tenant_id)
-            action_list = [a.id for a in actions]
             for action in actions:
                 action.set_id_as_name_if_empty()
             actions = sorted(actions, key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
             self.fields['policy_actions'].choices = action_list
+
             classifiers = client.policyclassifier_list(request,
                 tenant_id=request.user.tenant_id)
             classifier_list = [(c.id, c.name) for c in classifiers]

@@ -63,10 +63,11 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                                            label=_("Subnet Prefix Length"),
                                            help_text=_("Between 2 - 30 for IP4"
                                                        "and 2-127 for IP6."),)
-    external_segments = \
-        fields.CustomMultiChoiceField(label=_("External Segments"),
-                                      add_item_link=EXT_SEG_PARAM_URL,
-                                      required=False)
+    external_segments = fields.TransferTableField(
+        label=_("External Segments"),
+        add_item_link=EXT_SEG_PARAM_URL,
+        required=False
+    )
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False,
                                 required=False)
@@ -296,9 +297,11 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
-    network_service_params = fields.CustomMultiChoiceField(label=_(
-        "Network Service Parameters"), add_item_link=NETWORK_PARAM_URL,
-        required=False)
+    network_service_params = fields.TransferTableField(
+        label=_("Network Service Parameters"),
+        add_item_link=NETWORK_PARAM_URL,
+        required=False
+    )
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
 
@@ -555,9 +558,11 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
                                         "(e.g. 192.168.0.0/24,"
                                         "2001:DB8::/48)"),
                             version=forms.IPv4 | forms.IPv6, mask=True)
-    external_routes = fields.CustomMultiChoiceField(
-        label=_("External Routes"), add_item_link=ROUTE_URL,
-        required=False)
+    external_routes = fields.TransferTableField(
+        label=_("External Routes"),
+        add_item_link=ROUTE_URL,
+        required=False
+    )
     subnet_id = forms.ChoiceField(label=_("Subnet ID"), required=False)
     port_address_translation = forms.BooleanField(
         label=_("Port Address Translation"),
