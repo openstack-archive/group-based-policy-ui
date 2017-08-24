@@ -88,14 +88,16 @@ class ExternalPTGDetailsView(tabs.TabbedTableView):
         return context
 
 
+'''
 class LaunchVMView(workflows.WorkflowView):
     workflow_class = policy_target_workflows.LaunchInstance
 
     def get_initial(self):
-        initial = super(LaunchVMView, self).get_initial()
+        initial = super( LaunchVMView, self).get_initial()
         initial['project_id'] = self.request.user.tenant_id
         initial['user_id'] = self.request.user.id
         return initial
+'''
 
 
 class UpdatePTGView(gbforms.HelpTextModalMixin,
