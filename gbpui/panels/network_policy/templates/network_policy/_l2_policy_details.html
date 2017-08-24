@@ -22,7 +22,13 @@
         <div class="panel-body">
             <ul class='list-unstyled'>
             {% for ptg in l2policy.ptgs %}
-            <li><a href="{% url 'horizon:project:policytargets:policy_targetdetails' policy_target_id=ptg.id %}">{{ptg.name}}:{{ptg.id}}</a></li>
+            <li>
+                {% if ptg.can_access %}
+                <a href="{% url 'horizon:project:policytargets:policy_targetdetails' policy_target_id=ptg.id %}">{{ptg.name}}:{{ptg.id}}</a>
+                {% else %}
+                    {{ptg.name}}:{{ptg.id}}
+                {% endif %}
+            </li>
             {% endfor %}
         </ul>
         </div>

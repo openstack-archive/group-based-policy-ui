@@ -31,12 +31,22 @@
                 {% for node in scspec.nodes %}
                 <tr>
                     <td>
-                        <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
-                            {{node.name}}</a>
+                        {% if node.can_access %}
+                            <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
+                                {{node.name}}
+                            </a>
+                        {% else %}
+                            <span>{{node.name}}</span>
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=node.service_profile_id %}">
-                           {{ node.service_profile_id }}</a>
+                        {% if node.can_access_service_profile %}
+                            <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=node.service_profile_id %}">
+                               {{ node.service_profile_id }}
+                            </a>
+                        {% else %}
+                            <span>{{ node.service_profile_id }}</span>
+                        {% endif %}
                     </td>
                     <td> 
                         <div style ="white-space:pre;overflow-y: scroll;height:300px;background-color:#EEEEEE">{{node.config}}</div>

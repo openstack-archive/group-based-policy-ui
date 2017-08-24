@@ -34,11 +34,12 @@ from openstack_dashboard.dashboards.project.instances.workflows \
     import create_instance as workflows_create_instance
 
 from gbpui import client
+from gbpui.common.forms import PolicyHidingMixin
 from gbpui import fields
+from gbpui import GBP_POLICY_FILE
 
 from netaddr import IPAddress
 from netaddr import IPNetwork
-
 
 LOG = logging.getLogger(__name__)
 
@@ -64,8 +65,9 @@ class SelectPolicyRuleSetAction(workflows.Action):
         help_text = _("Select Policy Rule Set for Group.")
 
     def _policy_rule_set_list(self, request):
-        policy_rule_sets = client.policy_rule_set_list(request,
-            tenant_id=request.user.tenant_id)
+        policy_rule_sets = client.policy_rule_set_list(
+            request, tenant_id=request.user.tenant_id
+        )
         for c in policy_rule_sets:
             c.set_id_as_name_if_empty()
         policy_rule_sets = sorted(policy_rule_sets,
@@ -89,8 +91,7 @@ class SelectPolicyRuleSetAction(workflows.Action):
         policy_rule_set_list = []
         try:
             policy_rule_set_list = [('None', 'No Consumed Policy Rule Sets')]
-            policy_rule_set_list =\
-                self._policy_rule_set_list(request)
+            policy_rule_set_list = self._policy_rule_set_list(request)
         except Exception as e:
             msg = _('Unable to retrieve policy rule set. %s.') % (str(e))
             exceptions.handle(request, msg)
@@ -116,7 +117,7 @@ class SelectL2policyAction(workflows.Action):
         policies = []
         try:
             policies = client.l2policy_list(request,
-                tenant_id=request.user.tenant_id)
+                                            tenant_id=request.user.tenant_id)
             for p in policies:
                 p.set_id_as_name_if_empty()
             policies = sorted(policies, key=lambda rule: rule.name)
@@ -131,8 +132,9 @@ class SelectL2policyAction(workflows.Action):
     def populate_network_service_policy_id_choices(self, request, context):
         policies = []
         try:
-            policies = client.networkservicepolicy_list(request,
-                tenant_id=request.user.tenant_id)
+            policies = client.networkservicepolicy_list(
+                request, tenant_id=request.user.tenant_id
+            )
             for p in policies:
                 p.set_id_as_name_if_empty()
             policies = [(p.id, p.name + ":" + p.id) for p in policies]
@@ -183,14 +185,18 @@ class SelectPolicyRuleSetStep(workflows.Step):
             return context
 
 
-class AddPTGAction(workflows.Action):
+class AddPTGAction(PolicyHidingMixin, workflows.Action):
     name = forms.CharField(max_length=80,
                            label=_("Name"))
     description = forms.CharField(max_length=80,
                                   label=_("Description"),
                                   required=False)
     shared = forms.BooleanField(label=_("Shared"),
-                                initial=False, required=False)
+                                initial=False,
+                                required=False)
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_policy_target_group:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddPTGAction, self).__init__(request, *args, **kwargs)
@@ -278,7 +284,7 @@ class ExternalConnectivityStep(workflows.Step):
         return context
 
 
-class ExtAddPTGAction(workflows.Action):
+class ExtAddPTGAction(PolicyHidingMixin, workflows.Action):
     name = forms.CharField(max_length=80,
                            label=_("Name"))
     description = forms.CharField(max_length=80,
@@ -286,6 +292,10 @@ class ExtAddPTGAction(workflows.Action):
                                   required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_external_policy:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(ExtAddPTGAction, self).__init__(request, *args, **kwargs)

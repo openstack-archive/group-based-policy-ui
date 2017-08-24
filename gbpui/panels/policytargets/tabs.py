@@ -18,9 +18,11 @@ from horizon import tabs
 
 from openstack_dashboard import api
 from openstack_dashboard.dashboards.project.instances import tables as itables
+from openstack_dashboard import policy
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui import GBP_POLICY_FILE
 
 import tables
 
@@ -91,20 +93,36 @@ class PTGDetailsTab(tabs.Tab):
         nsp = ''
         try:
             policy_target = client.policy_target_get(request, policy_targetid)
-            l2_policy = client.l2policy_get(request,
-                            policy_target["l2_policy_id"])
-            l3_policy = client.l3policy_get(request,
-                            l2_policy["l3_policy_id"])
+            l2_policy = client.l2policy_get(
+                request,
+                policy_target["l2_policy_id"]
+            )
+            l2_can_access = policy.check(
+                ((GBP_POLICY_FILE, "get_l2_policy"),), request,
+                {"project_id": l2_policy.tenant_id}
+            )
+            l3_policy = client.l3policy_get(
+                request,
+                l2_policy["l3_policy_id"]
+            )
+            l3_can_access = policy.check(
+                ((GBP_POLICY_FILE, "get_l3_policy"),), request,
+                {"project_id": l3_policy["tenant_id"]}
+            )
+
             if policy_target['network_service_policy_id']:
                 nsp_id = policy_target['network_service_policy_id']
                 nsp = client.get_networkservice_policy(request, nsp_id)
+
         except Exception:
             exceptions.handle(
                 request, _('Unable to retrieve group details.'),
                 redirect=self.failure_url)
         return {'policy_target': policy_target,
                 'l3_policy': l3_policy,
+                'l3_can_access': l3_can_access,
                 'l2_policy': l2_policy,
+                'l2_can_access': l2_can_access,
                 'nsp': nsp}
 
 
@@ -212,11 +230,16 @@ class ProvidedTab(tabs.TableTab):
             provided_policy_rule_set_ids = policy_target.get(
                 'provided_policy_rule_sets')
             provided_policy_rule_sets = []
+
             for _id in provided_policy_rule_set_ids:
                 provided_policy_rule_sets.append(
-                    client.policy_rule_set_get(self.request, _id))
-            provided_policy_rule_sets = [gfilters.update_pruleset_attributes(
-                self.request, item) for item in provided_policy_rule_sets]
+                    client.policy_rule_set_get(self.request, _id)
+                )
+
+            provided_policy_rule_sets = [
+                gfilters.update_pruleset_attributes(self.request, item)
+                for item in provided_policy_rule_sets
+            ]
             return provided_policy_rule_sets
         except Exception:
             error_message = _('Unable to get provided rule sets')

@@ -21,17 +21,26 @@
     
     <dt>{% trans "Policy Actions" %}</dt>
     <dd>
-      {% for action in actions%}
-      {% url 'horizon:project:application_policy:policyactiondetails' action.id as action_url %}
-       <a href="{{ action_url }}"> {{action.name}}:{{ action.id }}</a><br>
+      {% for action in actions %}
+        {% if action.can_access %}
+            {% url 'horizon:project:application_policy:policyactiondetails' action.id as action_url %}
+            <a href="{{ action_url }}"> {{action.name}}:{{ action.id }}</a>
+        {% else %}
+            {{action.name}}:{{ action.id }}
+        {% endif %}
+        <br>
       {% endfor %}
     </dd>
     <dt>{% trans "Policy Classifier" %}</dt>
     <dd>
       {% for classifier in classifiers %}
-      
-      {% url 'horizon:project:application_policy:policyclassifierdetails' classifier.id as classifier_url %}
-      <a href="{{ classifier_url }}"> {{classifier.name}}:{{ classifier.id }}</a><br>
+        {% if classifier.can_access %}
+          {% url 'horizon:project:application_policy:policyclassifierdetails' classifier.id as classifier_url %}
+          <a href="{{ classifier_url }}"> {{classifier.name}}:{{ classifier.id }}</a>
+        {% else %}
+          {{classifier.name}}:{{ classifier.id }}
+        {% endif %}
+        <br>
       {% endfor %}
     </dd>
   </dl>
