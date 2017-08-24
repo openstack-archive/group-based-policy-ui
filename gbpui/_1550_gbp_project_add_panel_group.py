@@ -14,3 +14,6 @@ ADD_INSTALLED_APPS = ['gbpui', ]
 PANEL_GROUP = 'GroupPolicyPanels'
 PANEL_GROUP_NAME = 'Policy'
 PANEL_GROUP_DASHBOARD = 'project'
+
+AUTO_DISCOVER_STATIC_FILES = True
+ADD_ANGULAR_MODULES = ['gbpui', ]

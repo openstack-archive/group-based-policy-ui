@@ -48,12 +48,12 @@ ADD_EXTERNAL_CONNECTIVITY = \
 
 
 class SelectPolicyRuleSetAction(workflows.Action):
-    provided_policy_rule_set = fields.DynamicMultiChoiceField(
+    provided_policy_rule_set = fields.TransferTableField(
         label=_("Provided Policy Rule Set"),
         help_text=_("Choose a policy rule set for an Group."),
         add_item_link=POLICY_RULE_SET_URL,
         required=False)
-    consumed_policy_rule_set = fields.DynamicMultiChoiceField(
+    consumed_policy_rule_set = fields.TransferTableField(
         label=_("Consumed Policy Rule Set"),
         help_text=_("Select consumed policy rule set for Group."),
         add_item_link=POLICY_RULE_SET_URL,
@@ -64,8 +64,10 @@ class SelectPolicyRuleSetAction(workflows.Action):
         help_text = _("Select Policy Rule Set for Group.")
 
     def _policy_rule_set_list(self, request):
-        policy_rule_sets = client.policy_rule_set_list(request,
-            tenant_id=request.user.tenant_id)
+        policy_rule_sets = client.policy_rule_set_list(
+            request,
+            tenant_id=request.user.tenant_id
+        )
         for c in policy_rule_sets:
             c.set_id_as_name_if_empty()
         policy_rule_sets = sorted(policy_rule_sets,
@@ -75,12 +77,8 @@ class SelectPolicyRuleSetAction(workflows.Action):
     def populate_provided_policy_rule_set_choices(self, request, context):
         policy_rule_set_list = []
         try:
-            rsets = self._policy_rule_set_list(request)
-            if len(rsets) == 0:
-                rsets.extend([('None', 'No Provided Policy Rule Sets')])
-            policy_rule_set_list = rsets
+            policy_rule_set_list = self._policy_rule_set_list(request)
         except Exception as e:
-            policy_rule_set_list = []
             msg = _('Unable to retrieve policy rule set. %s.') % (str(e))
             exceptions.handle(request, msg)
         return policy_rule_set_list
@@ -88,9 +86,7 @@ class SelectPolicyRuleSetAction(workflows.Action):
     def populate_consumed_policy_rule_set_choices(self, request, context):
         policy_rule_set_list = []
         try:
-            policy_rule_set_list = [('None', 'No Consumed Policy Rule Sets')]
-            policy_rule_set_list =\
-                self._policy_rule_set_list(request)
+            policy_rule_set_list = self._policy_rule_set_list(request)
         except Exception as e:
             msg = _('Unable to retrieve policy rule set. %s.') % (str(e))
             exceptions.handle(request, msg)
@@ -342,6 +338,7 @@ class SetAccessControlsAction(workflows.Action):
                                        help_text=_("Key pair to use for "
                                                    "authentication."),
                                        add_item_link=KEYPAIR_IMPORT_URL)
+
     admin_pass = forms.RegexField(
         label=_("Admin Password"),
         required=False,
