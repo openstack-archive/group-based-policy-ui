@@ -22,6 +22,7 @@ from horizon import forms
 from horizon import messages
 
 from gbpui import client
+from gbpui import fields
 
 LOG = logging.getLogger(__name__)
 
@@ -31,10 +32,12 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
                            label=_("Name"), required=False)
     description = forms.CharField(max_length=80,
                                   label=_("Description"), required=False)
-    provided_policy_rule_sets = forms.MultipleChoiceField(
-        label=_("Provided Policy Rule Set"), required=False)
-    consumed_policy_rule_sets = forms.MultipleChoiceField(
-        label=_("Consumed Policy Rule Set"), required=False)
+    provided_policy_rule_sets = fields.TransferTableField(
+        label=_("Provided Policy Rule Set"), required=False
+    )
+    consumed_policy_rule_sets = fields.TransferTableField(
+        label=_("Consumed Policy Rule Set"), required=False
+    )
     l2_policy_id = forms.ChoiceField(
         label=_("Network Policy"),
         required=False,
@@ -141,9 +144,9 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
                            label=_("Name"), required=False)
     description = forms.CharField(max_length=80,
                                   label=_("Description"), required=False)
-    provided_policy_rule_sets = forms.MultipleChoiceField(
+    provided_policy_rule_sets = fields.TransferTableField(
         label=_("Provided Policy Rule Set"), required=False)
-    consumed_policy_rule_sets = forms.MultipleChoiceField(
+    consumed_policy_rule_sets = fields.TransferTableField(
         label=_("Consumed Policy Rule Set"), required=False)
     external_segments = forms.MultipleChoiceField(
         label=_("External Connectivity"), required=True,
