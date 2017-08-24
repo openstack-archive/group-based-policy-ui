@@ -11,9 +11,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-(function () {
+(function(){
     angular
-        .module('gbpui', ['gbpui.transfer-table-bridge', 'gbpui.group-member'])
+        .module('gbpui.group-member', [])
         .config(module_config);
 
     module_config.$inject = ["$provide","$windowProvider"];

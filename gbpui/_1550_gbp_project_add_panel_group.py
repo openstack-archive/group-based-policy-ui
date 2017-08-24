@@ -17,3 +17,4 @@ PANEL_GROUP_DASHBOARD = 'project'
 
 AUTO_DISCOVER_STATIC_FILES = True
 ADD_ANGULAR_MODULES = ['gbpui', ]
+ADD_SCSS_FILES = ['dashboard/gbpui/group-member/group-member.scss']

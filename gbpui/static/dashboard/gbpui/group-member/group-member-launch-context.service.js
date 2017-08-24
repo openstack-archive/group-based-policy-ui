@@ -11,15 +11,24 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+
+// Workaround service that allows for the modal launchContext object to be used
+// in any controller/service.
 (function () {
+    'use strict';
     angular
-        .module('gbpui', ['gbpui.transfer-table-bridge', 'gbpui.group-member'])
-        .config(module_config);
+        .module('gbpui.group-member')
+        .factory('gbpui.group-member.launch-context.service', launchContextService);
 
-    module_config.$inject = ["$provide","$windowProvider"];
 
-    function module_config($provide, $windowProvider) {
-        var path = $windowProvider.$get().STATIC_URL + 'dashboard/gbpui/';
-        $provide.constant('gbpui.basePath', path);
+    launchContextService.$inject = [];
+
+    function launchContextService() {
+        return {
+            launchContext: {
+                defaults: []
+            }
+        };
     }
 })();
