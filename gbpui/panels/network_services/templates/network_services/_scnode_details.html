@@ -18,7 +18,13 @@
 		<dd>{{ scnode.id }} </dd>
 		
         <dt>{% trans "Service Profile" %}</dt>
-	<dd><a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=scnode.service_profile_id %}">{{ scnode.service_profile_id }}</a></dd>
+        <dd>
+            {% if scnode.service_profile_can_access %}
+                <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=scnode.service_profile_id %}">{{ scnode.service_profile_id }}</a>
+            {% else %}
+                <span>{{ scnode.service_profile_id }}</span>
+            {% endif %}
+        </dd>
 
 	<dt>{% trans "Shared" %}</dt>
 	<dd>{{ scnode.shared }}</dd>

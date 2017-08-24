@@ -13,9 +13,19 @@
 #    under the License.
 
 from horizon import forms
+from openstack_dashboard import policy
 
 from django.core.urlresolvers import reverse
 
+# Allows forms to hide fields based on policy rules
+class PolicyHidingMixin(object):
+    hide_rules = {}
+
+    def __init__(self, request, *args, **kwargs):
+        super(PolicyHidingMixin, self).__init__(request, *args, **kwargs)
+        for field, rules in self.hide_rules.iteritems():
+            if not policy.check(rules, request):
+                self.fields[field].widget = forms.HiddenInput()
 
 class ReversingModalFormView(forms.ModalFormView):
     def get_context_data(self, **kwargs):

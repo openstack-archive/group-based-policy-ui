@@ -19,7 +19,9 @@ from horizon import forms
 from horizon import workflows
 
 from gbpui import client
+from gbpui.common.forms import PolicyHidingMixin
 from gbpui import fields
+from gbpui import GBP_POLICY_FILE
 
 ADD_POLICY_ACTION_URL = "horizon:project:application_policy:addpolicyaction"
 ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:"
@@ -68,7 +70,7 @@ class SelectPolicyRuleStep(workflows.Step):
             return context
 
 
-class AddContractAction(workflows.Action):
+class AddContractAction(PolicyHidingMixin, workflows.Action):
     name = forms.CharField(max_length=80,
                            label=_("Name"),
                            required=False)
@@ -77,6 +79,10 @@ class AddContractAction(workflows.Action):
                                   required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_policy_rule_set:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddContractAction, self).__init__(request, *args, **kwargs)
@@ -218,7 +224,7 @@ class SelectPolicyClassifierStep(workflows.Step):
             return context
 
 
-class AddPolicyRuleAction(workflows.Action):
+class AddPolicyRuleAction(PolicyHidingMixin, workflows.Action):
     name = forms.CharField(max_length=80,
                            label=_("Name"))
     description = forms.CharField(max_length=80,
@@ -226,6 +232,10 @@ class AddPolicyRuleAction(workflows.Action):
                                   required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_policy_rule:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyRuleAction, self).__init__(request, *args, **kwargs)

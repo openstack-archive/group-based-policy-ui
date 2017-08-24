@@ -21,10 +21,13 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
-from openstack_dashboard import api
 
 from gbpui import client
+from gbpui.common.forms import PolicyHidingMixin
 from gbpui import fields
+from gbpui import GBP_POLICY_FILE
+
+from openstack_dashboard import api
 
 LOG = logging.getLogger(__name__)
 
@@ -34,42 +37,53 @@ ROUTE_URL = "horizon:project:network_policy:add_external_route_param"
 
 
 class BaseUpdateForm(forms.SelfHandlingForm):
-
     def clean(self):
         cleaned_data = super(BaseUpdateForm, self).clean()
         updated_data = {d: cleaned_data[d] for d in cleaned_data
-            if d in self.changed_data}
+                        if d in self.changed_data}
         return updated_data
 
 
-class AddL3PolicyForm(forms.SelfHandlingForm):
-    name = forms.CharField(max_length=80, label=_("Name"))
+class AddL3PolicyForm(PolicyHidingMixin, forms.SelfHandlingForm):
+    name = forms.CharField(
+        max_length=80,
+        label=_("Name"))
     description = forms.CharField(
-        max_length=80, label=_("Description"), required=False)
-    ip_version = forms.ChoiceField(choices=[(4, 'IPv4'), (6, 'IPv6')],
-                                   widget=forms.Select(attrs={
-                                       'class': 'switchable',
-                                       'data-slug': 'ipversion',
-                                   }),
-                                   label=_("IP Version"))
-    ip_pool = forms.IPField(label=_("IP Pool"),
-                            initial="",
-                            help_text=_("Network address in CIDR format "
-                                        "(e.g. 192.168.0.0/24,"
-                                        "2001:DB8::/48)"),
-                            version=forms.IPv4 | forms.IPv6,
-                            mask=True)
-    subnet_prefix_length = forms.CharField(max_length=80,
-                                           label=_("Subnet Prefix Length"),
-                                           help_text=_("Between 2 - 30 for IP4"
-                                                       "and 2-127 for IP6."),)
-    external_segments = \
-        fields.CustomMultiChoiceField(label=_("External Segments"),
-                                      add_item_link=EXT_SEG_PARAM_URL,
-                                      required=False)
-    shared = forms.BooleanField(label=_("Shared"),
-                                initial=False,
-                                required=False)
+        max_length=80,
+        label=_("Description"),
+        required=False)
+    ip_version = forms.ChoiceField(
+        choices=[(4, 'IPv4'), (6, 'IPv6')],
+        widget=forms.Select(
+            attrs={
+                'class': 'switchable',
+                'data-slug': 'ipversion',
+            }),
+        label=_("IP Version"))
+    ip_pool = forms.IPField(
+        label=_("IP Pool"),
+        initial="",
+        help_text=_("Network address in CIDR format "
+                    "(e.g. 192.168.0.0/24,"
+                    "2001:DB8::/48)"),
+        version=forms.IPv4 | forms.IPv6,
+        mask=True)
+    subnet_prefix_length = forms.CharField(
+        max_length=80,
+        label=_("Subnet Prefix Length"),
+        help_text=_("Between 2 - 30 for IP4 and 2-127 for IP6."), )
+    external_segments = fields.CustomMultiChoiceField(
+        label=_("External Segments"),
+        add_item_link=EXT_SEG_PARAM_URL,
+        required=False)
+    shared = forms.BooleanField(
+        label=_("Shared"),
+        initial=False,
+        required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_l3_policy:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddL3PolicyForm, self).__init__(request, *args, **kwargs)
@@ -94,7 +108,7 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
                 dic = {}
                 for external_segment in context['external_segments']:
                     values = [i.split(":")[1]
-                        for i in external_segment.split(",")]
+                              for i in external_segment.split(",")]
                     dic[values[0]] = [values[1]]
                     external_segment_dic.update(dic)
                 context['external_segments'] = external_segment_dic
@@ -113,7 +127,6 @@ class AddL3PolicyForm(forms.SelfHandlingForm):
 
 
 class ExternalSegmentParam(object):
-
     def __init__(self, context):
         self.external_segment = context['external_segment']
         self.segment_ip = context['segment_ip']
@@ -124,7 +137,7 @@ class ExternalSegmentParam(object):
 
 class CreateExternalSegmentParamForm(forms.SelfHandlingForm):
     external_segment = forms.ChoiceField(label=_("External Segment"),
-                                          required=False)
+                                         required=False)
     segment_ip = forms.IPField(label=_("External Segment IP"), initial="",
                                required=False)
 
@@ -132,8 +145,8 @@ class CreateExternalSegmentParamForm(forms.SelfHandlingForm):
         super(CreateExternalSegmentParamForm, self).__init__(request,
                                                              *args,
                                                              **kwargs)
-        ec_list = client.externalconnectivity_list(request,
-            tenant_id=request.user.tenant_id)
+        ec_list = client.externalconnectivity_list(
+            request, tenant_id=request.user.tenant_id)
         external_segments_options = [(ec.id, ec.name) for ec in ec_list]
         self.fields['external_segment'].choices = external_segments_options
 
@@ -142,6 +155,10 @@ class CreateExternalSegmentParamForm(forms.SelfHandlingForm):
 
 
 class UpdateL3PolicyForm(AddL3PolicyForm):
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_l3_policy:shared"),)
+    }
+
     def __init__(self, request, *args, **kwargs):
         super(UpdateL3PolicyForm, self).__init__(request, *args, **kwargs)
         try:
@@ -180,14 +197,14 @@ class UpdateL3PolicyForm(AddL3PolicyForm):
                 dic = {}
                 for external_segment in cleaned_data['external_segments']:
                     values = [i.split(":")[1]
-                        for i in external_segment.split(",")]
+                              for i in external_segment.split(",")]
                     dic[values[0]] = [values[1]]
                     external_segment_dict.update(dic)
                 cleaned_data['external_segments'] = external_segment_dict
             else:
                 cleaned_data['external_segments'] = {}
             updated_data = {d: cleaned_data[d] for d in cleaned_data
-                if d in self.changed_data}
+                            if d in self.changed_data}
             cleaned_data = updated_data
         return cleaned_data
 
@@ -214,14 +231,14 @@ class AddL2PolicyForm(forms.SelfHandlingForm):
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
     inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
-                                initial=True,
-                                required=False)
+                                              initial=True,
+                                              required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(AddL2PolicyForm, self).__init__(request, *args, **kwargs)
         try:
             policies = client.l3policy_list(request,
-                tenant_id=request.user.tenant_id)
+                                            tenant_id=request.user.tenant_id)
             policies = [(item['id'], item['name'] + ":" + item['id'])
                         for item in policies]
             self.fields['l3_policy_id'].choices = policies
@@ -253,7 +270,7 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
         max_length=80, label=_("Description"), required=False)
     l3_policy_id = forms.ChoiceField(label=_("L3 Policy"), required=False)
     inject_default_route = forms.BooleanField(label=_("Inject Default Route"),
-                                required=False)
+                                              required=False)
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateL2PolicyForm, self).__init__(request, *args, **kwargs)
@@ -261,12 +278,12 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
             l2policy_id = self.initial['l2policy_id']
             l2 = client.l2policy_get(request, l2policy_id)
             policies = client.l3policy_list(request,
-                tenant_id=request.user.tenant_id)
+                                            tenant_id=request.user.tenant_id)
             policies = [(item['id'], item['name'] + ":" + item['id'])
                         for item in policies]
             self.fields['l3_policy_id'].choices = policies
             for item in ['name', 'description', 'l3_policy_id',
-                        'inject_default_route']:
+                         'inject_default_route']:
                 self.fields[item].initial = getattr(l2, item)
         except Exception:
             msg = _("Failed to get L3 policy list")
@@ -292,7 +309,7 @@ class UpdateL2PolicyForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class CreateServicePolicyForm(forms.SelfHandlingForm):
+class CreateServicePolicyForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -301,6 +318,9 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
         required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_network_service_policy:shared"),)
+    }
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_policy:index")
@@ -330,7 +350,6 @@ class CreateServicePolicyForm(forms.SelfHandlingForm):
 
 
 class NetworkServiceParam(object):
-
     def __init__(self, context):
         self.ptype = context['param_type']
         self.pname = html.escape(context['param_name'])
@@ -346,22 +365,28 @@ class CreateNetworkServiceParamForm(forms.SelfHandlingForm):
                                             ('ip_pool', 'ip_pool'),
                                             ('string', 'string')])
     param_name = forms.CharField(max_length=80, label=_("Name"))
-    param_value = forms.CharField(max_length=80, label=_("Value"),
-            help_text=_("Enter a string. For Types 'ip_single' or 'ip_pool',"
-                        "the Value is 'self_subnet' or 'external_subnet'."
-                        "For Type 'string' the Value is a user-specified"
-                        "string that matches the requirements published"
-                        "by a Service Chain Spec."))
+    param_value = forms.CharField(
+        max_length=80, label=_("Value"),
+        help_text=_(
+            "Enter a string. For Types 'ip_single' or 'ip_pool',"
+            "the Value is 'self_subnet' or 'external_subnet'."
+            "For Type 'string' the Value is a user-specified"
+            "string that matches the requirements published"
+            "by a Service Chain Spec."))
 
     def handle(self, request, context):
         return NetworkServiceParam(context)
 
 
-class UpdateServicePolicyForm(BaseUpdateForm):
+class UpdateServicePolicyForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "get_network_service_policy"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateServicePolicyForm, self).__init__(request, *args, **kwargs)
@@ -394,7 +419,7 @@ class UpdateServicePolicyForm(BaseUpdateForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class CreateNATPoolForm(forms.SelfHandlingForm):
+class CreateNATPoolForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -411,16 +436,20 @@ class CreateNATPoolForm(forms.SelfHandlingForm):
                                         "2001:DB8::/48)"),
                             version=forms.IPv4 | forms.IPv6, mask=True)
     external_segment_id = forms.ChoiceField(label=_("External Segment"),
-                                          required=True)
+                                            required=True)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_nat_pool:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(CreateNATPoolForm, self).__init__(request,
                                                 *args,
                                                 **kwargs)
-        ec_list = client.externalconnectivity_list(request,
-            tenant_id=request.user.tenant_id)
+        ec_list = client.externalconnectivity_list(
+            request, tenant_id=request.user.tenant_id)
         external_segments_options = [(ec.id, ec.name) for ec in ec_list]
         self.fields['external_segment_id'].choices = external_segments_options
 
@@ -442,7 +471,7 @@ class CreateNATPoolForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=url)
 
 
-class UpdateNATPoolForm(BaseUpdateForm):
+class UpdateNATPoolForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -459,22 +488,26 @@ class UpdateNATPoolForm(BaseUpdateForm):
                                         "2001:DB8::/48)"),
                             version=forms.IPv4 | forms.IPv6, mask=True)
     external_segment_id = forms.ChoiceField(label=_("External Segment"),
-                                          required=True)
+                                            required=True)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_nat_pool:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateNATPoolForm, self).__init__(request,
                                                 *args,
                                                 **kwargs)
         nat_pool_id = self.initial['nat_pool_id']
-        ec_list = client.externalconnectivity_list(request,
-            tenant_id=request.user.tenant_id)
+        ec_list = client.externalconnectivity_list(
+            request, tenant_id=request.user.tenant_id)
         external_segments_options = [(ec.id, ec.name) for ec in ec_list]
         self.fields['external_segment_id'].choices = external_segments_options
         nat_pool = client.get_natpool(request, nat_pool_id)
         attributes = ['name', 'description',
-                        'ip_version', 'ip_pool', 'external_segment_id']
+                      'ip_version', 'ip_pool', 'external_segment_id']
         for attr in attributes:
             self.fields[attr].initial = str(nat_pool[attr])
         self.fields['shared'].initial = nat_pool['shared']
@@ -494,26 +527,30 @@ class UpdateNATPoolForm(BaseUpdateForm):
             messages.success(request, msg)
             return http.HttpResponseRedirect(url)
         except Exception as e:
-            msg = _("Failed to update NAT Pool.%s") % \
-                (str(e))
+            msg = _("Failed to update NAT Pool.%s") % (str(e))
             LOG.error(msg)
             exceptions.handle(request, msg, redirect=url)
 
 
-class UpdateExternalConnectivityForm(forms.SelfHandlingForm):
+class UpdateExternalConnectivityForm(PolicyHidingMixin,
+                                     forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     shared = forms.BooleanField(label=_("Shared"), required=False)
 
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_external_segment:shared"),)
+    }
+
     def __init__(self, request, *args, **kwargs):
         super(UpdateExternalConnectivityForm, self).__init__(request,
-            *args, **kwargs)
+                                                             *args, **kwargs)
         try:
             external_connectivity_id = \
                 self.initial['external_connectivity_id']
-            external_connectivity = client.get_externalconnectivity(request,
-                external_connectivity_id)
+            external_connectivity = client.get_externalconnectivity(
+                request, external_connectivity_id)
             self.fields['name'].initial = external_connectivity.name
             self.fields['description'].initial = \
                 external_connectivity.description
@@ -539,7 +576,8 @@ class UpdateExternalConnectivityForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class CreateExternalConnectivityForm(forms.SelfHandlingForm):
+class CreateExternalConnectivityForm(PolicyHidingMixin,
+                                     forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -550,11 +588,11 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
                                    }),
                                    label=_("IP Version"))
     cidr = forms.IPField(label=_("CIDR"),
-                            initial="", required=False,
-                            help_text=_("Network address in CIDR format "
-                                        "(e.g. 192.168.0.0/24,"
-                                        "2001:DB8::/48)"),
-                            version=forms.IPv4 | forms.IPv6, mask=True)
+                         initial="", required=False,
+                         help_text=_("Network address in CIDR format "
+                                     "(e.g. 192.168.0.0/24,"
+                                     "2001:DB8::/48)"),
+                         version=forms.IPv4 | forms.IPv6, mask=True)
     external_routes = fields.CustomMultiChoiceField(
         label=_("External Routes"), add_item_link=ROUTE_URL,
         required=False)
@@ -565,18 +603,23 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
 
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_external_segment:shared"),)
+    }
+
     def __init__(self, request, *args, **kwargs):
         super(CreateExternalConnectivityForm, self).__init__(request,
-            *args, **kwargs)
+                                                             *args, **kwargs)
         net_id_list = []
         dic = {"router:external": True}
         try:
             net_list = api.neutron.network_list(request, **dic)
             subnet_list = api.neutron.subnet_list(request)
             net_id_list = [net.id for net in net_list]
-            self.fields['subnet_id'].choices = [('', 'Select')] + \
-                [(subnet.id, subnet.name) for subnet in subnet_list
-                if subnet.network_id in net_id_list]
+            self.fields['subnet_id'].choices = \
+                [('', 'Select')] + [(subnet.id, subnet.name)
+                                    for subnet in subnet_list
+                                    if subnet.network_id in net_id_list]
         except Exception:
             msg = _("Failed to get Subnet ID list.")
             exceptions.handle(request, msg)
@@ -609,7 +652,6 @@ class CreateExternalConnectivityForm(forms.SelfHandlingForm):
 
 
 class ExternalRouteParam(object):
-
     def __init__(self, context):
         self.destination = context['destination']
         self.next_hop = context['next_hop']
@@ -620,12 +662,12 @@ class ExternalRouteParam(object):
 
 class CreateExternalRouteParamForm(forms.SelfHandlingForm):
     destination = forms.IPField(label=_("Destination"),
-                            initial="",
-                            help_text=_(
-                                "(e.g. 192.168.0.0/24,"
-                                "2001:DB8::/48)"),
-                            version=forms.IPv4 | forms.IPv6,
-                            mask=True)
+                                initial="",
+                                help_text=_(
+                                    "(e.g. 192.168.0.0/24,"
+                                    "2001:DB8::/48)"),
+                                version=forms.IPv4 | forms.IPv6,
+                                mask=True)
     next_hop = forms.IPField(label=_("Next hop"))
 
     def handle(self, request, context):

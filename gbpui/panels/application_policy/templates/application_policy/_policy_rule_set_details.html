@@ -39,7 +39,11 @@
 				<td>{{rule.classifier.direction}}</td>
 				<td>&nbsp;
 					{% for a in rule.actions %}
-                    <a href="{% url 'horizon:project:application_policy:policyactiondetails' policyaction_id=a.id %}">{{a.name}}</a>
+						{% if a.can_access %}
+                    		<a href="{% url 'horizon:project:application_policy:policyactiondetails' policyaction_id=a.id %}">{{a.name}}</a>
+						{% else %}
+							{{a.name}}
+						{% endif %}
 					{% endfor %}
 				</td>
 			</tr>
