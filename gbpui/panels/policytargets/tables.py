@@ -16,6 +16,8 @@ from django import http
 from django import shortcuts
 from django.utils.translation import ugettext_lazy as _
 
+import extractors
+
 from horizon import exceptions
 from horizon import tables
 
@@ -24,6 +26,9 @@ from openstack_dashboard.dashboards.project.instances import tables as itables
 from openstack_dashboard.dashboards.project.instances import tabs
 
 from gbpui import client
+from gbpui.common import tables as gbtables
+
+from gbpui import GBP_POLICY_FILE
 
 LOG = logging.getLogger(__name__)
 
@@ -32,6 +37,7 @@ class UpdatePTGLink(tables.LinkAction):
     name = "updatepolicy_target"
     verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
+    policy_rules = ((GBP_POLICY_FILE, "update_policy_target_group"),)
 
     def get_link_url(self, policy_target):
         u = "horizon:project:policytargets:updatepolicy_target"
@@ -39,12 +45,13 @@ class UpdatePTGLink(tables.LinkAction):
         return base_url
 
 
-class DeletePTGLink(tables.DeleteAction):
+class DeletePTGLink(gbtables.GBPDeleteAction):
     name = "deletepolicytarget"
     action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
+    action_past = _("Deleted %(data_type)s")
     data_type_singular = _("Group")
     data_type_plural = _("Groups")
+    policy_rules = ((GBP_POLICY_FILE, "delete_policy_target_group"),)
 
     def action(self, request, object_id):
         client.policy_target_delete(request, object_id)
@@ -55,23 +62,40 @@ class AddPTGLink(tables.LinkAction):
     verbose_name = _("Create Internal Group")
     url = "horizon:project:policytargets:addpolicy_target"
     classes = ("ajax-modal", "btn-addpolicy_target",)
+    policy_rules = ((GBP_POLICY_FILE, "create_policy_target_group"),)
 
 
 class PTGsTable(tables.DataTable):
-    name = tables.Column(
-        "name",
+    name = gbtables.LinkColumn(
+        transform="name",
         verbose_name=_("Name"),
-        link="horizon:project:policytargets:policy_targetdetails"
+        link="horizon:project:policytargets:policy_targetdetails",
+        link_rules=((GBP_POLICY_FILE, "get_policy_target_group"),)
     )
     description = tables.Column("description", verbose_name=_("Description"))
-    provided_policy_rule_sets = tables.Column("provided_policy_rule_sets",
-                                              sortable=False,
-                                         verbose_name=_("Provided Rule Sets"))
-    consumed_policy_rule_sets = tables.Column("consumed_policy_rule_sets",
-                                         sortable=False,
-                                         verbose_name=_("Consumed Rule Sets"))
-    l2_policy_id = tables.Column("l2_policy_id",
-                                 verbose_name=_("L2 Policy"))
+    provided_policy_rule_sets = gbtables.ListColumn(
+        transform="name",
+        source_list="provided_policy_rule_sets",
+        link="horizon:project:application_policy:policy_rule_set_details",
+        sortable=False,
+        verbose_name=_("Provided Rule Sets"),
+        list_rules=((GBP_POLICY_FILE, "get_policy_rule_set"),)
+    )
+
+    consumed_policy_rule_sets = gbtables.ListColumn(
+        transform="name",
+        source_list="consumed_policy_rule_sets",
+        link="horizon:project:application_policy:policy_rule_set_details",
+        sortable=False,
+        verbose_name=_("Consumed Rule Sets"),
+        list_rules=((GBP_POLICY_FILE, "get_policy_rule_set"),)
+    )
+    l2_policy = gbtables.LinkColumn(
+        "l2_policy_name",
+        verbose_name=_("L2 Policy"),
+        link=extractors.get_l2_link,
+        link_rules=((GBP_POLICY_FILE, "get_l2_policy"),)
+    )
     status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
@@ -85,11 +109,12 @@ class UpdateExternalPTGLink(tables.LinkAction):
     name = "updateexternal_policy_target"
     verbose_name = _("Edit")
     classes = ("ajax-modal", "btn-update",)
+    policy_rules = ((GBP_POLICY_FILE, "update_external_policy"),)
 
     def get_link_url(self, ext_policy_target):
         u = "horizon:project:policytargets:update_ext_policy_target"
         base_url = reverse(u, kwargs={'ext_policy_target_id':
-            ext_policy_target.id})
+                                          ext_policy_target.id})
         return base_url
 
 
@@ -98,34 +123,51 @@ class AddExternalPTGLink(tables.LinkAction):
     verbose_name = _("Create External Group")
     url = "horizon:project:policytargets:addexternal_policy_target"
     classes = ("ajax-modal", "btn-addexternal_policy_target",)
+    policy_rules = ((GBP_POLICY_FILE, "create_external_policy"),)
 
 
 class DeleteExternalPTGLink(tables.DeleteAction):
     name = "deleteexternalpolicytarget"
     action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Group")
-    data_type_plural = _("Groups")
+    action_past = _("Deleted %(data_type)s")
+    data_type_singular = _("External Group")
+    data_type_plural = _("External Groups")
+    policy_rules = ((GBP_POLICY_FILE, "delete_external_policy"),)
 
     def action(self, request, object_id):
         client.ext_policy_target_delete(request, object_id)
 
 
 class ExternalPTGsTable(tables.DataTable):
-    name = tables.Column(
+    name = gbtables.LinkColumn(
         "name",
         verbose_name=_("Name"),
-        link="horizon:project:policytargets:ext_policy_targetdetails"
+        link="horizon:project:policytargets:ext_policy_targetdetails",
+        link_rules=((GBP_POLICY_FILE, "get_external_policy"),)
     )
     description = tables.Column("description", verbose_name=_("Description"))
-    provided_policy_rule_sets = tables.Column("provided_policy_rule_sets",
-                                              sortable=False,
-                                         verbose_name=_("Provided Rule Sets"))
-    consumed_policy_rule_sets = tables.Column("consumed_policy_rule_sets",
-                                         sortable=False,
-                                         verbose_name=_("Consumed Rule Sets"))
-    external_segments = tables.Column("external_segments",
-                                 verbose_name=_("External Connectivity"))
+
+    provided_policy_rule_sets = gbtables.ListColumn(
+        transform="name",
+        source_list="provided_policy_rule_sets",
+        sortable=False,
+        verbose_name=_("Provided Rule Sets")
+    )
+    consumed_policy_rule_sets = gbtables.ListColumn(
+        transform="name",
+        source_list="consumed_policy_rule_sets",
+        sortable=False,
+
+        verbose_name=_("Consumed Rule Sets")
+    )
+    external_segments = gbtables.ListColumn(
+        "name",
+        verbose_name=_("External Connectivity"),
+        link="horizon:project:network_policy:external_connectivity_details",
+        source_list="external_segments",
+        sortable=False,
+        list_rules=((GBP_POLICY_FILE, "get_external_segment"),)
+    )
     status = tables.Column("status", verbose_name=_("Status"))
 
     class Meta(object):
@@ -142,8 +184,8 @@ class LaunchVMLink(tables.LinkAction):
 
     def get_link_url(self):
         return reverse("horizon:project:policytargets:addvm",
-               kwargs={'policy_target_id':
-                   self.table.kwargs['policy_target_id']})
+                       kwargs={'policy_target_id':
+                                   self.table.kwargs['policy_target_id']})
 
 
 class RemoveVMLink(tables.DeleteAction):
@@ -153,7 +195,7 @@ class RemoveVMLink(tables.DeleteAction):
     def delete(self, request, instance_id):
         url = reverse("horizon:project:policytargets:policy_targetdetails",
                       kwargs={'policy_target_id':
-                          self.table.kwargs['policy_target_id']})
+                                  self.table.kwargs['policy_target_id']})
         try:
             pts = []
             instance = api.nova.server_get(request, instance_id)
@@ -225,8 +267,8 @@ class AddProvidedLink(tables.LinkAction):
 
     def get_link_url(self):
         return reverse("horizon:project:policytargets:add_provided_prs",
-            kwargs={'policy_target_id':
-                self.table.kwargs['policy_target_id']})
+                       kwargs={'policy_target_id':
+                                   self.table.kwargs['policy_target_id']})
 
 
 class RemoveProvidedLink(tables.LinkAction):
@@ -237,19 +279,24 @@ class RemoveProvidedLink(tables.LinkAction):
     def get_link_url(self):
         return reverse("horizon:project:policytargets:remove_provided_prs",
                        kwargs={'policy_target_id':
-                           self.table.kwargs['policy_target_id']})
+                                   self.table.kwargs['policy_target_id']})
 
 
 class ProvidedContractsTable(tables.DataTable):
-    name = tables.Column(
+    name = gbtables.LinkColumn(
         "name",
         link="horizon:project:application_policy:policy_rule_set_details",
-        verbose_name=_("Name")
+        verbose_name=_("Name"),
+        link_rules=((GBP_POLICY_FILE, "get_policy_rule_set"),)
     )
     description = tables.Column("description", verbose_name=_("Description"))
-    policy_rules = tables.Column("policy_rules",
-                                 sortable=False,
-                                 verbose_name=_("Policy Rules"))
+    policy_rules = gbtables.ListColumn(
+        "name",
+        source_list="policy_rules",
+        verbose_name=_("Policy Rules"),
+        link="horizon:project:application_policy:policyruledetails",
+        list_rules=((GBP_POLICY_FILE, "get_policy_rule"),)
+    )
 
     class Meta(object):
         name = 'provided_policy_rule_sets'
@@ -258,23 +305,20 @@ class ProvidedContractsTable(tables.DataTable):
 
 
 class ExtAddProvidedLink(AddProvidedLink):
-
     def get_link_url(self):
         return reverse("horizon:project:policytargets:ext_add_provided_prs",
                        kwargs={'ext_policy_target_id':
-                           self.table.kwargs['ext_policy_target_id']})
+                                   self.table.kwargs['ext_policy_target_id']})
 
 
 class ExtRemoveProvidedLink(RemoveProvidedLink):
-
     def get_link_url(self):
         return reverse("horizon:project:policytargets:ext_remove_provided_prs",
                        kwargs={'ext_policy_target_id':
-                           self.table.kwargs['ext_policy_target_id']})
+                                   self.table.kwargs['ext_policy_target_id']})
 
 
 class ExtProvidedContractsTable(ProvidedContractsTable):
-
     class Meta(ProvidedContractsTable.Meta):
         table_actions = (ExtAddProvidedLink, ExtRemoveProvidedLink,)
 
@@ -287,7 +331,7 @@ class AddConsumedLink(tables.LinkAction):
     def get_link_url(self):
         return reverse("horizon:project:policytargets:add_consumed_prs",
                        kwargs={'policy_target_id':
-                           self.table.kwargs['policy_target_id']})
+                                   self.table.kwargs['policy_target_id']})
 
 
 class RemoveConsumedLink(tables.LinkAction):
@@ -298,20 +342,25 @@ class RemoveConsumedLink(tables.LinkAction):
     def get_link_url(self):
         return reverse("horizon:project:policytargets:remove_consumed_prs",
                        kwargs={'policy_target_id':
-                           self.table.kwargs['policy_target_id']})
+                                   self.table.kwargs['policy_target_id']})
 
 
 class ConsumedContractsTable(tables.DataTable):
-    name = tables.Column(
+    name = gbtables.LinkColumn(
         "name",
         link="horizon:project:application_policy:policy_rule_set_details",
-        verbose_name=_("Name")
+        verbose_name=_("Name"),
+        link_rules=((GBP_POLICY_FILE, "get_policy_rule_set"),)
     )
     description = tables.Column("description",
                                 verbose_name=_("Description"))
-    policy_rules = tables.Column("policy_rules",
-                                 sortable=False,
-                                 verbose_name=_("Policy Rules"))
+    policy_rules = gbtables.ListColumn(
+        "name",
+        source_list="policy_rules",
+        verbose_name=_("Policy Rules"),
+        link="horizon:project:application_policy:policyruledetails",
+        list_rules=((GBP_POLICY_FILE, "get_policy_rule"),)
+    )
 
     class Meta(object):
         name = 'consumed_policy_rule_sets'
@@ -320,22 +369,19 @@ class ConsumedContractsTable(tables.DataTable):
 
 
 class ExtAddConsumedLink(AddConsumedLink):
-
     def get_link_url(self):
         return reverse("horizon:project:policytargets:ext_add_consumed_prs",
                        kwargs={'ext_policy_target_id':
-                           self.table.kwargs['ext_policy_target_id']})
+                                   self.table.kwargs['ext_policy_target_id']})
 
 
 class ExtRemoveConsumedLink(RemoveConsumedLink):
-
     def get_link_url(self):
         return reverse("horizon:project:policytargets:ext_remove_consumed_prs",
                        kwargs={'ext_policy_target_id':
-                           self.table.kwargs['ext_policy_target_id']})
+                                   self.table.kwargs['ext_policy_target_id']})
 
 
 class ExtConsumedContractsTable(ConsumedContractsTable):
-
     class Meta(ConsumedContractsTable.Meta):
         table_actions = (ExtAddConsumedLink, ExtRemoveConsumedLink,)

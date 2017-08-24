@@ -17,11 +17,15 @@ from django import http
 from django.utils import html
 from django.utils.translation import ugettext_lazy as _
 
+from openstack_dashboard import policy
+
 from horizon import exceptions
 from horizon import forms
 from horizon import messages
 
 from gbpui import client
+from gbpui.common.forms import PolicyHidingMixin
+from gbpui import GBP_POLICY_FILE
 
 LOG = logging.getLogger(__name__)
 
@@ -48,6 +52,12 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyTargetForm, self).__init__(request, *args, **kwargs)
+
+        if not policy.check(
+                ((GBP_POLICY_FILE, "update_policy_target_group:shared"),),
+                request):
+            self.fields['shared'].widget = forms.HiddenInput()
+
         try:
             policy_target_id = self.initial['policy_target_id']
             policy_target = client.policy_target_get(request, policy_target_id)
@@ -106,14 +116,14 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
                 if context.get('provided_policy_rule_sets'):
                     context['provided_policy_rule_sets'] = dict(
                         [(i, 'string')
-                        for i in context['provided_policy_rule_sets']])
+                         for i in context['provided_policy_rule_sets']])
                 else:
                     context['provided_policy_rule_sets'] = None
             if 'consumed_policy_rule_sets' in context:
                 if context.get('consumed_policy_rule_sets'):
                     context['consumed_policy_rule_sets'] = dict(
                         [(i, 'string')
-                        for i in context['consumed_policy_rule_sets']])
+                         for i in context['consumed_policy_rule_sets']])
                 else:
                     context['consumed_policy_rule_sets'] = None
             if context.get('network_service_policy_id') == 'None':
@@ -136,7 +146,8 @@ class UpdatePolicyTargetForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=redirect)
 
 
-class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
+class UpdateExternalPolicyTargetForm(
+        PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80,
                            label=_("Name"), required=False)
     description = forms.CharField(max_length=80,
@@ -150,6 +161,10 @@ class UpdateExternalPolicyTargetForm(forms.SelfHandlingForm):
         help_text=_("Select external segment(s) for Group."))
     shared = forms.BooleanField(label=_("Shared"), required=False)
     failure_url = 'horizon:project:policytargets:index'
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_external_policy:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateExternalPolicyTargetForm, self).__init__(request,
@@ -387,7 +402,7 @@ class RemoveProvidedPRSForm(forms.SelfHandlingForm):
 
 class ExtRemoveProvidedPRSForm(forms.SelfHandlingForm):
     policy_rule_set = forms.MultipleChoiceField(
-        label=_("Provided Policy Rule Sets"),)
+        label=_("Provided Policy Rule Sets"), )
 
     def __init__(self, request, *args, **kwargs):
         super(ExtRemoveProvidedPRSForm, self).__init__(request,
