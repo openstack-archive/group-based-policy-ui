@@ -20,9 +20,11 @@ from django.utils.translation import ugettext_lazy as _
 from horizon import exceptions
 from horizon import tabs
 
+from openstack_dashboard import policy
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui import GBP_POLICY_FILE
 
 import tables as ns_tables
 
@@ -151,6 +153,12 @@ class ServiceChainNodeDetailsTab(tabs.Tab):
                 scnode.config = yaml.dump(
                     config, default_flow_style=False, indent=4)
             scnode.tree = self.prepare_config_as_tree(config)
+
+            sc_profile = client.get_service_profile(request,
+                                                    scnode.service_profile_id)
+            scnode.service_profile_can_access = policy.check(
+                ((GBP_POLICY_FILE, "get_service_profile"),), request,
+                {'project_id': sc_profile.tenant_id})
         except Exception:
             exceptions.handle(request, _(
                 'Unable to retrieve service node details.'),
@@ -229,10 +237,9 @@ class ServiceChainSpecDetailsTab(tabs.Tab):
         try:
             scspec = client.get_servicechain_spec(request, scspec_id)
             nodes = []
-            gn = lambda x, y: client.get_servicechain_node(x, y)
-            for node in scspec.nodes:
-                n = gn(self.request, node)
-                config = n.config
+            for node_id in scspec.nodes:
+                node = client.get_servicechain_node(request, node_id)
+                config = node.config
                 config = config.strip()
                 if config.startswith('{'):
                     config = yaml.load(config)
@@ -245,8 +252,24 @@ class ServiceChainSpecDetailsTab(tabs.Tab):
                     config = yaml.load(config)
                     config = yaml.dump(
                         config, default_flow_style=False, indent=4)
-                setattr(n, 'config', config)
-                nodes.append(n)
+
+                setattr(node, 'config', config)
+
+                node.can_access = policy.check(
+                    ((GBP_POLICY_FILE, "get_servicechain_node"), ), request,
+                    {'project_id': node.tenant_id})
+
+                # getting this only to be able to check service profile access
+                # rights using it's internal fields (tenant_id)
+                service_profile = client.get_service_profile(
+                    request,
+                    node.service_profile_id
+                )
+                node.can_access_service_profile = policy.check(
+                    ((GBP_POLICY_FILE, "get_service_profile"), ), request,
+                    {'project_id': service_profile.tenant_id})
+
+                nodes.append(node)
             setattr(scspec, 'nodes', nodes)
         except Exception:
             exceptions.handle(request, _(

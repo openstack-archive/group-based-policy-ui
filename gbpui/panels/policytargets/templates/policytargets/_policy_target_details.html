@@ -18,7 +18,9 @@
 
                 <dt>{% trans "Network Service Policy" %}</dt>
                 <dd>{% if nsp %}
-                        <a href="{% url 'horizon:project:network_policy:service_policy_details' nsp.id %}">{{nsp.name}}</a>
+                        <a href="{% url 'horizon:project:network_policy:service_policy_details' nsp.id %}">
+                            {{nsp.name}}
+                        </a>
                     {% else %}
                         {{ _("-") }}
                     {% endif %}
@@ -29,18 +31,34 @@
 		<div class='panel-heading'>{% trans "L3 Policies" %}</div>
 		<div class='panel-body'>
 			<ul class="unstyled">
-				<li><a href="{% url 'horizon:project:network_policy:l3policy_details' l3_policy.id %}">{{l3_policy.name}}:{{l3_policy.id}}</a></li>
+				<li>
+					{% if l3_can_access %}
+					<a href="{% url 'horizon:project:network_policy:l3policy_details' l3_policy.id %}">
+                        {{l3_policy.name}}:{{l3_policy.id}}
+                    </a>
+					{% else %}
+						{{l3_policy.name}}:{{l3_policy.id}}
+					{% endif %}
+                </li>
 			</ul>
 		</div>
 	</div>
 	{% endif %}
 
-        {% if l2_policy %}
+	{% if l2_policy %}
 	<div class='panel panel-default'>
 		<div class='panel-heading'>{% trans "L2 Policies" %}</div>
 		<div class='panel-body'>
 			<ul class="unstyled">
-				<li><a href="{% url 'horizon:project:network_policy:l2policy_details' l2_policy.id %}">{{l2_policy.name}}:{{l2_policy.id}}</a></li>
+				<li>
+                    {% if l2_can_access %}
+                    <a href="{% url 'horizon:project:network_policy:l2policy_details' l2_policy.id %}">
+                        {{l2_policy.name}}:{{l2_policy.id}}
+                    </a>
+                    {% else %}
+                        {{l2_policy.name}}:{{l2_policy.id}}
+                    {% endif %}
+                </li>
 			</ul>
 		</div>
 	</div>

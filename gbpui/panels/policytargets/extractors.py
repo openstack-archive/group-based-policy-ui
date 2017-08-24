@@ -10,5 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# todo: this is just a way to get around python import problems
-from openstack_dashboard import policy  # noqa
+from django.core.urlresolvers import reverse
+
+
+def get_l2_link(datum):
+    url = "horizon:project:network_policy:l2policy_details"
+    u = reverse(url, kwargs={'l2policy_id': datum.l2_policy_id})
+    return u
