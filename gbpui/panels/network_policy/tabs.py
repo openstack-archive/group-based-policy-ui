@@ -13,11 +13,14 @@
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
+from openstack_dashboard import policy
+
 from horizon import exceptions
 from horizon import tabs
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui import GBP_POLICY_FILE
 
 import tables
 
@@ -125,7 +128,7 @@ class ExternalConnectivityTab(tabs.TableTab):
         try:
             external_segment_list = \
                 client.externalconnectivity_list(self.request,
-                    self.request.user.tenant_id)
+                                                 self.request.user.tenant_id)
         except Exception:
             exceptions.handle(self.tab_group.request,
                     _('Unable to retrieve network service policy list.'))
@@ -161,15 +164,14 @@ class NATPoolTab(tabs.TableTab):
     def get_nat_pool_table_data(self):
         nat_pool_list = []
         try:
-            nat_pools = \
-                client.natpool_list(self.request,
-                    self.request.user.tenant_id)
+            nat_pools = client.natpool_list(
+                self.request, self.request.user.tenant_id)
             update = lambda x: gfilters.update_nat_pool_attributes(
                 self.request, x)
             nat_pool_list = [update(nat_pool) for nat_pool in nat_pools]
         except Exception:
             exceptions.handle(self.tab_group.request,
-                    _('Unable to retrieve nat pool list.'))
+                              _('Unable to retrieve nat pool list.'))
         return nat_pool_list
 
 
@@ -229,7 +231,11 @@ class L2PolicyDetailsTab(tabs.Tab):
             l2policy = client.l2policy_get(request, l2policy_id)
             ptgs = []
             for item in l2policy.policy_target_groups:
-                ptgs.append(client.policy_target_get(request, item))
+                ptg = client.policy_target_get(request, item)
+                ptg.can_access = policy.check(
+                    ((GBP_POLICY_FILE, "get_policy_target_group"),), request,
+                    {"project_id": ptg.tenant_id})
+                ptgs.append(ptg)
             setattr(l2policy, 'ptgs', ptgs)
         except Exception:
             exceptions.handle(

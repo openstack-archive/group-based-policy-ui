@@ -10,5 +10,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# todo: this is just a way to get around python import problems
-from openstack_dashboard import policy  # noqa
+from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
+
+
+def get_external_segment_name(segment):
+    base_url = "horizon:project:network_policy:external_connectivity_details"
+    url = reverse(base_url, kwargs={'external_connectivity_id': segment.id})
+    name = "<a href=\"" + url + "\">" + segment.name + "</a>" \
+        if segment.can_access else segment.name
+    return mark_safe(name + ": " + segment.addresses[0])

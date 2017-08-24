@@ -12,10 +12,8 @@
 
 from django.core.urlresolvers import reverse
 from django import http
-from django.template.defaultfilters import filesizeformat  # noqa
 from django.utils import html
 from django.utils.translation import ugettext_lazy as _
-from django.views.decorators.debug import sensitive_variables  # noqa
 
 from horizon import exceptions
 from horizon import forms
@@ -23,7 +21,9 @@ from horizon import messages
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui.common.forms import PolicyHidingMixin
 from gbpui import fields
+from gbpui import GBP_POLICY_FILE
 
 PROTOCOLS = ('TCP', 'UDP', 'ICMP', 'HTTP',
     'HTTPS', 'SMTP', 'DNS', 'FTP', 'ANY')
@@ -52,11 +52,15 @@ class BaseUpdateForm(forms.SelfHandlingForm):
         return updated_data
 
 
-class UpdatePolicyRuleSetForm(BaseUpdateForm):
+class UpdatePolicyRuleSetForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"), required=False)
     policy_rules = fields.TransferTableField(label=_("Policy Rules"), )
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_policy_rule_set:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyRuleSetForm, self).__init__(request, *args, **kwargs)
@@ -99,7 +103,7 @@ class UpdatePolicyRuleSetForm(BaseUpdateForm):
                 redirect=redirect)
 
 
-class AddPolicyActionForm(forms.SelfHandlingForm):
+class AddPolicyActionForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"),
                                   required=False)
@@ -120,6 +124,10 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
                                      }))
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_policy_action:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyActionForm, self).__init__(request, *args, **kwargs)
@@ -152,11 +160,15 @@ class AddPolicyActionForm(forms.SelfHandlingForm):
                 request, _("Unable to create policy action."), redirect=url)
 
 
-class UpdatePolicyActionForm(BaseUpdateForm):
+class UpdatePolicyActionForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(label=_("Name"))
     description = forms.CharField(label=_("Description"),
                                   required=False)
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_policy_action:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyActionForm, self).__init__(request, *args, **kwargs)
@@ -186,7 +198,7 @@ class UpdatePolicyActionForm(BaseUpdateForm):
                 request, _("Unable to update policy action."), redirect=url)
 
 
-class AddPolicyClassifierForm(forms.SelfHandlingForm):
+class AddPolicyClassifierForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     protocol = forms.CharField(required=True)
@@ -208,6 +220,10 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
                  ('bi', _('BI'))])
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_policy_classifier:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(AddPolicyClassifierForm, self).__init__(request, *args, **kwargs)
@@ -236,7 +252,7 @@ class AddPolicyClassifierForm(forms.SelfHandlingForm):
                 redirect=url)
 
 
-class UpdatePolicyClassifierForm(BaseUpdateForm):
+class UpdatePolicyClassifierForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     protocol = forms.CharField(required=True)
@@ -244,6 +260,10 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
             required=False)
     direction = forms.ChoiceField(label=_("Direction"), choices=DIRECTIONS)
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_policy_classifier:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyClassifierForm, self).__init__(
@@ -294,7 +314,7 @@ class UpdatePolicyClassifierForm(BaseUpdateForm):
                 redirect=url)
 
 
-class UpdatePolicyRuleForm(BaseUpdateForm):
+class UpdatePolicyRuleForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"), required=False)
     description = forms.CharField(label=_("Description"), required=False)
     policy_classifier_id = forms.ChoiceField(label=_("Policy Classifier"))
@@ -304,6 +324,10 @@ class UpdatePolicyRuleForm(BaseUpdateForm):
     )
 
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_policy_rule:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdatePolicyRuleForm, self).__init__(request, *args, **kwargs)

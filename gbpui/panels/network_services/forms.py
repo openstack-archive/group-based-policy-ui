@@ -25,6 +25,8 @@ from horizon import forms
 from horizon import messages
 
 from gbpui import client
+from gbpui.common.forms import PolicyHidingMixin
+from gbpui import GBP_POLICY_FILE
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +35,6 @@ SERVICE_TYPES = [('LOADBALANCER', 'Load Balancer'),
 
 
 class BaseUpdateForm(forms.SelfHandlingForm):
-
     def clean(self):
         cleaned_data = super(BaseUpdateForm, self).clean()
         updated_data = {d: cleaned_data[d] for d in cleaned_data
@@ -42,7 +43,7 @@ class BaseUpdateForm(forms.SelfHandlingForm):
         return updated_data
 
 
-class CreateServiceProfileForm(forms.SelfHandlingForm):
+class CreateServiceProfileForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -56,6 +57,10 @@ class CreateServiceProfileForm(forms.SelfHandlingForm):
         label=_("Insertion Mode"), choices=[('l3', 'L3'), ('l2', 'L2')])
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_service_profile:shared"),)
+    }
 
     def handle(self, request, context):
         url = reverse("horizon:project:network_services:index")
@@ -79,7 +84,7 @@ class CreateServiceProfileForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class CreateServiceChainNodeForm(forms.SelfHandlingForm):
+class CreateServiceChainNodeForm(PolicyHidingMixin, forms.SelfHandlingForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
@@ -106,6 +111,10 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
                                             required=False)
     shared = forms.BooleanField(label=_("Shared"),
                                 initial=False, required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "create_servicechain_node:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(CreateServiceChainNodeForm, self).__init__(
@@ -172,11 +181,15 @@ class CreateServiceChainNodeForm(forms.SelfHandlingForm):
             exceptions.handle(request, msg, redirect=shortcuts.redirect)
 
 
-class UpdateServiceChainNodeForm(BaseUpdateForm):
+class UpdateServiceChainNodeForm(PolicyHidingMixin, BaseUpdateForm):
     name = forms.CharField(max_length=80, label=_("Name"))
     description = forms.CharField(
         max_length=80, label=_("Description"), required=False)
     shared = forms.BooleanField(label=_("Shared"), required=False)
+
+    hide_rules = {
+        "shared": ((GBP_POLICY_FILE, "update_servicechain_node:shared"),)
+    }
 
     def __init__(self, request, *args, **kwargs):
         super(UpdateServiceChainNodeForm, self).__init__(
@@ -261,7 +274,6 @@ class CreateServiceChainSpecForm(forms.SelfHandlingForm):
 
 
 class UpdateServiceChainSpecForm(CreateServiceChainSpecForm, BaseUpdateForm):
-
     def __init__(self, request, *args, **kwargs):
         super(UpdateServiceChainSpecForm, self).__init__(
             request, *args, **kwargs)
