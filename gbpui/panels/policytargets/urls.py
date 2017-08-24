@@ -10,11 +10,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from django.conf.urls import patterns  # noqa
 from django.conf.urls import url  # noqa
 
 import views
+
+import restApi
 
 urlpatterns = patterns('',
                        url(r'^$',
@@ -31,18 +32,16 @@ urlpatterns = patterns('',
                            views.UpdatePTGView.as_view(),
                            name='updatepolicy_target'),
                        url(r'^update_ext_policy_target/'
-                          '(?P<ext_policy_target_id>[^/]+)/$',
+                           '(?P<ext_policy_target_id>[^/]+)/$',
                            views.UpdateExternalPTGView.as_view(),
                            name='update_ext_policy_target'),
                        url(r'^policy_target/(?P<policy_target_id>[^/]+)/$',
                            views.PTGDetailsView.as_view(),
                            name='policy_targetdetails'),
                        url(r'^ext_policy_target/'
-                          '(?P<ext_policy_target_id>[^/]+)/$',
+                           '(?P<ext_policy_target_id>[^/]+)/$',
                            views.ExternalPTGDetailsView.as_view(),
                            name='ext_policy_targetdetails'),
-                       url(r'^addvm/(?P<policy_target_id>[^/]+)/$',
-                           views.LaunchVMView.as_view(), name='addvm'),
                        url(r'^ext_add_policy_rule_set/'
                            '(?P<ext_policy_target_id>[^/]+)/$',
                            views.ExtAddProvidedPRSView.as_view(),
@@ -76,4 +75,11 @@ urlpatterns = patterns('',
                        url(r'/check_ip_availability',
                            views.check_ip_availability,
                            name='check_ip_availability'),
+                       # Rest APIs for use with AJAX/ANGULARJS calls
+                       url(r'policy_target_groups/$',
+                           restApi.PolicyTargets.as_view(),
+                           name='policy_target_groups'),
+                       url(r'launch_instance/$',
+                           restApi.Members.as_view(),
+                           name='launch_instance'),
                        )

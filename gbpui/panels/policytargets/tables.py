@@ -136,14 +136,30 @@ class ExternalPTGsTable(tables.DataTable):
 
 
 class LaunchVMLink(tables.LinkAction):
-    name = "launch_vm"
+    name = "launch_vm-ng"
     verbose_name = _("Create Member")
-    classes = ("ajax-modal", "btn-addvm",)
+    url = "horizon:project:policytargets:policy_targetdetails"
+    ajax = False
+    classes = ("btn-launch", )
 
-    def get_link_url(self):
-        return reverse("horizon:project:policytargets:addvm",
-               kwargs={'policy_target_id':
-                   self.table.kwargs['policy_target_id']})
+    def get_default_attrs(self):
+        url_kwargs = {
+            'policy_target_id': self.table.kwargs['policy_target_id']
+        }
+        url = reverse(self.url, kwargs=url_kwargs)
+        ngclick = "modal.openLaunchInstanceWizard(" \
+                  "{ successUrl: '%s'," \
+                  " defaults: ['%s'] }" \
+                  ")" % (url, self.table.kwargs['policy_target_id'])
+
+        self.attrs.update({
+            'ng-controller': 'LaunchInstanceModalController as modal',
+            'ng-click': ngclick
+        })
+        return super(LaunchVMLink, self).get_default_attrs()
+
+    def get_link_url(self, datum=None):
+        return ""
 
 
 class RemoveVMLink(tables.DeleteAction):

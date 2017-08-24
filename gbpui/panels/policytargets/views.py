@@ -90,17 +90,6 @@ class ExternalPTGDetailsView(tabs.TabbedTableView):
         return context
 
 
-class LaunchVMView(workflows.WorkflowView):
-    workflow_class = policy_target_workflows.LaunchInstance
-    template_name = "project/policytargets/add_vm.html"
-
-    def get_initial(self):
-        initial = super(LaunchVMView, self).get_initial()
-        initial['project_id'] = self.request.user.tenant_id
-        initial['user_id'] = self.request.user.id
-        return initial
-
-
 class UpdatePTGView(forms.ModalFormView):
     form_class = policy_target_forms.UpdatePolicyTargetForm
     form_id = "update_policy_target_form"
