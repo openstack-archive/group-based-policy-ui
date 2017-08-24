@@ -48,12 +48,12 @@ ADD_EXTERNAL_CONNECTIVITY = \
 
 
 class SelectPolicyRuleSetAction(workflows.Action):
-    provided_policy_rule_set = fields.DynamicMultiChoiceField(
+    provided_policy_rule_set = fields.TransferTableField(
         label=_("Provided Policy Rule Set"),
         help_text=_("Choose a policy rule set for an Group."),
         add_item_link=POLICY_RULE_SET_URL,
         required=False)
-    consumed_policy_rule_set = fields.DynamicMultiChoiceField(
+    consumed_policy_rule_set = fields.TransferTableField(
         label=_("Consumed Policy Rule Set"),
         help_text=_("Select consumed policy rule set for Group."),
         add_item_link=POLICY_RULE_SET_URL,
@@ -342,6 +342,7 @@ class SetAccessControlsAction(workflows.Action):
                                        help_text=_("Key pair to use for "
                                                    "authentication."),
                                        add_item_link=KEYPAIR_IMPORT_URL)
+
     admin_pass = forms.RegexField(
         label=_("Admin Password"),
         required=False,

@@ -16,6 +16,11 @@ from django.forms import TextInput
 from django.forms import widgets
 from django.utils.safestring import mark_safe
 
+from django.forms.utils import flatatt
+from django.utils.html import format_html
+
+from django.utils.translation import ugettext_lazy as _
+
 
 class DynamicMultiSelectWidget(widgets.SelectMultiple):
 
@@ -84,3 +89,78 @@ class DropdownEditWidget(TextInput):
             data_list += '<option value="%s">' % item
         data_list += '</datalist>'
         return mark_safe(text_html + data_list)
+
+
+class TransferTableWidget(widgets.SelectMultiple):
+    actions_list = []
+    add_item_link = None
+    max_items = None
+    allocated_filter = False
+
+    allocated_help_text = None
+    available_help_text = None
+    no_allocated_text = None
+    no_available_text = None
+
+    def render(self, name, value, attrs=None, choices=()):
+        # css class currently breaks the layout for some reason,
+        self.attrs.pop('class', None)
+
+        final_attrs = self.build_attrs(attrs, name=name)
+
+        selected = [] if value is None else value
+
+        options = self.render_options(choices, selected)
+
+        if self.add_item_link is not None:
+            final_attrs['add_item_link'] = urlresolvers.reverse(
+                self.add_item_link
+            )
+
+        if self.max_items is not None:
+            final_attrs['max_items'] = self.max_items
+
+        if self.allocated_filter:
+            final_attrs['allocated_filter'] = "True"
+
+        final_attrs['allocated_help_text'] = self.allocated_help_text
+        final_attrs['available_help_text'] = self.available_help_text
+        final_attrs['no_allocated_text'] = self.no_allocated_text
+        final_attrs['no_available_text'] = self.no_available_text
+
+        open_tag = format_html('<d-table {}>', flatatt(final_attrs))
+
+        output = [open_tag, options, '</d-table>']
+
+        return mark_safe('\n'.join(output))
+
+    # ...this adds the 'add item button' just by existing and returning a
+    # true-y value
+    def get_add_item_url(self):
+        return None
+
+
+class TransferTableField(fields.MultipleChoiceField):
+    widget = TransferTableWidget
+
+    def __init__(self, add_item_link=None, max_items=-1,
+                 allocated_filter=False,
+                 allocated_help_text="",
+                 available_help_text="",
+                 no_allocated_text=_("Select items from bellow"),
+                 no_available_text=_("No available items"),
+                 *args, **kwargs):
+        super(TransferTableField, self).__init__(*args, **kwargs)
+
+        self.widget.add_item_link = add_item_link
+        self.widget.max_items = max_items
+        self.widget.allocated_filter = allocated_filter
+
+        self.widget.allocated_help_text = allocated_help_text
+        self.widget.available_help_text = available_help_text
+
+        self.widget.no_allocated_text = no_allocated_text
+        self.widget.no_available_text = no_available_text
+
+    def validate(self, *args, **kwargs):
+        return True
