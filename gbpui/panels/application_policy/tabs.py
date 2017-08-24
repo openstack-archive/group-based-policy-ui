@@ -18,6 +18,9 @@ from horizon import tabs
 
 from gbpui import client
 from gbpui import column_filters as gfilters
+from gbpui import GBP_POLICY_FILE
+
+from openstack_dashboard import policy
 
 import tables
 
@@ -144,7 +147,14 @@ class PolicyRuleSetDetailsTab(tabs.Tab):
                 action_list = []
                 for aid in rule.policy_actions:
                     action = client.policyaction_get(request, aid)
-                    a = {'id': action.id}
+                    target = {"project_id": action.tenant_id}
+                    can_access = policy.check(
+                        ((GBP_POLICY_FILE, "get_policy_action"),), request,
+                        target)
+                    a = {
+                        'id': action.id,
+                        'can_access': can_access
+                    }
                     if action.action_value:
                         if action.action_type == 'redirect':
                             scspec = client.get_servicechain_spec(request,
@@ -182,28 +192,45 @@ class PolicyRulesDetailsTab(tabs.Tab):
 
     def get_context_data(self, request):
         ruleid = self.tab_group.kwargs['policyrule_id']
-        actions = []
-        classifiers = []
+        _actions = []
+        _classifiers = []
         try:
             policyrule = client.policyrule_get(request, ruleid)
             actions = client.policyaction_list(request,
                 tenant_id=request.user.tenant_id, policyrule_id=ruleid)
-            actions = [
-                item for item in actions if item.id in
-                policyrule.policy_actions]
-            classifiers = client.policyclassifier_list(
-                request, tenant_id=request.user.tenant_id,
-                policyrule_id=ruleid)
-            classifiers = [
-                item for item in classifiers if
-                item.id == policyrule.policy_classifier_id]
+
+            # Since both classifiers and actions are retrieved using the
+            # matching tenant_id, we can use the same project_id target.
+            # Obviously, this is a very non-generic solution
+            target = {
+                "project_id": request.user.tenant_id
+            }
+
+            for action in actions:
+                if action.id in policyrule.policy_actions:
+                    can_access = policy.check(
+                        ((GBP_POLICY_FILE, "get_policy_action"),), request,
+                        target)
+                    action.can_access = can_access
+                    _actions.append(action)
+
+            classifiers = client.policyclassifier_list(request,
+                tenant_id=request.user.tenant_id, policyrule_id=ruleid)
+
+            for classifier in classifiers:
+                if classifier.id == policyrule.policy_classifier_id:
+                    can_access = policy.check(
+                        ((GBP_POLICY_FILE, "get_policy_classifier"),), request,
+                        target)
+                    classifier.can_access = can_access
+                    _classifiers.append(classifier)
         except Exception:
             exceptions.handle(request,
                               _('Unable to retrieve policyrule details.'),
                               redirect=self.failure_url)
         return {'policyrule': policyrule,
-                'classifiers': classifiers,
-                'actions': actions}
+                'classifiers': _classifiers,
+                'actions': _actions}
 
 
 class PolicyRuleDetailsTabs(tabs.TabGroup):

@@ -16,7 +16,10 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
+from common import policy
+
 from gbpui import client
+from gbpui import GBP_POLICY_FILE
 
 
 def list_column_filter(items):
@@ -26,18 +29,9 @@ def list_column_filter(items):
 
 
 def update_pruleset_attributes(request, prset):
-    rules = prset.policy_rules
-    url = "horizon:project:application_policy:policyruledetails"
-    value = ["<ul>"]
-    li = lambda x: "<li><a href='" + \
-        reverse(url, kwargs={'policyrule_id': x.id}) + \
-        "'>" + x.name + "</a></li>"
-    for rule in rules:
-        r = client.policyrule_get(request, rule)
-        value.append(li(r))
-    value.append("</ul>")
-    value = "".join(value)
-    setattr(prset, 'policy_rules', mark_safe(value))
+    setattr(prset, 'policy_rules',
+        [client.policyrule_get(request, rule) for rule in prset.policy_rules]
+    )
     return prset
 
 
@@ -49,7 +43,7 @@ def update_service_policy_attributes(policy):
         for item in np:
             dl = ["<dl class='dl-horizontal'>"]
             dl.extend(["<dt>%s<dt><dd>%s</dd>" %
-                (k, v) for k, v in item.items()])
+                       (k, v) for k, v in item.items()])
             dl.append("</dl>")
             tags.append("".join(dl))
         params = mark_safe("".join(tags))
@@ -58,146 +52,81 @@ def update_service_policy_attributes(policy):
 
 
 def update_policy_target_attributes(request, pt):
-    url = "horizon:project:application_policy:policy_rule_set_details"
-    provided = pt.provided_policy_rule_sets
-    consumed = pt.consumed_policy_rule_sets
-    provided = [client.policy_rule_set_get(request, item) for item in provided]
-    consumed = [client.policy_rule_set_get(request, item) for item in consumed]
-    p = ["<ul>"]
-    li = lambda x: "<li><a href='" + \
-        reverse(url, kwargs={'policy_rule_set_id': x.id}) + \
-        "'>" + x.name + "</a></li>"
-    for item in provided:
-        p.append(li(item))
-    p.append("</ul>")
-    p = "".join(p)
-    c = ["<ul>"]
-    for item in consumed:
-        c.append(li(item))
-    c.append("</ul>")
-    c = "".join(c)
-    consumed = [item.name for item in consumed]
-    setattr(pt, 'provided_policy_rule_sets', mark_safe(p))
-    setattr(pt, 'consumed_policy_rule_sets', mark_safe(c))
-    l2url = "horizon:project:network_policy:l2policy_details"
+    # gets policy rule set objects from ids and sets them into the datum object
+    # for displaying in tables
+    setattr(pt, 'provided_policy_rule_sets',
+        [client.policy_rule_set_get(request, item) for item in
+         pt.provided_policy_rule_sets])
+    setattr(pt, 'consumed_policy_rule_sets',
+        [client.policy_rule_set_get(request, item) for item in
+         pt.consumed_policy_rule_sets])
+
+    # sets l2 policy information for the table
     if hasattr(pt, 'l2_policy_id') and pt.l2_policy_id is not None:
+        # We could/should probably pass the entire policy object
         policy = client.l2policy_get(request, pt.l2_policy_id)
-        u = reverse(l2url, kwargs={'l2policy_id': policy.id})
-        atag = mark_safe(
-            "<a href='" + u + "'>" + policy.name + "</a>")
-        setattr(pt, 'l2_policy_id', atag)
+        setattr(pt, 'l2_policy_name', policy.name)
+
+    # external segments for linking
     if hasattr(pt, 'external_segments'):
-        exturl = "horizon:project:network_policy:external_connectivity_details"
-        value = ["<ul>"]
-        li = lambda x: "<li><a href='" + \
-            reverse(exturl, kwargs={'external_connectivity_id': x.id}) + \
-            "'>" + x.name + "</a></li>"
-        for external_segment in pt.external_segments:
-            ext_policy = client.get_externalconnectivity(request,
-                external_segment)
-            value.append(li(ext_policy))
-        value.append("</ul>")
-        value = "".join(value)
-        setattr(pt, 'external_segments', mark_safe(value))
+        setattr(pt, 'external_segments',
+            [client.get_externalconnectivity(request, external_segment)
+             for external_segment in pt.external_segments])
     return pt
 
 
 def update_policyrule_attributes(request, prule):
-    url = "horizon:project:application_policy:policyclassifierdetails"
     classifier_id = prule.policy_classifier_id
     classifier = client.policyclassifier_get(request, classifier_id)
-    u = reverse(url, kwargs={'policyclassifier_id': classifier.id})
-    tag = mark_safe("<a href='" + u + "'>" + classifier.name + "</a>")
-    setattr(prule, 'policy_classifier_id', tag)
-    actions = prule.policy_actions
-    action_url = "horizon:project:application_policy:policyactiondetails"
-    ul = ["<ul>"]
-    for a in actions:
+    setattr(prule, 'policy_classifier', classifier)
+
+    policy_actions = []
+    for a in prule.policy_actions:
         action = client.policyaction_get(request, a)
-        u = reverse(action_url, kwargs={'policyaction_id': a})
+
         if action.action_type == 'redirect':
             spec = client.get_servicechain_spec(request, action.action_value)
             spec_details = "%s:%s" % (spec.name, str(spec.id))
-            li = "<li><a href='%s'>%s</a></li>" % (u, spec_details)
-        else:
-            li = "<li><a href='%s'>%s</a></li>" % (u, action.name)
-        ul.append(li)
-    ul.append("</ul>")
-    ultag = "".join(ul)
-    setattr(prule, 'policy_actions', mark_safe(ultag))
+            action.name = spec_details
+
+        policy_actions.append(action)
+    setattr(prule, 'policy_actions', policy_actions)
+
     return prule
 
 
 def update_policyaction_attributes(request, paction):
     if paction.action_type == 'redirect':
-        spec = client.get_servicechain_spec(request,
-                paction.action_value)
-        url = "horizon:project:network_services:sc_spec_details"
-        url = reverse(url, kwargs={'scspec_id': spec.id})
-        tag_content = (url, spec.name + ":" + spec.id)
-        tag = "<a href='%s'>%s</a>" % tag_content
-        setattr(paction, 'action_value', mark_safe(tag))
+        spec = client.get_servicechain_spec(request, paction.action_value)
+        setattr(paction, 'spec', spec)
+
     return paction
 
 
 def update_sc_spec_attributes(request, scspec):
-    static_url = getattr(settings, 'STATIC_URL', "/static/")
-    img_path = static_url + "dashboard/img/"
-    provider = "default"
-    nodes = scspec.nodes
-    nodes = [client.get_servicechain_node(request, item) for item in nodes]
-    t = "<table class='table table-condensed' \
-        style='margin-bottom:0px'><tr><td>"
-    val = [t + "<span class='glyphicon glyphicon-remove-circle'></span></td>"]
-    ds_path = "/opt/stack/horizon/static/dashboard/img/"
-    if os.path.exists(ds_path):
-        local_img_path = ds_path
-    else:
-        local_img_path = "/usr/share/openstack-dashboard/" \
-            + "openstack_dashboard/static/dashboard/img/"
-    if os.path.exists(local_img_path):
-        providers = os.listdir(local_img_path)
-        for p in providers:
-            if p in scspec.description:
-                provider = p
-                break
+    loaded_nodes = []
+    for node_id in scspec.nodes:
+        node = client.get_servicechain_node(request, node_id)
+        node.service_profile = client.get_service_profile(
+            request, node.service_profile_id
+        )
+        node.can_access = policy.check((
+            (GBP_POLICY_FILE, "get_servicechain_node"),), request,
+            {"project_id": node.tenant_id}
+        )
+        loaded_nodes.append(node)
 
-    img_src = img_path + provider + "/"
-    scn_url = "horizon:project:network_services:sc_node_details"
-    for n in nodes:
-        url = reverse(scn_url, kwargs={'scnode_id': n.id})
-        service_profile_id = n.service_profile_id
-        try:
-            service_profile = client.get_service_profile(request,
-                service_profile_id)
-            service_type = service_profile.service_type
-        except Exception:
-            pass
-        val.append(
-            "<td><span class='glyphicon glyphicon-arrow-right'></span></td>")
-        scnode = "<td><a href='" + url + "' style='font-size: 9px;' >" \
-            + "<img src='" + img_src + service_type + ".png'>" \
-            + "<br>" + n.name + " (" + service_type + ")</a></td>"
-        val.append(scnode)
-    val.append("</tr></table>")
-    setattr(scspec, 'nodes', mark_safe("".join(val)))
+    setattr(scspec, 'loaded_nodes', loaded_nodes)
     return scspec
 
 
 def update_sc_node_attributes(request, scnode):
-    t = "<p style='margin-bottom:0px'>"
-    val = [t]
-    sp_url = "horizon:project:network_services:service_profile_details"
-    url = reverse(sp_url, kwargs={'sp_id': scnode.service_profile_id})
     try:
         service_profile = client.get_service_profile(request,
-            scnode.service_profile_id)
-        sp = "<a href='" + url + "'>" + service_profile.name + ' : ' + \
-            service_profile.service_type + '</a></p>'
-        val.append(sp)
+                                                     scnode.service_profile_id)
+        setattr(scnode, 'service_profile', service_profile)
     except Exception:
         return scnode
-    setattr(scnode, 'service_profile', mark_safe("".join(val)))
     return scnode
 
 
@@ -213,7 +142,7 @@ def update_scn_instance_attributes(request, scspec):
         local_img_path = ds_path
     else:
         local_img_path = "/usr/share/openstack-dashboard/" \
-            + "openstack_dashboard/static/dashboard/img/"
+                         + "openstack_dashboard/static/dashboard/img/"
     if os.path.exists(local_img_path):
         providers = os.listdir(local_img_path)
         for p in providers:
@@ -226,7 +155,7 @@ def update_scn_instance_attributes(request, scspec):
         service_profile_id = n.service_profile_id
         try:
             service_profile = client.get_service_profile(request,
-                service_profile_id)
+                                                         service_profile_id)
             service_type = service_profile.service_type
         except Exception:
             pass
@@ -275,7 +204,7 @@ def update_sc_instance_attributes(request, scinstance):
 
 def update_classifier_attributes(classifiers):
     port_protocol_map = {'21': 'ftp', '25': 'smtp', '53': 'dns',
-                        '80': 'http', '443': 'https'}
+                         '80': 'http', '443': 'https'}
     if type(classifiers) == list:
         for classifier in classifiers:
             classifier.set_id_as_name_if_empty()
@@ -290,38 +219,28 @@ def update_classifier_attributes(classifiers):
 
 
 def update_l3_policy_attributes(request, l3_policy):
-    url = "horizon:project:network_policy:external_connectivity_details"
-    if bool(l3_policy.external_segments):
-        value = ["<ul>"]
-        li = \
-            lambda x: "<li><a href='" + \
-            reverse(url, kwargs={'external_connectivity_id': x.id}) + \
-             "'>" + x.name + "</a>" + " : " + \
-            l3_policy.external_segments[x.id][0] + "</li>"
-        for ec in l3_policy.external_segments.keys():
-            external_connectivity = client.get_externalconnectivity(request,
-                                                                    ec)
-            value.append(li(external_connectivity))
-        value.append("</ul>")
-        tag = mark_safe("".join(value))
-    else:
-        tag = '-'
-    setattr(l3_policy, 'external_segments', tag)
+    _segments = []
+    if "external_segments" in l3_policy:
+        for seg_id, addresses in l3_policy.external_segments.iteritems():
+            segment = client.get_externalconnectivity(request, seg_id)
+            segment.addresses = addresses
+
+            # this is a bit of a hack, where the policy is checked here for use
+            # with complex transform in the table matching column; the
+            # transform function has no access to a request
+            segment.can_access = policy.check(
+                ((GBP_POLICY_FILE, "get_external_segment"),), request,
+                {'project_id': segment.tenant_id}
+            )
+            _segments.append(segment)
+    setattr(l3_policy, 'external_segments', _segments)
     return l3_policy
 
 
 def update_nat_pool_attributes(request, nat_pool):
-    url = "horizon:project:network_policy:external_connectivity_details"
-    id = nat_pool.external_segment_id
-    value = ["<ul>"]
-    li = \
-        lambda x: "<li><a href='" + \
-        reverse(url, kwargs={'external_connectivity_id': x.id}) + \
-        "'>" + x.name + "</a>" + "</li>"
-    external_connectivity = client.get_externalconnectivity(request,
-                                                                id)
-    value.append(li(external_connectivity))
-    value.append("</ul>")
-    tag = mark_safe("".join(value))
-    setattr(nat_pool, 'external_segment_id', tag)
+    external_connectivity = client.get_externalconnectivity(
+        request, nat_pool.external_segment_id
+    )
+    external_segments = [external_connectivity]
+    setattr(nat_pool, 'external_segments', external_segments)
     return nat_pool
