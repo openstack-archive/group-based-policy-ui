@@ -10,5 +10,4 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# todo: this is just a way to get around python import problems
-from openstack_dashboard import policy  # noqa
+GBP_POLICY_FILE = "groups"
