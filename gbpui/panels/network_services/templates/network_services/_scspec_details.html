@@ -4,7 +4,7 @@
 <div class="info row detail">
 	<hr class="header_rule">
 	<dl>
-		<dt>{% trans "Name" %}</dt>
+    <dt>{% trans "Name" %}</dt>
 		<dd>{{ scspec.name|default:_("-") }}</dd>
 
 		<dt>{% trans "Description" %}</dt>
@@ -16,35 +16,35 @@
 		<dt>{% trans "Shared" %}</dt>
 		<dd>{{ scspec.shared }}</dd>
 	</dl>
-    {% if scspec.nodes %}
-    <div class="panel panel-default">
-        <div class="panel-heading">Nodes</div>
-        <div class="panel-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Service Profile</th>
-                        <th>Config</th>
-                    </tr>
-                </thead>
-                {% for node in scspec.nodes %}
-                <tr>
-                    <td>
-                        <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
-                            {{node.name}}</a>
-                    </td>
-                    <td>
-                        <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=node.service_profile_id %}">
-                           {{ node.service_profile_id }}</a>
-                    </td>
-                    <td> 
-                        <div style ="white-space:pre;overflow-y: scroll;height:300px;background-color:#EEEEEE">{{node.config}}</div>
-                    </td>
-                </tr>
-				{% endfor %}
-            </table>                                                
-        </div>
-    </div>
-    {% endif %}
+  {% if scspec.nodes %}
+  <div class="panel panel-default">
+      <div class="panel-heading">Nodes</div>
+      <div class="panel-body">
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th>Name</th>
+                      <th>Service Profile</th>
+                      <th>Config</th>
+                  </tr>
+              </thead>
+              {% for node in scspec.nodes %}
+              <tr>
+                  <td>
+                      <a href="{% url 'horizon:project:network_services:sc_node_details' scnode_id=node.id %}">
+                          {{node.name}}</a>
+                  </td>
+                  <td>
+                      <a href="{% url 'horizon:project:network_services:service_profile_details' sp_id=node.service_profile_id %}">
+                         {{ node.service_profile_id }}</a>
+                  </td>
+                  <td>
+                      <div style ="white-space:pre;overflow-y: scroll;height:300px;background-color:#EEEEEE">{{node.config}}</div>
+                  </td>
+              </tr>
+      {% endfor %}
+          </table>
+      </div>
+  </div>
+  {% endif %}
 </div>

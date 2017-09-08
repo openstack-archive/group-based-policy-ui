@@ -31,3 +31,10 @@ class ReversingModalFormView(forms.ModalFormView):
         submit_params = self.get_submit_url_params(**kwargs)
         submit_url = reverse(self.submit_url, kwargs=submit_params)
         return submit_url
+
+
+class HelpTextModalMixin(object):
+    def get_context_data(self, **kwargs):
+        context = super(HelpTextModalMixin, self).get_context_data(**kwargs)
+        context["help_text"] = self.help_text
+        return context
