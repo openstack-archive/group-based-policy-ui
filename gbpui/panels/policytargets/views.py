@@ -12,13 +12,11 @@
 
 import json
 
-from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse  # noqa
 from django.utils.translation import ugettext_lazy as _
 
 from horizon import exceptions
-from horizon import forms
 from horizon import tabs
 from horizon.utils import memoized
 from horizon import workflows
@@ -45,7 +43,7 @@ AddExternalPTG = policy_target_workflows.AddExternalPTG
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = (PTGTabs)
-    template_name = 'project/policytargets/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
     page_title = _("Groups")
 
 
@@ -59,7 +57,7 @@ class AddExternalPTGView(workflows.WorkflowView):
 
 class PTGDetailsView(tabs.TabbedTableView):
     tab_group_class = (policy_target_tabs.PTGMemberTabs)
-    template_name = 'project/policytargets/group_details.html'
+    template_name = 'gbpui/details_tabs.html'
     page_title = _("Group: {{ policy_target.name }}")
 
     def get_context_data(self, **kwargs):
@@ -75,7 +73,7 @@ class PTGDetailsView(tabs.TabbedTableView):
 
 class ExternalPTGDetailsView(tabs.TabbedTableView):
     tab_group_class = (policy_target_tabs.ExternalPTGMemberTabs)
-    template_name = 'project/policytargets/group_details.html'
+    template_name = 'gbpui/details_tabs.html'
     page_title = _("Group: {{ policy_target.name }}")
 
     def get_context_data(self, **kwargs):
@@ -92,7 +90,6 @@ class ExternalPTGDetailsView(tabs.TabbedTableView):
 
 class LaunchVMView(workflows.WorkflowView):
     workflow_class = policy_target_workflows.LaunchInstance
-    template_name = "project/policytargets/add_vm.html"
 
     def get_initial(self):
         initial = super(LaunchVMView, self).get_initial()
@@ -101,7 +98,8 @@ class LaunchVMView(workflows.WorkflowView):
         return initial
 
 
-class UpdatePTGView(forms.ModalFormView):
+class UpdatePTGView(gbforms.HelpTextModalMixin,
+                    gbforms.ReversingModalFormView):
     form_class = policy_target_forms.UpdatePolicyTargetForm
     form_id = "update_policy_target_form"
     modal_header = _("Edit Group")
@@ -113,16 +111,10 @@ class UpdatePTGView(forms.ModalFormView):
     page_title = _("Edit Group")
     help_text = _("You may update group details here.")
 
-    def get_context_data(self, **kwargs):
-        context = super(UpdatePTGView, self).get_context_data(**kwargs)
-        obj_id = self.kwargs['policy_target_id']
-        context["policy_target_id"] = obj_id
-        obj = self._get_object()
-        if obj:
-            context['name'] = obj.name
-        context["submit_url"] = reverse(self.submit_url, args=(obj_id,))
-        context["help_text"] = self.help_text
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "policy_target_id": self.kwargs["policy_target_id"]
+        }
 
     @memoized.memoized_method
     def _get_object(self, *args, **kwargs):
@@ -141,7 +133,8 @@ class UpdatePTGView(forms.ModalFormView):
         return self.kwargs
 
 
-class UpdateExternalPTGView(forms.ModalFormView):
+class UpdateExternalPTGView(gbforms.HelpTextModalMixin,
+                            gbforms.ReversingModalFormView):
     form_class = policy_target_forms.UpdateExternalPolicyTargetForm
     form_id = "update_policy_target_form"
     modal_header = _("Edit Group")
@@ -153,16 +146,10 @@ class UpdateExternalPTGView(forms.ModalFormView):
     page_title = _("Edit Group")
     help_text = _("You may update external policy details here.")
 
-    def get_context_data(self, **kwargs):
-        context = super(UpdateExternalPTGView, self).get_context_data(**kwargs)
-        obj_id = self.kwargs['ext_policy_target_id']
-        context["ext_policy_target_id"] = obj_id
-        obj = self._get_object()
-        if obj:
-            context['name'] = obj.name
-        context["submit_url"] = reverse(self.submit_url, args=(obj_id,))
-        context["help_text"] = self.help_text
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {
+            "ext_policy_target_id": self.kwargs["ext_policy_target_id"]
+        }
 
     @memoized.memoized_method
     def _get_object(self, *args, **kwargs):
@@ -181,7 +168,8 @@ class UpdateExternalPTGView(forms.ModalFormView):
         return self.kwargs
 
 
-class ExtAddProvidedPRSView(gbforms.ReversingModalFormView):
+class ExtAddProvidedPRSView(gbforms.HelpTextModalMixin,
+                            gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddProvidedPRSForm
     form_id = "ext_add_provided_form"
     modal_header = _("Add Provided PRS")
@@ -202,7 +190,8 @@ class ExtAddProvidedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class ExtRemoveProvidedPRSView(gbforms.ReversingModalFormView):
+class ExtRemoveProvidedPRSView(gbforms.HelpTextModalMixin,
+                               gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveProvidedPRSForm
     form_id = "ext_remove_provided_form"
     modal_header = _("Remove Provided PRS")
@@ -223,7 +212,8 @@ class ExtRemoveProvidedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class AddProvidedPRSView(gbforms.ReversingModalFormView):
+class AddProvidedPRSView(gbforms.HelpTextModalMixin,
+                         gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddProvidedPRSForm
     form_id = "add_provided_form"
     modal_header = _("Add Provided PRS")
@@ -244,7 +234,8 @@ class AddProvidedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class RemoveProvidedPRSView(gbforms.ReversingModalFormView):
+class RemoveProvidedPRSView(gbforms.HelpTextModalMixin,
+                            gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveProvidedPRSForm
     form_id = "remove_provided_form"
     modal_header = _("Remove Provided PRS")
@@ -265,7 +256,8 @@ class RemoveProvidedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class ExtAddConsumedPRSView(gbforms.ReversingModalFormView):
+class ExtAddConsumedPRSView(gbforms.HelpTextModalMixin,
+                            gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtAddConsumedPRSForm
     form_id = "ext_add_consumed_form"
     modal_header = _("Add Policy Rule Set")
@@ -286,7 +278,8 @@ class ExtAddConsumedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class ExtRemoveConsumedPRSView(gbforms.ReversingModalFormView):
+class ExtRemoveConsumedPRSView(gbforms.HelpTextModalMixin,
+                               gbforms.ReversingModalFormView):
     form_class = policy_target_forms.ExtRemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")
@@ -307,7 +300,8 @@ class ExtRemoveConsumedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class AddConsumedPRSView(gbforms.ReversingModalFormView):
+class AddConsumedPRSView(gbforms.HelpTextModalMixin,
+                         gbforms.ReversingModalFormView):
     form_class = policy_target_forms.AddConsumedPRSForm
     form_id = "add_consumed_form"
     modal_header = _("Add ")
@@ -328,7 +322,8 @@ class AddConsumedPRSView(gbforms.ReversingModalFormView):
         return self.kwargs
 
 
-class RemoveConsumedPRSView(gbforms.ReversingModalFormView):
+class RemoveConsumedPRSView(gbforms.HelpTextModalMixin,
+                            gbforms.ReversingModalFormView):
     form_class = policy_target_forms.RemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")

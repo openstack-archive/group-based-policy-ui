@@ -11,13 +11,15 @@
 # under the License.
 from django.core.urlresolvers import reverse
 
-from horizon import forms
 from horizon import tabs
 from horizon import workflows
 
 import forms as policy_rule_set_forms
 import tabs as policy_rule_set_tabs
 import workflows as policy_rule_set_workflows
+
+from django.utils.translation import ugettext_lazy as _
+from gbpui.common import forms as gbforms
 
 PolicyRuleSetTabs = policy_rule_set_tabs.ApplicationPoliciesTabs
 PolicyRuleSetDetailsTabs = policy_rule_set_tabs.PolicyRuleSetDetailsTabs
@@ -31,26 +33,26 @@ AddPolicyClassifier = policy_rule_set_workflows.AddPolicyClassifier
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = (PolicyRuleSetTabs)
-    template_name = 'project/application_policy/details_tabs.html'
+    template_name = "gbpui/details_tabs.html"
+    page_title = _("Application Policies")
 
 
 class AddPolicyRuleSetView(workflows.WorkflowView):
     workflow_class = AddPolicyRuleSet
-    template_name = "project/application_policy/addpolicy_rule_set.html"
-
-    def get_object_id(self, policy_rule_set):
-        return [policy_rule_set.id]
 
 
-class UpdatePolicyRuleSetView(forms.ModalFormView):
+class UpdatePolicyRuleSetView(gbforms.HelpTextModalMixin,
+                              gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.UpdatePolicyRuleSetForm
-    template_name = 'project/application_policy/update_policy_rule_set.html'
+    modal_header = _("Edit Policy Rule Set")
+    submit_label = _("Update Policy Rule Set")
+    submit_url = "horizon:project:application_policy:updatepolicy_rule_set"
+    template_name = "gbpui/form_with_description.html"
+    page_title = _("Update Rule Set")
+    help_text = _("Update Rule Set.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdatePolicyRuleSetView, self).get_context_data(**kwargs)
-        context['policy_rule_set_id'] = self.kwargs['policy_rule_set_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {"policy_rule_set_id": self.kwargs['policy_rule_set_id']}
 
     def get_initial(self):
         return {'policy_rule_set_id': self.kwargs['policy_rule_set_id']}
@@ -58,15 +60,17 @@ class UpdatePolicyRuleSetView(forms.ModalFormView):
 
 class AddPolicyRuleView(workflows.WorkflowView):
     workflow_class = AddPolicyRule
-    template_name = "project/application_policy/addpolicyrule.html"
-
-    def get_object_id(self, rule):
-        return [rule.id]
 
 
-class AddPolicyClassifierView(forms.ModalFormView):
+class AddPolicyClassifierView(gbforms.HelpTextModalMixin,
+                              gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.AddPolicyClassifierForm
-    template_name = "project/application_policy/add_policy_classifier.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:application_policy:addpolicyclassifier"
+    modal_header = _("Create Policy Classifier")
+    page_title = _("Create Policy Classifier")
+    help_text = _("Create Policy Classifier.")
+    submit_label = _("Save Changes")
 
     def get_success_url(self):
         return reverse('horizon:project:application_policy:index')
@@ -75,26 +79,32 @@ class AddPolicyClassifierView(forms.ModalFormView):
         return [classifier.id]
 
 
-class AddPolicyActionView(forms.ModalFormView):
+class AddPolicyActionView(gbforms.HelpTextModalMixin,
+                          gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.AddPolicyActionForm
-    template_name = "project/application_policy/add_policy_action.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:application_policy:addpolicyaction"
+    modal_header = _("Create Policy Action")
+    page_title = _("Create Policy Action")
+    submit_label = _("Create")
+    help_text = _("Create Policy Action.")
 
     def get_success_url(self):
         return reverse('horizon:project:application_policy:index')
 
-    def get_object_id(self, policyaction):
-        return [policyaction.id]
 
-
-class UpdatePolicyActionView(forms.ModalFormView):
+class UpdatePolicyActionView(gbforms.HelpTextModalMixin,
+                             gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.UpdatePolicyActionForm
-    template_name = "project/application_policy/update_policy_action.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:application_policy:updatepolicyaction"
+    modal_header = _("Edit Policy Action")
+    page_title = _("Edit Policy Action")
+    submit_label = _("Save Changes")
+    help_text = _("Edit Policy Action.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdatePolicyActionView, self).get_context_data(**kwargs)
-        context['policyaction_id'] = self.kwargs['policyaction_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {"policyaction_id": self.kwargs['policyaction_id']}
 
     def get_initial(self):
         return {'policyaction_id': self.kwargs['policyaction_id']}
@@ -102,22 +112,29 @@ class UpdatePolicyActionView(forms.ModalFormView):
 
 class PolicyRuleSetDetailsView(tabs.TabView):
     tab_group_class = (PolicyRuleSetDetailsTabs)
-    template_name = 'project/application_policy/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Policy Rule Set Details")
 
 
 class PolicyRuleDetailsView(tabs.TabView):
     tab_group_class = (PolicyRuleDetailsTabs)
-    template_name = 'project/application_policy/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Policy Rule Details")
 
 
-class UpdatePolicyRuleView(forms.ModalFormView):
+class UpdatePolicyRuleView(gbforms.HelpTextModalMixin,
+                           gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.UpdatePolicyRuleForm
-    template_name = "project/application_policy/update_policy_rule.html"
 
-    def get_context_data(self, **kwargs):
-        context = super(UpdatePolicyRuleView, self).get_context_data(**kwargs)
-        context['policyrule_id'] = self.kwargs['policyrule_id']
-        return context
+    modal_header = _("Edit Policy Rule")
+    submit_label = _("Update Policy Rule")
+    submit_url = "horizon:project:application_policy:updatepolicyrule"
+    template_name = "gbpui/form_with_description.html"
+    page_title = _("Edit Policy Rule")
+    help_text = _("Edit Policy Rule.")
+
+    def get_submit_url_params(self, **kwargs):
+        return {"policyrule_id": self.kwargs['policyrule_id']}
 
     def get_initial(self):
         return {'policyrule_id': self.kwargs['policyrule_id']}
@@ -125,18 +142,22 @@ class UpdatePolicyRuleView(forms.ModalFormView):
 
 class PolicyClassifierDetailsView(tabs.TabView):
     tab_group_class = (PolicyClassifierDetailsTabs)
-    template_name = 'project/application_policy/details_tabs.html'
+    template_name = "gbpui/details_tabs.html"
+    page_title = _("Policy Classifier Details")
 
 
-class UpdatePolicyClassifierView(forms.ModalFormView):
+class UpdatePolicyClassifierView(gbforms.HelpTextModalMixin,
+                                 gbforms.ReversingModalFormView):
     form_class = policy_rule_set_forms.UpdatePolicyClassifierForm
-    template_name = "project/application_policy/update_policy_classifier.html"
+    modal_header = _("Edit Policy Classifier")
+    submit_label = _("Update Policy Classifier")
+    submit_url = "horizon:project:application_policy:updatepolicyclassifier"
+    template_name = "gbpui/form_with_description.html"
+    page_title = _("Edit Policy Classifier")
+    help_text = _("Edit Policy Classifier.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdatePolicyClassifierView, self).get_context_data(**kwargs)
-        context['policyclassifier_id'] = self.kwargs['policyclassifier_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {"policyclassifier_id": self.kwargs['policyclassifier_id']}
 
     def get_initial(self):
         return {'policyclassifier_id': self.kwargs['policyclassifier_id']}
@@ -144,4 +165,5 @@ class UpdatePolicyClassifierView(forms.ModalFormView):
 
 class PolicyActionDetailsView(tabs.TabView):
     tab_group_class = (PolicyActionDetailsTabs)
-    template_name = 'project/application_policy/details_tabs.html'
+    template_name = "gbpui/details_tabs.html"
+    page_title = _("Policy Action Details")

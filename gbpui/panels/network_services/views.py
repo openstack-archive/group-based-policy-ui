@@ -15,46 +15,56 @@ from horizon import tabs
 import forms as ns_forms
 import tabs as ns_tabs
 
+from django.utils.translation import ugettext_lazy as _
+from gbpui.common import forms as gbforms
+
 
 class IndexView(tabs.TabbedTableView):
     tab_group_class = (ns_tabs.ServiceChainTabs)
-    template_name = 'project/network_services/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Network Services")
 
 
 class ServiceProfileDetailsView(tabs.TabView):
     tab_group_class = (ns_tabs.ServiceProfileDetailsTabGroup)
-    template_name = 'project/network_services/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Service Profile Details")
 
 
-class CreateServiceProfileView(forms.ModalFormView):
+class CreateServiceProfileView(gbforms.HelpTextModalMixin,
+                               gbforms.ReversingModalFormView):
     form_class = ns_forms.CreateServiceProfileForm
-    template_name = "project/network_services/create_service_profile.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:network_services:create_service_profile"
+    modal_header = _("Create Service Profile")
+    submit_label = _("Create")
+    page_title = _("Create Service Profile")
+    help_text = _("Create Service Profile.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            CreateServiceProfileView, self).get_context_data(**kwargs)
-        return context
 
-
-class CreateServiceChainNodeView(forms.ModalFormView):
+class CreateServiceChainNodeView(gbforms.HelpTextModalMixin,
+                                 gbforms.ReversingModalFormView):
     form_class = ns_forms.CreateServiceChainNodeForm
-    template_name = "project/network_services/create_service_chain_node.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:network_services:create_sc_node"
+    modal_header = _("Create Service Chain Node")
+    submit_label = _("Create")
+    page_title = _("Create Service Chain Node")
+    help_text = _("Create Service Chain Node.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            CreateServiceChainNodeView, self).get_context_data(**kwargs)
-        return context
 
-
-class UpdateServiceChainNodeView(forms.ModalFormView):
+class UpdateServiceChainNodeView(gbforms.HelpTextModalMixin,
+                                 gbforms.ReversingModalFormView):
     form_class = ns_forms.UpdateServiceChainNodeForm
-    template_name = "project/network_services/update_service_chain_node.html"
+    template_name = "gbpui/form_with_description.html"
+    submit_url = "horizon:project:network_services:update_sc_node"
+    modal_header = _("Update Service Chain Node")
+    submit_label = _("Save Changes")
+    page_title = _("Update Service Chain Node")
+    help_text = _("Update Service Chain Node.")
 
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdateServiceChainNodeView, self).get_context_data(**kwargs)
-        context['scnode_id'] = self.kwargs['scnode_id']
-        return context
+    def get_submit_url_params(self, **kwargs):
+        return {"scnode_id": self.kwargs['scnode_id']}
 
     def get_initial(self):
         return self.kwargs
@@ -62,7 +72,8 @@ class UpdateServiceChainNodeView(forms.ModalFormView):
 
 class ServiceChainNodeDetailsView(tabs.TabView):
     tab_group_class = (ns_tabs.SCNodeDetailsTabGroup)
-    template_name = 'project/network_services/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Service Chain Node Details")
 
 
 class CreateServiceChainSpecView(forms.ModalFormView):
@@ -91,35 +102,11 @@ class UpdateServiceChainSpecView(forms.ModalFormView):
 
 class ServiceChainSpecDetailsView(tabs.TabView):
     tab_group_class = (ns_tabs.SCSpecDetailsTabGroup)
-    template_name = 'project/network_services/details_tabs.html'
-
-
-class CreateServiceChainInstanceView(forms.ModalFormView):
-    form_class = ns_forms.CreateServiceChainInstanceForm
-    template_name = "project/network_services/" \
-                    "create_service_chain_instance.html"
-
-    def get_context_data(self, **kwargs):
-        context = super(
-            CreateServiceChainInstanceView, self).get_context_data(**kwargs)
-        return context
-
-
-class UpdateServiceChainInstanceView(forms.ModalFormView):
-    form_class = ns_forms.UpdateServiceChainInstanceForm
-    template_name = "project/network_services/" \
-                    "update_service_chain_instance.html"
-
-    def get_context_data(self, **kwargs):
-        context = super(
-            UpdateServiceChainInstanceView, self).get_context_data(**kwargs)
-        context['scinstance_id'] = self.kwargs['scinstance_id']
-        return context
-
-    def get_initial(self):
-        return self.kwargs
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Service Chain Spec Details")
 
 
 class ServiceChainInstanceDetailsView(tabs.TabView):
     tab_group_class = (ns_tabs.SCInstanceDetailsTabGroup)
-    template_name = 'project/network_services/details_tabs.html'
+    template_name = 'gbpui/details_tabs.html'
+    page_title = _("Service Chain Instance Details")

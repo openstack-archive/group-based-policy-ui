@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from django.conf.urls import url  # noqa
 
 import views
@@ -41,12 +40,6 @@ urlpatterns = [
     url(r'^sc_spec/(?P<scspec_id>[^/]+)/$',
         views.ServiceChainSpecDetailsView.as_view(),
         name='sc_spec_details'),
-    url(r'^create_sc_instance$',
-        views.CreateServiceChainInstanceView.as_view(),
-        name='create_sc_instance'),
-    url(r'^update_sc_instance/(?P<scinstance_id>[^/]+)/$',
-        views.UpdateServiceChainInstanceView.as_view(),
-        name='update_sc_instance'),
     url(r'^sc_instance/(?P<scinstance_id>[^/]+)/$',
         views.ServiceChainInstanceDetailsView.as_view(),
         name='sc_instance_details'),
