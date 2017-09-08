@@ -1,0 +1,9 @@
+Code-Review+2: Anna Khmelnitsky <akhmelnitsky@vmware.com>
+Code-Review+2: Thomas Bachman <bachman@noironetworks.com>
+Workflow+1: Thomas Bachman <bachman@noironetworks.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 08 Sep 2017 23:44:13 +0000
+Reviewed-on: https://review.openstack.org/502145
+Project: openstack/group-based-policy-ui
+Branch: refs/heads/stable/ocata
