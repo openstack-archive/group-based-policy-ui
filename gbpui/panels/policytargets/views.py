@@ -103,7 +103,7 @@ class UpdatePTGView(forms.ModalFormView):
     form_class = policy_target_forms.UpdatePolicyTargetForm
     form_id = "update_policy_target_form"
     modal_header = _("Edit Group")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/update_policy_target.html"
     context_object_name = 'policy_target'
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:updatepolicy_target"
@@ -143,7 +143,7 @@ class UpdateExternalPTGView(forms.ModalFormView):
     form_class = policy_target_forms.UpdateExternalPolicyTargetForm
     form_id = "update_policy_target_form"
     modal_header = _("Edit Group")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/update_external_policy_target.html"
     context_object_name = 'external_policy_target'
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:update_ext_policy_target"
@@ -183,7 +183,7 @@ class ExtAddProvidedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.ExtAddProvidedPRSForm
     form_id = "ext_add_provided_form"
     modal_header = _("Add Provided PRS")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/ext_add_provided_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:ext_add_provided_prs"
     page_title = _("Add Provided PRS")
@@ -204,7 +204,7 @@ class ExtRemoveProvidedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.ExtRemoveProvidedPRSForm
     form_id = "ext_remove_provided_form"
     modal_header = _("Remove Provided PRS")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/ext_remove_provided_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:ext_remove_provided_prs"
     page_title = _("Remove Provided PRS")
@@ -226,7 +226,7 @@ class AddProvidedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.AddProvidedPRSForm
     form_id = "add_provided_form"
     modal_header = _("Add Provided PRS")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/add_provided_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:add_provided_prs"
     page_title = _("Add Provided PRS")
@@ -247,7 +247,7 @@ class RemoveProvidedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.RemoveProvidedPRSForm
     form_id = "remove_provided_form"
     modal_header = _("Remove Provided PRS")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/remove_provided_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:remove_provided_prs"
     page_title = _("Remove Provided PRS")
@@ -268,7 +268,7 @@ class ExtAddConsumedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.ExtAddConsumedPRSForm
     form_id = "ext_add_consumed_form"
     modal_header = _("Add Policy Rule Set")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/ext_add_consumed_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:ext_add_consumed_prs"
     page_title = _("Add Policy Rule Set")
@@ -289,7 +289,7 @@ class ExtRemoveConsumedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.ExtRemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/ext_remove_consumed_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:ext_remove_consumed_prs"
     page_title = _("Remove Policy Rule Set")
@@ -311,7 +311,7 @@ class AddConsumedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.AddConsumedPRSForm
     form_id = "add_consumed_form"
     modal_header = _("Add ")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/add_consumed_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:add_consumed_prs"
     page_title = _("Add ")
@@ -332,7 +332,7 @@ class RemoveConsumedPRSView(forms.ModalFormView):
     form_class = policy_target_forms.RemoveConsumedPRSForm
     form_id = "remove_contract_form"
     modal_header = _("Remove Policy Rule Set")
-    template_name = "gbpui/form_with_description.html"
+    template_name = "project/policytargets/remove_consumed_prs.html"
     submit_label = _("Save Changes")
     submit_url = "horizon:project:policytargets:remove_consumed_prs"
     page_title = _("Remove Policy Rule Set")
