@@ -11,13 +11,11 @@
 # under the License.
 
 
-from django.conf.urls import patterns  # noqa
 from django.conf.urls import url  # noqa
 
 import views
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^addpolicy_rule_set$', views.AddPolicyRuleSetView.as_view(),
         name='addpolicy_rule_set'),
@@ -48,4 +46,4 @@ urlpatterns = patterns(
     url(r'^policy_rule_set/(?P<policy_rule_set_id>[^/]+)/$',
         views.PolicyRuleSetDetailsView.as_view(),
         name='policy_rule_set_details'),
-)
+]
