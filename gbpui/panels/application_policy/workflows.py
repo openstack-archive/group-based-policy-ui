@@ -21,6 +21,7 @@ from horizon import workflows
 from gbpui import client
 from gbpui import fields
 
+
 ADD_POLICY_ACTION_URL = "horizon:project:application_policy:addpolicyaction"
 ADD_POLICY_CLASSIFIER_URL = "horizon:project:application_policy:"
 ADD_POLICY_CLASSIFIER_URL = ADD_POLICY_CLASSIFIER_URL + "addpolicyclassifier"
@@ -28,11 +29,12 @@ ADD_POLICY_RULE_URL = "horizon:project:application_policy:addpolicyrule"
 
 
 class SelectPolicyRuleAction(workflows.Action):
-    policy_rules = fields.DynamicMultiChoiceField(
+    policy_rules = fields.TransferTableField(
         label=_("Policy Rules"),
         required=False,
         add_item_link=ADD_POLICY_RULE_URL,
-        help_text=_("Create a policy rule set with selected rules."))
+        help_text=_("Create a policy rule set with selected rules.")
+    )
 
     class Meta(object):
         name = _("Rules")
@@ -162,11 +164,17 @@ class SelectPolicyClassifierAction(workflows.Action):
 
 
 class SelectPolicyActionAction(workflows.Action):
-    actions = fields.DynamicMultiChoiceField(
+    actions = fields.TransferTableField(
         label=_("Policy Action"),
         required=False,
-        help_text=_("Create a policy-rule with selected action."),
-        add_item_link=ADD_POLICY_ACTION_URL)
+        add_item_link=ADD_POLICY_ACTION_URL,
+        help_text=_("Create a policy-rule with selected action.")
+    )
+
+    def __init__(self, request, context, *args, **kwargs):
+        super(SelectPolicyActionAction, self).__init__(
+            request, context, *args, **kwargs
+        )
 
     class Meta(object):
         name = _("actions")
@@ -176,14 +184,11 @@ class SelectPolicyActionAction(workflows.Action):
         try:
             actions = client.policyaction_list(request,
                 tenant_id=request.user.tenant_id)
-            action_list = [a.id for a in actions]
             for action in actions:
                 action.set_id_as_name_if_empty()
             actions = sorted(actions,
                              key=lambda action: action.name)
             action_list = [(a.id, a.name) for a in actions]
-            if len(action_list) > 0:
-                self.fields['actions'].initial = action_list[0]
         except Exception as e:
             action_list = []
             exceptions.handle(request,
