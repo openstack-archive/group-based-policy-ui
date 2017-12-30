@@ -8,11 +8,12 @@
 #
 # Hacking should appear first in case something else depends on pep8
 
--e git://github.com/openstack/horizon.git@stable/ocata#egg=horizon
+-e git://github.com/openstack/horizon.git@stable/pike#egg=horizon
 hacking<0.11,>=0.10.0
 #
-coverage>=4.0 # Apache-2.0
+coverage!=4.4,>=4.0 # Apache-2.0
 django-nose>=1.4.4 # BSD
+flake8-import-order==0.12 # LGPLv3
 mock>=2.0 # BSD
 mox3!=0.19.0,>=0.7.0 # Apache-2.0
 nodeenv>=0.9.4 # BSD
@@ -21,11 +22,11 @@ nose-exclude # LGPL
 nosehtmloutput>=0.0.3 # Apache-2.0
 nosexcover # BSD
 openstack.nose-plugin>=0.7 # Apache-2.0
-oslosphinx>=4.7.0 # Apache-2.0
-reno>=1.8.0 # Apache-2.0
-requests!=2.12.2,>=2.10.0 # Apache-2.0
+openstackdocstheme>=1.16.0 # Apache-2.0
+reno!=2.3.1,>=1.8.0 # Apache-2.0
+requests>=2.14.2 # Apache-2.0
 selenium>=2.50.1 # Apache-2.0
-sphinx!=1.3b1,<1.4,>=1.2.1 # BSD
+sphinx>=1.6.2 # BSD
 testtools>=1.4.0 # MIT
 # This also needs xvfb library installed on your OS
 xvfbwrapper>=0.1.3 #license: MIT
