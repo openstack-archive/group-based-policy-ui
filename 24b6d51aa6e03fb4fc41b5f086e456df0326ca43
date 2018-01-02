@@ -1,0 +1,10 @@
+Code-Review+2: Ivar Lazzaro <ivarlazzaro@gmail.com>
+Code-Review+2: Thomas Bachman <bachman@noironetworks.com>
+Code-Review+2: Anna Khmelnitsky <akhmelnitsky@vmware.com>
+Workflow+1: Anna Khmelnitsky <akhmelnitsky@vmware.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Tue, 02 Jan 2018 20:59:32 +0000
+Reviewed-on: https://review.openstack.org/530524
+Project: openstack/group-based-policy-ui
+Branch: refs/heads/master
