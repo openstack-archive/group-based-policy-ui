@@ -12,6 +12,7 @@
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext_lazy
 
 from horizon import tables
 
@@ -39,13 +40,25 @@ class UpdateAppPolicyLink(tables.LinkAction):
 
 class DeletePolicyRuleSetLink(tables.DeleteAction):
     name = "deletepolicyruleset"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Policy Rule Set")
-    data_type_plural = _("Policy Rule Sets")
 
     def action(self, request, object_id):
         client.policy_rule_set_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Policy Rule Set",
+            u"Delete Policy Rule Sets",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Policy Rule Set",
+            u"Scheduled deletion of Policy Rule Sets",
+            count
+        )
 
 
 class AddPolicyRuleLink(tables.LinkAction):
@@ -69,13 +82,25 @@ class UpdatePolicyRuleLink(tables.LinkAction):
 
 class DeletePolicyRuleLink(tables.DeleteAction):
     name = "deletepolicyrule"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Policy Rule")
-    data_type_plural = _("Policy Rules")
 
     def action(self, request, object_id):
         client.policyrule_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Policy Rule",
+            u"Delete Policy Rules",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Policy Rule",
+            u"Scheduled deletion of Policy Rules",
+            count
+        )
 
 
 class AddPolicyClassifierLink(tables.LinkAction):
@@ -99,13 +124,25 @@ class UpdatePolicyClassifierLink(tables.LinkAction):
 
 class DeletePolicyClassifierLink(tables.DeleteAction):
     name = "deletepolicyclassifier"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Policy Classifier")
-    data_type_plural = _("Policy Classifiers")
 
     def action(self, request, object_id):
         client.policyclassifier_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Policy Classifier",
+            u"Delete Policy Classifiers",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Policy Classifier",
+            u"Scheduled deletion of Policy Classifiers",
+            count
+        )
 
 
 class AddPolicyActionLink(tables.LinkAction):
@@ -129,13 +166,25 @@ class UpdatePolicyActionLink(tables.LinkAction):
 
 class DeletePolicyActionLink(tables.DeleteAction):
     name = "deletepolicyaction"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Policy Action")
-    data_type_plural = _("Policy Actions")
 
     def action(self, request, object_id):
         client.policyaction_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Policy Action",
+            u"Delete Policy Actions",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Policy Action",
+            u"Scheduled deletion of Policy Actions",
+            count
+        )
 
 
 class ApplicationPoliciesTable(tables.DataTable):

@@ -10,10 +10,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from itertools import chain
+
 from django.core import urlresolvers
 from django.forms import fields
 from django.forms import TextInput
 from django.forms import widgets
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 
 from django.forms.utils import flatatt
@@ -133,6 +136,45 @@ class TransferTableWidget(widgets.SelectMultiple):
         output = [open_tag, options, '</d-table>']
 
         return mark_safe('\n'.join(output))
+
+    def build_attrs(self, extra_attrs=None, **kwargs):
+        "Helper function for building an attribute dictionary."
+        attrs = dict(self.attrs, **kwargs)
+        if extra_attrs:
+            attrs.update(extra_attrs)
+        return attrs
+
+    def render_option(self, selected_choices, option_value, option_label):
+        if option_value is None:
+            option_value = ''
+        option_value = force_text(option_value)
+        if option_value in selected_choices:
+            selected_html = mark_safe(' selected="selected"')
+            if not self.allow_multiple_selected:
+                # Only allow for a single selection.
+                selected_choices.remove(option_value)
+        else:
+            selected_html = ''
+        return format_html('<option value="{}"{}>{}</option>',
+                           option_value,
+                           selected_html,
+                           force_text(option_label))
+
+    def render_options(self, choices, selected_choices):
+        # Normalize to strings.
+        selected_choices = set(force_text(v) for v in selected_choices)
+        output = []
+        for option_value, option_label in chain(self.choices, choices):
+            if isinstance(option_label, (list, tuple)):
+                output.append(format_html('<optgroup label="{}">',
+                              force_text(option_value)))
+                for option in option_label:
+                    output.append(self.render_option(selected_choices, *option))
+                output.append('</optgroup>')
+            else:
+                output.append(self.render_option(selected_choices, option_value,
+                                                 option_label))
+        return '\n'.join(output)
 
     # ...this adds the 'add item button' just by existing and returning a
     # true-y value
