@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 from django import http
 from django import shortcuts
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext_lazy
 
 from horizon import exceptions
 from horizon import tables
@@ -41,13 +42,25 @@ class UpdatePTGLink(tables.LinkAction):
 
 class DeletePTGLink(tables.DeleteAction):
     name = "deletepolicytarget"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Group")
-    data_type_plural = _("Groups")
 
     def action(self, request, object_id):
         client.policy_target_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Group",
+            u"Delete Groups",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Group",
+            u"Scheduled deletion of Groups",
+            count
+        )
 
 
 class AddPTGLink(tables.LinkAction):
@@ -102,13 +115,25 @@ class AddExternalPTGLink(tables.LinkAction):
 
 class DeleteExternalPTGLink(tables.DeleteAction):
     name = "deleteexternalpolicytarget"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Group")
-    data_type_plural = _("Groups")
 
     def action(self, request, object_id):
         client.ext_policy_target_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete External Group",
+            u"Delete External Groups",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of External Group",
+            u"Scheduled deletion of External Groups",
+            count
+        )
 
 
 class ExternalPTGsTable(tables.DataTable):
@@ -163,8 +188,22 @@ class LaunchVMLink(tables.LinkAction):
 
 
 class RemoveVMLink(tables.DeleteAction):
-    data_type_singular = _("Member")
-    data_type_plural = _("Members")
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Member",
+            u"Delete Members",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Deleted Member",
+            u"Deleted Members",
+            count
+        )
 
     def delete(self, request, instance_id):
         url = reverse("horizon:project:policytargets:policy_targetdetails",

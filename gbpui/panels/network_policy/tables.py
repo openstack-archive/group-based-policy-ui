@@ -12,6 +12,7 @@
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext_lazy
 
 from horizon import tables
 
@@ -38,13 +39,25 @@ class EditL2PolicyLink(tables.LinkAction):
 
 class DeleteL2PolicyLink(tables.DeleteAction):
     name = "deletel2policy"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("L2Policy")
-    data_type_plural = _("L2Policies")
 
     def action(self, request, object_id):
         client.l2policy_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete L2 Policy",
+            u"Delete L2 Policies",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of L2 Policy",
+            u"Scheduled deletion of L2 Policies",
+            count
+        )
 
 
 class L2PolicyTable(tables.DataTable):
@@ -87,13 +100,25 @@ class EditL3PolicyLink(tables.LinkAction):
 
 class DeleteL3PolicyLink(tables.DeleteAction):
     name = "deletel3policy"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("L3 Policy")
-    data_type_plural = _("L3 Policies")
 
     def action(self, request, object_id):
         client.l3policy_delete(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete L3 Policy",
+            u"Delete L3 Policies",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of L3 Policy",
+            u"Scheduled deletion of L3 Policies",
+            count
+        )
 
 
 class L3PolicyTable(tables.DataTable):
@@ -138,13 +163,25 @@ class EditServicePolicyLink(tables.LinkAction):
 
 class DeleteServicePolicyLink(tables.DeleteAction):
     name = "deletespolicy"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ServicePolicy")
-    data_type_plural = _("ServicePolicies")
 
     def action(self, request, object_id):
         client.delete_networkservice_policy(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Network Service Policy",
+            u"Delete Network ServiceL3 Policies",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Network Service Policy",
+            u"Scheduled deletion of Network Service Policies",
+            count
+        )
 
 
 class ServicePolicyTable(tables.DataTable):
@@ -191,13 +228,25 @@ class EditExternalConnectivityLink(tables.LinkAction):
 
 class DeleteExternalConnectivityLink(tables.DeleteAction):
     name = "deleteexternalconnectivity"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ExternalConnectivity")
-    data_type_plural = _("ExternalConnectivities")
 
     def action(self, request, object_id):
         client.delete_externalconnectivity(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete External Connectivity Policy",
+            u"Delete External Connectivity Policies",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of External Connectivity Policy",
+            u"Scheduled deletion of External Connectivity Policies",
+            count
+        )
 
 
 class ExternalConnectivityTable(tables.DataTable):
@@ -228,13 +277,25 @@ class CreateNATPoolLink(tables.LinkAction):
 
 class DeleteNATPoolLink(tables.DeleteAction):
     name = "deletenatpool"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("NAT Pool")
-    data_type_plural = _("NAT Pools")
 
     def action(self, request, object_id):
         client.delete_natpool(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete NAT Pool",
+            u"Delete NAT Pools",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of NAT Pool",
+            u"Scheduled deletion of NAT Pools",
+            count
+        )
 
 
 class EditNATPoolLink(tables.LinkAction):

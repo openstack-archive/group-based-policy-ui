@@ -12,6 +12,7 @@
 
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext_lazy
 
 from gbpui import client
 from horizon import tables
@@ -37,13 +38,25 @@ class EditServiceChainSpecLink(tables.LinkAction):
 
 class DeleteServiceChainSpecLink(tables.DeleteAction):
     name = "deletescspec"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Service Chain Spec")
-    data_type_plural = _("Service Chain Specs")
 
     def action(self, request, object_id):
         client.delete_servicechain_spec(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Service Chain Spec",
+            u"Delete Service Chain Specs",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Service Chain Spec",
+            u"Scheduled deletion of Service Chain Specs",
+            count
+        )
 
 
 class ServiceChainSpecTable(tables.DataTable):
@@ -85,13 +98,25 @@ class EditServiceChainNodeLink(tables.LinkAction):
 
 class DeleteServiceChainNodeLink(tables.DeleteAction):
     name = "deletescnode"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("Service Chain Node")
-    data_type_plural = _("Service Chain Nodes")
 
     def action(self, request, object_id):
         client.delete_servicechain_node(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Service Chain Node",
+            u"Delete Service Chain Nodes",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Service Chain Node",
+            u"Scheduled deletion of Service Chain Nodes",
+            count
+        )
 
 
 class ServiceChainNodeTable(tables.DataTable):
@@ -134,13 +159,25 @@ class EditServiceChainInstanceLink(tables.LinkAction):
 
 class DeleteServiceChainInstanceLink(tables.DeleteAction):
     name = "deletescinstance"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ServiceChainInstance")
-    data_type_plural = _("ServiceChainInstances")
 
     def action(self, request, object_id):
         client.delete_servicechain_instance(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Service Chain Instance",
+            u"Delete Service Chain Instances",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Service Chain Instance",
+            u"Scheduled deletion of Service Chain Instances",
+            count
+        )
 
 
 class ServiceChainInstanceTable(tables.DataTable):
@@ -175,13 +212,25 @@ class CreateServiceProfileLink(tables.LinkAction):
 
 class DeleteServiceProfileLink(tables.DeleteAction):
     name = "deleteserviceprofile"
-    action_present = _("Delete")
-    action_past = _("Scheduled deletion of %(data_type)s")
-    data_type_singular = _("ServiceProfile")
-    data_type_plural = _("ServiceProfiles")
 
     def action(self, request, object_id):
         client.delete_service_profile(request, object_id)
+
+    @staticmethod
+    def action_present(count):
+        return ungettext_lazy(
+            u"Delete Service Chain Profile",
+            u"Delete Service Chain Profiles",
+            count
+        )
+
+    @staticmethod
+    def action_past(count):
+        return ungettext_lazy(
+            u"Scheduled deletion of Service Chain Profile",
+            u"Scheduled deletion of Service Chain Profiles",
+            count
+        )
 
 
 class ServiceProfileTable(tables.DataTable):
