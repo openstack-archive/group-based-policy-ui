@@ -1,0 +1,9 @@
+Code-Review+2: Thomas Bachman <bachman@noironetworks.com>
+Code-Review+2: Robert Kukura <kukura@noironetworks.com>
+Workflow+1: Robert Kukura <kukura@noironetworks.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Sat, 27 Jan 2018 15:56:37 +0000
+Reviewed-on: https://review.openstack.org/538380
+Project: openstack/group-based-policy-ui
+Branch: refs/heads/stable/pike
