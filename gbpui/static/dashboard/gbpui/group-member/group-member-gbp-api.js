@@ -26,7 +26,7 @@
 
         function getPolicyTargetGroups() {
             return apiService.get('project/policytargets/policy_target_groups')
-                .error(function () {
+                .catch(function () {
                     toastService.add('error', gettext('Unable to retrieve Policy Target Groups'))
                 });
         }
@@ -34,7 +34,7 @@
         function createServer(newServer) {
             return apiService
                 .post('project/policytargets/launch_instance/', newServer)
-                .error(function () {
+                .catch(function () {
                     toastService.add('error', gettext('Unable to create Instance'))
                 })
         }
