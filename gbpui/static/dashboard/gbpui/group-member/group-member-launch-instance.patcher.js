@@ -25,7 +25,8 @@
        $provide.decorator(
            'horizon.dashboard.project.workflow.launch-instance.workflow',
            ["$delegate", 'horizon.app.core.workflow.factory',
-               function($delegate, dashboardWorkflow)
+            'gbpui.group-member.launch-context.service',
+               function($delegate, dashboardWorkflow, launchContextService)
                {
                 var steps = $delegate.steps;
                 var gbstep = {
@@ -36,24 +37,28 @@
                     formName: 'gbpForm'
                 };
 
-                // Finds and replaces the Network and Port wizard pages with
-                // the GBP wizard page
-                var networkIndex = -1;
-                var portIndex = -1;
-                angular.forEach(steps, function (step) {
-                    if(step.id == 'networks') {
-                        networkIndex = steps.indexOf(step)
-                    } else if(step.id == 'ports') {
-                        portIndex = steps.indexOf(step);
+                // This check can be potentially made more restrictive to specifically
+                // check if policy_target is in the URL
+                if (launchContextService.launchContext.successUrl != '/dashboard/project/instances/') {
+                    // Finds and replaces the Network and Port wizard pages with
+                    // the GBP wizard page
+                    var networkIndex = -1;
+                    var portIndex = -1;
+                    angular.forEach(steps, function (step) {
+                        if(step.id == 'networks') {
+                            networkIndex = steps.indexOf(step)
+                        } else if(step.id == 'ports') {
+                            portIndex = steps.indexOf(step);
+                        }
+                    });
+
+                    if(networkIndex > -1) {
+                        steps.splice(networkIndex, 1, gbstep);
                     }
-                });
 
-                if(networkIndex > -1) {
-                    steps.splice(networkIndex, 1, gbstep);
-                }
-
-                if(portIndex > -1) {
-                    steps.splice(portIndex, 1);
+                    if(portIndex > -1) {
+                        steps.splice(portIndex, 1);
+                    }
                 }
 
                 var result = dashboardWorkflow($delegate);
