@@ -114,7 +114,7 @@ class Members(generic.View):
         'block_device_mapping_v2',
         'availability_zone',
         'admin_pass', 'disk_config',
-        'config_drive'
+        'config_drive', "scheduler_hints"
     ]
 
     @rest_utils.ajax()
@@ -153,10 +153,17 @@ class Members(generic.View):
         try:
             instance_name = request.DATA['name'] + suffix
 
-            meta_data, nics = self.create_ports(request, instance_name)
+            if "group_policy_targets" in request.DATA and (
+                    request.DATA["group_policy_targets"]):
+                meta_data, nics = self.create_ports(request, instance_name)
 
-            kw['meta'] = meta_data
-            kw['nics'] = nics
+                kw['meta'] = meta_data
+                kw['nics'] = nics
+            else:
+                if 'nics' in request.DATA:
+                    kw['nics'] = request.DATA['nics']
+                if 'meta' in request.DATA:
+                    kw['meta'] = request.DATA['meta']
 
             args = (
                 request,
