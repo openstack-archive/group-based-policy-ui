@@ -39,7 +39,7 @@
 
                 // This check can be potentially made more restrictive to specifically
                 // check if policy_target is in the URL
-                if (launchContextService.launchContext.successUrl != '/dashboard/project/instances/' && launchContextService.launchContext.successUrl != '/dashboard/project/network_topology/') {
+                if (launchContextService.launchContext.successUrl != '/dashboard/project/instances/' && launchContextService.launchContext.successUrl != '/dashboard/project/network_topology/' && launchContextService.launchContext.successUrl != '/project/instances/') {
                     // Finds and replaces the Network and Port wizard pages with
                     // the GBP wizard page
                     var networkIndex = -1;
